@@ -1,0 +1,6 @@
+{
+    "prefix": "ml!",
+    "debug": {
+        "filechange": true
+    }
+}
