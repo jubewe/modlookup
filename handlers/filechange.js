@@ -4,8 +4,9 @@ const _wf = require("../functions/_wf");
 const _getallobjectkeystree = require("../functions/_getallobjectkeystree");
 const _getbyobjectkeyfromtree = require("../functions/_getbyobjectkeyfromtree");
 const isdebug = require("../functions/isdebug");
-const files = require("../variables/files");
-const paths = require("../variables/paths");
+let files = require("../variables/files");
+let paths = require("../variables/paths");
+const _rf = require("../functions/_rf");
 
 let filesold = {};
 module.exports = () => {
@@ -14,13 +15,25 @@ module.exports = () => {
     };
     
     let changed_files = 0;
+    let readnew_files = 0;
 
     function filechange(files_) {
         for(let file in files_){
+            let filenew = _rf(_getbyobjectkeyfromtree(paths, file)[0][0], false);
             if(filesold[file] && filesold[file] !== JSON.stringify(files_[file]) && _getallobjectkeystree(paths).includes(file)){
                 _wf(_getbyobjectkeyfromtree(paths, file)[0][0], files_[file], true);
                 changed_files++;
+            } else if(filesold[file] && filesold[file] === JSON.stringify(files_[file]) && filesold[file] != filenew && JSON.stringify(files_[file]) != filenew){
+                filesold[file] = filenew;
+                try {
+                    files_[file] = JSON.parse(filenew);
+                    _wf(_getbyobjectkeyfromtree(paths, file)[0][0], JSON.stringify(JSON.parse(filenew)));
+                } catch(e){
+                    files_[file] = filenew;
+                }
+                readnew_files++;
             };
+            
             filesold[file] = JSON.stringify(files_[file]);
         };
     };
@@ -28,6 +41,6 @@ module.exports = () => {
     filechange(files);
     
     if(isdebug("filechange")){
-        _log(1, `${_stackname("handlers", "filechange")[3]} executed\t(Changed ${changed_files} files)`);
+        _log(1, `${_stackname("handlers", "filechange")[3]} executed\t(Changed ${changed_files} and Re-read ${readnew_files} files)`);
     };
 }

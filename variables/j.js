@@ -12,7 +12,8 @@ class j {
 
     static logclient = new oberknechtClient({
         token: env.T_TOKEN,
-        anonymus: true
+        // botStatus: "verified"
+        anonymus: true,
     });
 };
 

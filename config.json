@@ -1,6 +1,23 @@
 {
-    "prefix": "ml!",
+    "prefix": "mlb!",
     "debug": {
         "filechange": true
+    },
+    "perm": {
+        "bot": 1,
+        "default": 10,
+        "moderator": 25,
+        "broadcaster": 30,
+        "botdefault": 60,
+        "bothigh": 62,
+        "botcoowner": 68,
+        "botowner": 69,
+        "discord": {
+            "admin": 30
+        }
+    },
+    "trackers":{
+        "mods": true,
+        "vips": true
     }
 }
