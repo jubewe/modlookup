@@ -9,14 +9,13 @@ const viplookup = require("./functions/viplookup");
 const getuserperm = require("./functions/getuserperm");
 const _permission = require("./functions/_permission");
 const _numberspacer = require("./functions/_numberspacer");
+const _sleep = require("./functions/_sleep");
+const _cleantime = require("./functions/_cleantime");
 const c = require("./config.json");
+let handledMessagescache = {};
 
 j.client.connect();
 j.logclient.connect();
-
-// let max_logs = 20000;
-let channels_per_block = 1000;
-let block_channels = 0;
 
 j.client.onReady(() => {
     _log(1, `Client Ready`);
@@ -24,12 +23,11 @@ j.client.onReady(() => {
     j.client.joinAll(files.clientChannels.channels);
 });
 
-
 j.logclient.onReady(async () => {
     _log(1, `LogClient Ready`);
 
     if (c.trackers.mods || c.trackers.vips) {
-        await modlookup.join(30)
+        await modlookup.join(1000)
             .then(a => {
                 console.log(`Joined ${a.length} channels`);
             });
@@ -96,6 +94,17 @@ j.logclient.onPRIVMSG(response => {
     };
 });
 
+setInterval(() => {
+    handledMessagescache[Date.now()] = files.lel.handledMessages;
+}, 15000);
+
+setInterval(() => {
+    const a = Object.keys(handledMessagescache).filter(a => a < (Date.now() - 60000));
+    a.forEach(b => {
+        delete handledMessagescache[b];
+    });
+}, 60000);
+
 j.logclient.onPRIVMSG(response => {
     if (c.trackers.vips) {
         if (!response.userstate.badges["vip"] && files.vipinfo.users[response.userstate.id] && files.vipinfo.users[response.userstate.id].channels[response.channelID]) delete files.vipinfo.users[response.userstate.id].channels[response.channelID];
@@ -129,11 +138,14 @@ j.client.onPRIVMSG(async response => {
         case "ping": {
             let memory = { used: (os.totalmem() - os.freemem()), total: os.totalmem(), free: os.freemem() };
 
-            response.reply(`Pong! Your command took ${response.serverDelay}ms to get to me; `
+            response.reply(
+                `Pong! Your command took ${response.serverDelay}ms to get to me; `
                 + `I've handled ${files.lel.handledMessages} messages of the logclient so far; Current memory usage: `
                 + `${Math.round(memory.used / 1048576)} (computer-wide) ${Math.round(process.memoryUsage.rss() / 1048576)} / ${Math.round(memory.total / 1048576)} mb; `
-                + `(Modlookup) Tracked ${Object.keys(files.modinfo.channels).length} channels and ${Object.keys(files.modinfo.users)} users; `
-                + `(Viplookup) Tracked ${Object.keys(files.vipinfo.channels).length} channels and ${Object.keys(files.vipinfo.users)} users`);
+                + `(Modlookup) Tracked ${Object.keys(files.modinfo.channels).length} channels and ${Object.keys(files.modinfo.users).length} users; `
+                + `(Viplookup) Tracked ${Object.keys(files.vipinfo.channels).length} channels and ${Object.keys(files.vipinfo.users).length} users; `
+                + `Messages per minute: ${files.lel.handledMessages - handledMessagescache[Object.keys(handledMessagescache).filter(a => a >= (Date.now() - 60000))[0]]};`
+            );
 
             break;
         };
@@ -185,7 +197,7 @@ j.client.onPRIVMSG(async response => {
 
             break;
         };
-        
+
 
         case "vipchannel": {
             let _lookupchannel = await j.client.getuser(response.messageArguments[1] ?? response.channelID);
@@ -327,6 +339,24 @@ j.client.onPRIVMSG(async response => {
 
             break;
         };
+        
+        case "help": {
+            response.reply(`VoHiYo Commands and help: https://jubewe.github.io/modlookup`);
+
+            break;
+        };
+    
+        case "restart": {
+            if (permission.num < c.perm.botdefault) return response.reply("NAHHH you ain't doing that");
+
+            await response.reply(`Waiting Restarting... (Uptime: ${_cleantime(process.uptime()*1000, 4).time.join(" and ")})`);
+
+            await _sleep(2000);
+
+            process.exit(0);
+
+            break;
+        };
     }
 });
 
@@ -362,7 +392,7 @@ j.client.onWHISPER(async response => {
                     if (lookupchannel.error) return response.reply(`Error: ${lookupchannel.error.message}`);
 
                     console.log(lookupchannel)
-                    response.reply(`Found ${_numberspacer(Object.keys(lookupchannel.users).length)} (tracked) mods in ${_lookupchannel.login}: ${Object.keys(lookupchannel.users).map(a => {return lookupchannel.users[a].name}).join(", ")}`);
+                    response.reply(`Found ${_numberspacer(Object.keys(lookupchannel.users).length)} (tracked) mods in ${_lookupchannel.login}: ${Object.keys(lookupchannel.users).map(a => { return lookupchannel.users[a].name }).join(", ")}`);
                 })
                 .catch(e => {
                     console.error(e);
@@ -457,6 +487,12 @@ j.client.onWHISPER(async response => {
 
         case "chans": {
             response.reply(`VoHiYo Currently tracking ${_numberspacer(j.logclient.channels.length)} channels`);
+
+            break;
+        };
+
+        case "help": {
+            response.reply(`VoHiYo Commands and help: https://jubewe.github.io/modlookup`);
 
             break;
         };
