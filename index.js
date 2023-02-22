@@ -11,6 +11,7 @@ const _permission = require("./functions/_permission");
 const _numberspacer = require("./functions/_numberspacer");
 const _sleep = require("./functions/_sleep");
 const _cleantime = require("./functions/_cleantime");
+const _chunkArray = require("./functions/_chunkArray");
 const c = require("./config.json");
 let handledMessagescache = {};
 
@@ -35,38 +36,7 @@ j.logclient.onReady(async () => {
         setInterval(() => {
             modlookup.renew(3);
         }, 600000);
-    }
-
-    // let pagination;
-
-    // await j.client.API.getStreams({ first: 100, language: "de" })
-    //     .then(streams => {
-    //         pagination = streams.pagination.cursor;
-    //         const streamLogins = streams.data.map(a => a.user_login);
-
-    //         block_channels += 100;
-    //         j.logclient.joinAll(streamLogins);
-    //     });
-
-    // async function asd() {
-    //     await j.client.API.getStreams({ first: 100, after: pagination, language: "de" })
-    //         .then(streams => {
-    //             pagination = streams.pagination.cursor;
-    //             const streamLogins = streams.data.map(a => a.user_login);
-
-    //             j.logclient.joinAll(streamLogins);
-
-    //             block_channels += 100;
-    //             if (block_channels < channels_per_block) asd(); else {
-    //                 pagination = undefined;
-    //                 block_channels = 0;
-    //             };
-    //         });
-    // };
-
-    // asd();
-
-    // setInterval(asd, 300000);
+    };
 });
 
 j.client.onError(e => {
@@ -98,12 +68,12 @@ setInterval(() => {
     handledMessagescache[Date.now()] = files.lel.handledMessages;
 }, 15000);
 
-setInterval(() => {
-    const a = Object.keys(handledMessagescache).filter(a => a < (Date.now() - 60000));
-    a.forEach(b => {
-        delete handledMessagescache[b];
-    });
-}, 60000);
+// setInterval(() => {
+//     const a = Object.keys(handledMessagescache).filter(a => a < (Date.now() - 60000));
+//     a.forEach(b => {
+//         delete handledMessagescache[b];
+//     });
+// }, 60000);
 
 j.logclient.onPRIVMSG(response => {
     if (c.trackers.vips) {
@@ -339,21 +309,31 @@ j.client.onPRIVMSG(async response => {
 
             break;
         };
-        
+
         case "help": {
             response.reply(`VoHiYo Commands and help: https://jubewe.github.io/modlookup`);
 
             break;
         };
-    
+
         case "restart": {
             if (permission.num < c.perm.botdefault) return response.reply("NAHHH you ain't doing that");
 
-            await response.reply(`Waiting Restarting... (Uptime: ${_cleantime(process.uptime()*1000, 4).time.join(" and ")})`);
+            await response.reply(`Waiting Restarting... (Uptime: ${_cleantime(process.uptime() * 1000, 4).time.join(" and ")})`);
 
             await _sleep(2000);
 
             process.exit(0);
+
+            break;
+        };
+
+        case "clearcache": {
+            if (permission.num < c.perm.botdefault) return response.reply("NAHHH you ain't doing that");
+
+            handledMessagescache = {};
+
+            response.reply(`Successfully cleared cache`);
 
             break;
         };
@@ -376,8 +356,9 @@ j.client.onWHISPER(async response => {
             response.reply(`Pong! Your command took ${response.serverDelay}ms to get to me; `
                 + `I've handled ${files.lel.handledMessages} messages of the logclient so far; Current memory usage: `
                 + `${Math.round(memory.used / 1048576)} (computer-wide) ${Math.round(process.memoryUsage.rss() / 1048576)} / ${Math.round(memory.total / 1048576)} mb; `
-                + `(Modlookup) Tracked ${Object.keys(files.modinfo.channels).length} channels and ${Object.keys(files.modinfo.users)} users; `
-                + `(Viplookup) Tracked ${Object.keys(files.vipinfo.channels).length} channels and ${Object.keys(files.vipinfo.users)} users`);
+                + `(Modlookup) Tracked ${Object.keys(files.modinfo.channels).length} channels and ${Object.keys(files.modinfo.users).length} users; `
+                + `(Viplookup) Tracked ${Object.keys(files.vipinfo.channels).length} channels and ${Object.keys(files.vipinfo.users).length} users; `
+                + `Messages per minute: ${files.lel.handledMessages - handledMessagescache[Object.keys(handledMessagescache).filter(a => a >= (Date.now() - 60000))[0]]};`)
 
             break;
         };
@@ -391,7 +372,6 @@ j.client.onWHISPER(async response => {
                 .then(lookupchannel => {
                     if (lookupchannel.error) return response.reply(`Error: ${lookupchannel.error.message}`);
 
-                    console.log(lookupchannel)
                     response.reply(`Found ${_numberspacer(Object.keys(lookupchannel.users).length)} (tracked) mods in ${_lookupchannel.login}: ${Object.keys(lookupchannel.users).map(a => { return lookupchannel.users[a].name }).join(", ")}`);
                 })
                 .catch(e => {
@@ -407,10 +387,28 @@ j.client.onWHISPER(async response => {
             let _lookupuser = await j.client.getuser(response.messageArguments[1] ?? response.senderUserID);
             _lookupuser = _lookupuser.data[0];
             modlookup.user(_lookupuser.id)
-                .then(lookupuser => {
+                .then(async lookupuser => {
                     if (lookupuser.error) return response.reply(`Error: ${lookupuser.error.message}`);
+                    let channelChunks = _chunkArray(Object.keys(lookupuser.channels), 100);
 
-                    response.reply(`${_lookupuser.login} is mod in ${_numberspacer(Object.keys(lookupuser.channels).length)} (tracked) channels: ${Object.keys(lookupuser.channels).map(a => lookupuser.channels[a].name).join(", ")}`);
+                    let channelData = {};
+
+                    await Promise.all(channelChunks.map(channelChunk => {
+                        return j.client.API.getUsers(null, channelChunk)
+                            .then(channels => {
+                                console.log(channels)
+                                channels.data.forEach(channel => {
+                                    channelData[channel.id] = channel;
+                                });
+                            })
+                            .catch(e => {
+                                console.error(e);
+                            })
+                    }));
+
+                    response.reply(`${_lookupuser.login} is mod in ${_numberspacer(Object.keys(channelData).length)} (tracked) channels `
+                        + `(Partners: ${Object.keys(channelData).filter(a => channelData[a].broadcaster_type == "partner").length}): `
+                        + `${Object.keys(channelData).map(a => `${channelData[a].login}${channelData[a].broadcaster_type == "partner" ? " (Partner)" : ""}`)}`);
                 })
                 .catch(e => {
                     console.error(e);
@@ -443,7 +441,10 @@ j.client.onWHISPER(async response => {
                 .then(lookupchannel => {
                     if (lookupchannel.error) return response.reply(`Error: ${lookupchannel.error.message}`);
 
-                    response.reply(`Found ${_numberspacer(Object.keys(lookupchannel.users).length)} (tracked) vips in ${_lookupchannel.login}: ${Object.keys(lookupchannel.users).map(a => lookupchannel.users[a].name).join(", ")}`);
+                    let users
+
+                    response.reply(`Found ${_numberspacer(Object.keys(lookupchannel.users).length)} (tracked) vips in ${_lookupchannel.login}: `
+                        + `${Object.keys(lookupchannel.users).map(a => lookupchannel.users[a].name).join(", ")}`);
                 })
                 .catch(e => {
                     console.error(e);
@@ -461,7 +462,8 @@ j.client.onWHISPER(async response => {
                 .then(lookupuser => {
                     if (lookupuser.error) return response.reply(`Error: ${lookupuser.error.message}`);
 
-                    response.reply(`${_lookupuser.login} is vip in ${_numberspacer(Object.keys(lookupuser.channels).length)} (tracked) channels: ${Object.keys(lookupuser.channels).map(a => lookupuser.channels[a].name).join(", ")}`);
+                    response.reply(`${_lookupuser.login} is vip in ${_numberspacer(Object.keys(lookupuser.channels).length)} (tracked) channels: `
+                        + `${Object.keys(lookupuser.channels).map(a => lookupuser.channels[a].name).join(", ")}`);
                 })
                 .catch(e => {
                     console.error(e);
@@ -493,6 +495,16 @@ j.client.onWHISPER(async response => {
 
         case "help": {
             response.reply(`VoHiYo Commands and help: https://jubewe.github.io/modlookup`);
+
+            break;
+        };
+
+        case "clearcache": {
+            if (permission.num < c.perm.botdefault) return response.reply("NAHHH you ain't doing that");
+
+            handledMessagescache = {};
+
+            response.reply(`Successfully cleared cache`);
 
             break;
         };

@@ -28,7 +28,7 @@ class modlookup {
             join();
 
             async function join() {
-                let reqData = { first: 100, language: "de" };
+                let reqData = { first: 100, language: ["de", "en"] };
 
                 if (usePagination && pagination) reqData.after = pagination;
                 await j.client.API.getStreams(reqData)
