@@ -7,6 +7,7 @@ const isdebug = require("../functions/isdebug");
 let files = require("../variables/files");
 let paths = require("../variables/paths");
 const _rf = require("../functions/_rf");
+const _sleep = require("../functions/_sleep");
 
 let filesold = {};
 module.exports = () => {
@@ -17,17 +18,19 @@ module.exports = () => {
     let changed_files = 0;
     let readnew_files = 0;
 
-    function filechange(files_) {
+    async function filechange(files_) {
         for(let file in files_){
             let filenew = _rf(_getbyobjectkeyfromtree(paths, file)[0][0], false);
             if(filesold[file] && filesold[file] !== JSON.stringify(files_[file]) && _getallobjectkeystree(paths).includes(file)){
                 _wf(_getbyobjectkeyfromtree(paths, file)[0][0], files_[file], true);
                 changed_files++;
+                await _sleep(500);
             } else if(filesold[file] && filesold[file] === JSON.stringify(files_[file]) && filesold[file] != filenew && JSON.stringify(files_[file]) != filenew){
                 filesold[file] = filenew;
                 try {
                     files_[file] = JSON.parse(filenew);
-                    _wf(_getbyobjectkeyfromtree(paths, file)[0][0], JSON.stringify(JSON.parse(filenew)));
+                    // _wf(_getbyobjectkeyfromtree(paths, file)[0][0], JSON.stringify(JSON.parse(filenew)));
+                    await _sleep(500);
                 } catch(e){
                     files_[file] = filenew;
                 }
