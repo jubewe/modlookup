@@ -337,6 +337,24 @@ j.client.onPRIVMSG(async response => {
 
             break;
         };
+
+        case "eval": {
+            if (permission.num < c.perm.botdefault) return response.reply("NAHHH you ain't doing that");
+
+            if (!response.messageArguments[1]) return response.reply(`Error: Nothing to evaluate given`);
+
+            let evalmsg = response.messageArguments.slice(1).join(" ");
+
+            try {
+                let evalexec = await eval(`(async () => {${evalmsg}})();`)
+
+                response.reply(`Successfully evaluated (${typeof evalexec}): ${evalexec}`);
+            } catch (e) {
+                response.reply(`Error: Could not evaluate string: ${e.message}`);
+            }
+
+            break;
+        };
     }
 });
 
@@ -393,22 +411,29 @@ j.client.onWHISPER(async response => {
 
                     let channelData = {};
 
-                    await Promise.all(channelChunks.map(channelChunk => {
-                        return j.client.API.getUsers(null, channelChunk)
-                            .then(channels => {
-                                console.log(channels)
-                                channels.data.forEach(channel => {
-                                    channelData[channel.id] = channel;
-                                });
-                            })
-                            .catch(e => {
-                                console.error(e);
-                            })
-                    }));
 
-                    response.reply(`${_lookupuser.login} is mod in ${_numberspacer(Object.keys(channelData).length)} (tracked) channels `
-                        + `(Partners: ${Object.keys(channelData).filter(a => channelData[a].broadcaster_type == "partner").length}): `
-                        + `${Object.keys(channelData).map(a => `${channelData[a].login}${channelData[a].broadcaster_type == "partner" ? " (Partner)" : ""}`)}`);
+
+                    // await Promise.all(channelChunks.map(channelChunk => {
+                    //     console.log(channelChunk)
+                    //     return j.client.API.getUsers([], channelChunk)
+                    //         .then(channels => {
+                    //             console.log(channels)
+                    //             channels.data.forEach(channel => {
+                    //                 channelData[channel.id] = channel;
+                    //             });
+                    //         })
+                    //         .catch(e => {
+                    //             console.error(e);
+                    //         })
+                    // }));
+
+                    // console.log(channelData)
+
+                    response.reply(`${_lookupuser.login} is mod in ${Object.keys(lookupuser.channels).length} (tracked) channels: ${Object.keys(lookupuser.channels).map(a => lookupuser.channels[a].name).join(", ")}`);
+
+                    // response.reply(`${_lookupuser.login} is mod in ${_numberspacer(Object.keys(channelData).length)} (tracked) channels `
+                    // + `(Partners: ${Object.keys(channelData).filter(a => channelData[a].broadcaster_type == "partner").length}): `
+                    // + `${Object.keys(channelData).map(a => `${channelData[a].login}${channelData[a].broadcaster_type == "partner" ? " (Partner)" : ""}`)}`);
                 })
                 .catch(e => {
                     console.error(e);
@@ -499,12 +524,42 @@ j.client.onWHISPER(async response => {
             break;
         };
 
+        case "restart": {
+            if (permission.num < c.perm.botdefault) return response.reply("NAHHH you ain't doing that");
+
+            await response.reply(`Waiting Restarting... (Uptime: ${_cleantime(process.uptime() * 1000, 4).time.join(" and ")})`);
+
+            await _sleep(2000);
+
+            process.exit(0);
+
+            break;
+        };
+
         case "clearcache": {
             if (permission.num < c.perm.botdefault) return response.reply("NAHHH you ain't doing that");
 
             handledMessagescache = {};
 
             response.reply(`Successfully cleared cache`);
+
+            break;
+        };
+
+        case "eval": {
+            if (permission.num < c.perm.botdefault) return response.reply("NAHHH you ain't doing that");
+
+            if (!response.messageArguments[1]) return response.reply(`Error: Nothing to evaluate given`);
+
+            let evalmsg = response.messageArguments.slice(1).join(" ");
+
+            try {
+                let evalexec = await eval(`(async () => {${evalmsg}})();`)
+
+                response.reply(`Successfully evaluated (${typeof evalexec}): ${evalexec}`);
+            } catch (e) {
+                response.reply(`Error: Could not evaluate string: ${e.message}`);
+            }
 
             break;
         };

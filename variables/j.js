@@ -6,7 +6,7 @@ const _numberspacer = require("../functions/_numberspacer");
 class j {
     static client = new oberknechtClient({
         token: env.T_TOKEN,
-        username: "VoHiYo",
+        username: env.T_USERNAME,
         prefix: config.prefix,
         executeOnOutgoingPrivmsg: (m) => {
             let dmatch = m.match(/\d{3,}/g);
