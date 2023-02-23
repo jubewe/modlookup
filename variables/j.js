@@ -2,6 +2,7 @@ const { oberknechtClient } = require("oberknecht-client");
 const env = require("dotenv").config().parsed;
 const config = require("../config.json");
 const _numberspacer = require("../functions/_numberspacer");
+const express = require("express");
 
 class j {
     static client = new oberknechtClient({
@@ -23,6 +24,8 @@ class j {
         token: env.T_TOKEN,
         anonymus: true
     });
+
+    static express = express();
 };
 
 module.exports = j;

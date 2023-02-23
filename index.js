@@ -1,4 +1,5 @@
 require("./handlers/_")();
+require("./express/index")();
 
 const os = require("os");
 const j = require("./variables/j");
@@ -429,7 +430,7 @@ j.client.onWHISPER(async response => {
 
                     // console.log(channelData)
 
-                    response.reply(`${_lookupuser.login} is mod in ${Object.keys(lookupuser.channels).length} (tracked) channels: ${Object.keys(lookupuser.channels).map(a => lookupuser.channels[a].name).join(", ")}`);
+                    response.reply(`${_lookupuser.login} is mod in ${Object.keys(lookupuser.channels).length} (tracked) channels: ${Object.keys(lookupuser.channels).map(a => lookupuser.channels[a].name).slice(0, 50).join(", ")} ${(Object.keys(lookupuser.channels).length > 50 ? `(First 50 recorded)` : "")}`);
 
                     // response.reply(`${_lookupuser.login} is mod in ${_numberspacer(Object.keys(channelData).length)} (tracked) channels `
                     // + `(Partners: ${Object.keys(channelData).filter(a => channelData[a].broadcaster_type == "partner").length}): `

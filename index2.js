@@ -52,7 +52,7 @@ Object.keys(modinfo.channels).forEach(user => {
             .catch(e => {
                 if (!errored[chunkedkey]) errored[chunkedkey] = [];
 
-                errored[chunkedkey].push(...e);
+                errored[chunkedkey].push(e);
             });
 
         console.log(`Successfully replaced ${replaced[chunkedkey]?.length ?? 0} ${chunkedkey}`, `> Errored on ${errored[chunkedkey]?.length ?? 0}`);
