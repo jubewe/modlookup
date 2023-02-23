@@ -2,7 +2,6 @@
 data/
 logs/
 .tmp.*/
-index[0-9].js
 
 # Logs
 logs
