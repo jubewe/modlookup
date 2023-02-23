@@ -31,7 +31,7 @@ module.exports = async () => {
     });
 
     j.express.get("/", (req, res) => {
-        res.send(_rf(_mainpath("./express/endpoints.txt")).toString().split("\n").map(a => `<br><h>${a}</h>`).join(""));
+        res.send(_rf(_mainpath("./express/endpoints.html")).toString());
     });
 
     j.express.get("/modlookup/users", (req, res) => {
