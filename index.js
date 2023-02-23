@@ -1,5 +1,4 @@
 require("./handlers/_")();
-require("./express/index")();
 
 const os = require("os");
 const j = require("./variables/j");
@@ -21,6 +20,8 @@ j.logclient.connect();
 
 j.client.onReady(() => {
     _log(1, `Client Ready`);
+    
+    require("./express/index")();
 
     j.client.joinAll(files.clientChannels.channels);
 });
