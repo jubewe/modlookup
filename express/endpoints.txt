@@ -1,0 +1,9 @@
+/modlookup/users > Tracked users (number) (ml!users)
+/modlookup/channels > Tracked channels (number) (ml!channels)
+/modlookup/user/:user > Modlookup for user (ml!user <user>)
+/modlookup/channels/:channel > Modlookup for channel (ml!channel <channel>)
+
+/viplookup/users > Tracked users (number) (ml!vipusers)
+/viplookup/channels > Tracked channels (number) (ml!vipchannels)
+/viplookup/user/:user > Viplookup for user (ml!vipuser <user>)
+/viplookup/channels/:channel > Viplookup for channel (ml!vipchannel <channel>)

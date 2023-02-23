@@ -5,6 +5,8 @@ const _log = require("../functions/_log");
 const modlookup = require("../functions/modlookup");
 const files = require("../variables/files");
 const viplookup = require("../functions/viplookup");
+const _rf = require("../functions/_rf");
+const _mainpath = require("../functions/_mainpath");
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000,
     max: 100,
@@ -28,7 +30,7 @@ module.exports = () => {
     });
 
     j.express.get("/", (req, res) => {
-        res.send("lol");
+        res.send(_rf(_mainpath("./express/endpoints.txt")).toString().split("\n").map(a => `<br><h>${a}</h>`).join(""));
     });
 
     j.express.get("/modlookup/users", (req, res) => {
