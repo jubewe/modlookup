@@ -82,7 +82,7 @@ module.exports = async () => {
     });
 
 
-    j.express.get("/vipookup/users", (req, res) => {
+    j.express.get("/viplookup/users", (req, res) => {
         res.sendWC(Object.keys(files.vipinfo.users).length);
     });
 
