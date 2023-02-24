@@ -1,6 +1,8 @@
 const url = new URL(document.baseURI).origin;
 const api_url = (url.split(".")[0].split("-dest")[0] + "-api" + (url.split(".")[0].includes("dest") ? "-dest" : "") + "." + url.split(".").slice(1).join("."));
 function apiurl(u) { return api_url + (!u.startsWith("/") ? "/" : "") + (u) };
+function siteurl(u) { return url + (!u.startsWith("/") ? "/" : "") + (u) };
+function redirect(url) { document.location.replace(url); };
 
 function progress(num) {
     const progress_elem = document.getElementById("j_progress");
@@ -224,8 +226,10 @@ class vl {
 const currentendpoint = document.URL.replace(/http(s)*:\/\/(mod|vip)lookup(-dest)*\.jubewe\.de/g, "");
 const currentendpointparts = currentendpoint.split("/").slice(1);
 progress(0);
+let autoexecs = 0;
 function autoexec() {
     console.debug("autoexec");
+    autoexecs++;
     switch (currentendpoint.split("/").slice(0, 3).join("/")) {
         case "/modlookup":
         case "/modlookup/": {
@@ -242,15 +246,18 @@ function autoexec() {
             ml.channels(); break;
         };
 
-        case "/modlookup/user": {
-            let currentinput = (document.getElementById('ml_user_input')?.value?.length > 0 ? document.getElementById('ml_user_input').value : currentendpointparts[2]);
-            if (currentinput) ml.user(currentinput); break;
-        };
-        
         case "/modlookup/channel": {
             let currentinput = (document.getElementById('ml_channel_input')?.value?.length > 0 ? document.getElementById('ml_channel_input').value : currentendpointparts[2]);
+            if(autoexecs > 1 && document.getElementById('ml_channel_input')?.value?.length > 0) redirect(siteurl('/modlookup/channel/' + document.getElementById('ml_channel_input').value))
             if (currentinput) ml.channel(currentinput); break;
         };
+
+        case "/modlookup/user": {
+            let currentinput = (document.getElementById('ml_user_input')?.value?.length > 0 ? document.getElementById('ml_user_input').value : currentendpointparts[2]);
+            if(autoexecs > 1 && document.getElementById('ml_user_input')?.value?.length > 0) redirect(siteurl('/modlookup/user/' + document.getElementById('ml_user_input').value))
+            if (currentinput) ml.user(currentinput); break;
+        };
+
 
         case "/viplookup":
         case "/viplookup/": {
@@ -267,14 +274,21 @@ function autoexec() {
             vl.channels(); break;
         };
 
+        case "/viplookup/channel": {
+            let currentinput = (document.getElementById('vl_channel_input')?.value?.length > 0 ? document.getElementById('vl_channel_input').value : currentendpointparts[2]);
+            if(autoexecs > 1 && document.getElementById('vl_channel_input')?.value?.length > 0) redirect(siteurl('/viplookup/channel/' + document.getElementById('vl_channel_input').value))
+            if (currentinput) vl.channel(currentinput); break;
+        };
+
         case "/viplookup/user": {
             let currentinput = (document.getElementById('vl_user_input')?.value?.length > 0 ? document.getElementById('vl_user_input').value : currentendpointparts[2]);
+            if(autoexecs > 1 && document.getElementById('vl_user_input')?.value?.length > 0) redirect(siteurl('/viplookup/user/' + document.getElementById('vl_user_input').value))
             if (currentinput) vl.user(currentinput); break;
         };
 
-        case "/viplookup/channel": {
-            let currentinput = (document.getElementById('vl_channel_input')?.value?.length > 0 ? document.getElementById('vl_channel_input').value : currentendpointparts[2]);
-            if (currentinput) vl.channel(currentinput); break;
+
+        default: {
+            progress(-1);
         };
     };
 };
@@ -282,7 +296,6 @@ function autoexec() {
 autoexec();
 
 window.addEventListener("keypress", ev => {
-    console.log(ev.key);
     switch (ev.key) {
         case "Enter": {
             autoexec(); break;

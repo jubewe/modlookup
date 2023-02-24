@@ -38,7 +38,7 @@
       <j_spacer_smol></j_spacer_smol>
       <input placeholder="User" id="vl_user_input" />
       <j_spacer_smol_smol></j_spacer_smol_smol>
-      <button onclick="vl.user(document.getElementById('vl_user_input').value)">
+      <button onclick="redirect(siteurl('/viplookup/user/' + document.getElementById('vl_user_input').value))">
         Search
       </button>
       <j_spacer_smol_smol></j_spacer_smol_smol>

@@ -38,9 +38,7 @@
       <j_spacer_smol></j_spacer_smol>
       <input placeholder="Channel" id="vl_channel_input" />
       <j_spacer_smol_smol></j_spacer_smol_smol>
-      <button
-        onclick="vl.channel(document.getElementById('vl_channel_input').value)"
-      >
+      <button onclick="redirect(siteurl('/viplookup/channel/' + document.getElementById('vl_channel_input').value))">
         Search
       </button>
       <j_spacer_smol_smol></j_spacer_smol_smol>
