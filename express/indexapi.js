@@ -24,6 +24,10 @@ module.exports = async () => {
             if ((status ?? undefined) || stuff.error) return res.json({ "status": status ?? 400, "error": stuff.error.message ?? stuff.error ?? stuff });
             return res.json({ status: 200, "data": (["number", "object"].includes(typeof stuff) ? stuff : stuff) });
         };
+        
+
+        if(!files.lel.handledAPIRequests) files.lel.handledAPIRequests = 0;
+        files.lel.handledAPIRequests++;
 
         next();
     });

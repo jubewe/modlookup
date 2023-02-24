@@ -1,5 +1,5 @@
 const url = new URL(document.baseURI).origin;
-const api_url = url.split(".")[0] + "-api." + url.split(".").slice(1).join(".");
+const api_url = (url.split(".")[0].split("-dest")[0] + "-api" + (url.split(".")[0].includes("dest") ? "-dest" : "") + "." + url.split(".").slice(1).join("."));
 
 function progress(num) {
     const progress_elem = document.getElementById("j_progress");
@@ -82,7 +82,8 @@ class ml {
             [...document.getElementsByClassName("j_table_tr")].forEach(a => a.remove());
 
             if (Object.keys(mluser.channels).length > 1) document.getElementById("j_ml_user_info").innerText += "s";
-            Object.keys(mluser.channels).forEach(channel => {
+
+            Object.keys(mluser.channels).sort((a, b) => { return mluser.channels[a].name - mluser.channels[b].name }).forEach(channel => {
                 let channelelemtr = document.createElement("tr");
                 let channelelemtd = document.createElement("td");
                 channelelemtr.id = `ml_channel_${channel}`;
@@ -222,7 +223,6 @@ class vl {
 const currentendpoint = document.URL.replace(/http(s)*:\/\/(mod|vip)lookup(-dest)*\.jubewe\.de/g, "");
 const currentendpointparts = currentendpoint.split("/").slice(1);
 progress(0);
-console.log(currentendpoint.split("/").slice(0, 3).join("/"))
 switch (currentendpoint.split("/").slice(0, 3).join("/")) {
     case "/modlookup":
     case "/modlookup/": {

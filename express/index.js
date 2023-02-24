@@ -27,6 +27,9 @@ module.exports = async () => {
 
         logreq(req, res);
 
+        if(!files.lel.handledRequests) files.lel.handledRequests = 0;
+        files.lel.handledAPIrequests++;
+
         next();
     });
 
