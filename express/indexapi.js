@@ -40,7 +40,7 @@ module.exports = async () => {
     });
 
     j.expressapi.get("/", (req, res) => {
-        res.send(_rf(_mainpath("./express/endpoints.html")).toString());
+        res.send(_rf(_mainpath("./express/endpoints/endpoints.html")).toString());
     });
 
     j.expressapi.get("/modlookup", (req, res) => {
