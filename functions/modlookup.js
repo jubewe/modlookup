@@ -48,6 +48,8 @@ class modlookup {
                         if (block_channels < max_block_channels) join(); else resolve(joinedChannels);
                     })
                     .catch(reject);
+
+                console.log(`>> Joined ${joinedChannels.length} channels (Bot joined: ${j.client.channels.length})`);
             };
         });
     };
@@ -56,6 +58,7 @@ class modlookup {
     static part = async (num) => {
         let partChannels = joinedChannels.splice(0, (num * 100));
         block_channels -= partChannels.length;
+        console.log(`>> Parted ${partChannels.length} channels (Now in ${joinedChannels.length} channels, Bot joined: ${j.client.channels.length})`);
         return await j.client.partAll(partChannels);
     };
 
