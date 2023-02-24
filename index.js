@@ -116,7 +116,7 @@ j.client.onPRIVMSG(async response => {
 
             response.reply(
                 `Pong! Your command took ${response.serverDelay}ms to get to me; `
-                + `I've handled ${files.lel.handledMessages} messages of the logclient (in ${_cleantime(Date.now()-development_start.getTime(), 4).time.join(" and ")}); Current memory usage: `
+                + `I've handled ${files.lel.handledMessages} messages of the logclient (in ${_cleantime(Date.now() - development_start.getTime(), 4).time.join(" and ")}); Current memory usage: `
                 + `${Math.round(memory.used / 1048576)} (computer-wide) ${Math.round(process.memoryUsage.rss() / 1048576)} / ${Math.round(memory.total / 1048576)} mb; `
                 + `(Modlookup) Tracked ${Object.keys(files.modinfo.channels).length} channels and ${Object.keys(files.modinfo.users).length} users; `
                 + `(Viplookup) Tracked ${Object.keys(files.vipinfo.channels).length} channels and ${Object.keys(files.vipinfo.users).length} users; `
@@ -138,7 +138,7 @@ j.client.onPRIVMSG(async response => {
                 .catch(e => {
                     console.error(e);
 
-                    response.reply(`Errored PoroSad`);
+                    response.reply(`Errored: ${e.error?.message ?? e.message ?? e} PoroSad`);
                 });
 
             break;
@@ -156,7 +156,7 @@ j.client.onPRIVMSG(async response => {
                 .catch(e => {
                     console.error(e);
 
-                    response.reply(`Errored PoroSad`);
+                    response.reply(`Errored: ${e.error?.message ?? e.message ?? e} PoroSad`);
                 });
 
             break;
@@ -187,7 +187,7 @@ j.client.onPRIVMSG(async response => {
                 .catch(e => {
                     console.error(e);
 
-                    response.reply(`Errored PoroSad`);
+                    response.reply(`Errored: ${e.error?.message ?? e.message ?? e} PoroSad`);
                 });
 
             break;
@@ -205,7 +205,7 @@ j.client.onPRIVMSG(async response => {
                 .catch(e => {
                     console.error(e);
 
-                    response.reply(`Errored PoroSad`);
+                    response.reply(`Errored: ${e.error?.message ?? e.message ?? e} PoroSad`);
                 });
 
             break;
@@ -231,32 +231,28 @@ j.client.onPRIVMSG(async response => {
         };
 
         case "join": {
-            if (permission.num < c.perm.botdefault) return response.reply("NAHHH you ain't doing that");
-
-            let joinchan = oberknechtUtils.correctChannelName(response.messageArguments[1]);
-
+            let joinchan = ((permission.num >= c.perm.botdefault) ? response.messageArguments[1] : response.senderUserName);
             if (!joinchan) return response.reply(`Error: No channel to join given PoroSad`);
+            joinchan = oberknechtUtils.correctChannelName(joinchan);
             if (j.client.channels.includes(joinchan)) return response.reply(`Error: Already in channel PoroSad`);
 
             j.client.join(joinchan)
                 .then(() => {
                     files.clientChannels.channels.push(joinchan.split("#")[1]);
-                    response.reply(`VoHiYo Successfully joined channel`);
+                    response.reply(`VoHiYo Successfully joined ${joinchan}`);
                 })
                 .catch(e => {
                     console.error(e);
-                    response.reply(`Errored PoroSad`);
+                    response.reply(`Errored: ${e.error?.message ?? e.message ?? e} PoroSad`);
                 });
 
             break;
         };
 
         case "part": {
-            if (permission.num < c.perm.botdefault) return response.reply("NAHHH you ain't doing that");
-
-            let partchan = oberknechtUtils.correctChannelName(response.messageArguments[1]);
-
+            let partchan = ((permission.num >= c.perm.botdefault) ? response.messageArguments[1] : response.senderUserName);
             if (!partchan) return response.reply(`Error: No channel to part given PoroSad`);
+            partchan = oberknechtUtils.correctChannelName(partchan);
             if (!j.client.channels.includes(partchan)) return response.reply(`Error: Not in channel PoroSad`);
 
             j.client.part(partchan)
@@ -266,7 +262,7 @@ j.client.onPRIVMSG(async response => {
                 })
                 .catch(e => {
                     console.error(e);
-                    response.reply(`Errored PoroSad`);
+                    response.reply(`Errored: ${e.error?.message ?? e.message ?? e} PoroSad`);
                 });
 
             break;
@@ -290,7 +286,7 @@ j.client.onPRIVMSG(async response => {
                 })
                 .catch(e => {
                     console.error(e);
-                    response.reply(`PoroSad Error: Could not get permission of ${permuser}: ${e.message}`);
+                    response.reply(`PoroSad Error: Could not get permission of ${permuser}: ${e.error?.message ?? e.message ?? e}`);
                 });
 
             break;
@@ -310,14 +306,15 @@ j.client.onPRIVMSG(async response => {
                 })
                 .catch(e => {
                     console.error(e);
-                    response.reply(`PoroSad Error: Could not set permission of ${permuser.login} to ${permnum} (${e.message})`);
+                    response.reply(`PoroSad Error: Could not set permission of ${permuser.login} to ${permnum} (${e.error?.message ?? e.message ?? e})`);
                 });
 
             break;
         };
 
-        case "help": {
-            response.reply(`VoHiYo Commands and help: https://jubewe.github.io/modlookup`);
+        case "help":
+        case "commands": {
+            response.reply(`VoHiYo Commands and help: https://jubewe.github.io/modlookup API: https://modlookup.jubewe.de/`);
 
             break;
         };
@@ -378,7 +375,7 @@ j.client.onWHISPER(async response => {
             let memory = { used: (os.totalmem() - os.freemem()), total: os.totalmem(), free: os.freemem() };
 
             response.reply(`Pong! Your command took ${response.serverDelay}ms to get to me; `
-                + `I've handled ${files.lel.handledMessages} messages of the logclient (in ${_cleantime(Date.now()-development_start.getTime(), 4).time.join(" and ")}); Current memory usage: `
+                + `I've handled ${files.lel.handledMessages} messages of the logclient (in ${_cleantime(Date.now() - development_start.getTime(), 4).time.join(" and ")}); Current memory usage: `
                 + `${Math.round(memory.used / 1048576)} (computer-wide) ${Math.round(process.memoryUsage.rss() / 1048576)} / ${Math.round(memory.total / 1048576)} mb; `
                 + `(Modlookup) Tracked ${Object.keys(files.modinfo.channels).length} channels and ${Object.keys(files.modinfo.users).length} users; `
                 + `(Viplookup) Tracked ${Object.keys(files.vipinfo.channels).length} channels and ${Object.keys(files.vipinfo.users).length} users; `
@@ -400,8 +397,7 @@ j.client.onWHISPER(async response => {
                 })
                 .catch(e => {
                     console.error(e);
-
-                    response.reply(`Errored PoroSad`);
+                    response.reply(`Errored: ${e.error?.message ?? e.message ?? e} PoroSad`);
                 });
 
             break;
@@ -416,8 +412,6 @@ j.client.onWHISPER(async response => {
                     let channelChunks = _chunkArray(Object.keys(lookupuser.channels), 100);
 
                     let channelData = {};
-
-
 
                     // await Promise.all(channelChunks.map(channelChunk => {
                     //     console.log(channelChunk)
@@ -443,8 +437,7 @@ j.client.onWHISPER(async response => {
                 })
                 .catch(e => {
                     console.error(e);
-
-                    response.reply(`Errored PoroSad`);
+                    response.reply(`Errored: ${e.error?.message ?? e.message ?? e} PoroSad`);
                 });
 
             break;
@@ -479,8 +472,7 @@ j.client.onWHISPER(async response => {
                 })
                 .catch(e => {
                     console.error(e);
-
-                    response.reply(`Errored PoroSad`);
+                    response.reply(`Errored: ${e.error?.message ?? e.message ?? e} PoroSad`);
                 });
 
             break;
@@ -498,8 +490,7 @@ j.client.onWHISPER(async response => {
                 })
                 .catch(e => {
                     console.error(e);
-
-                    response.reply(`Errored PoroSad`);
+                    response.reply(`Errored: ${e.error?.message ?? e.message ?? e} PoroSad`);
                 });
 
             break;
@@ -524,8 +515,9 @@ j.client.onWHISPER(async response => {
             break;
         };
 
-        case "help": {
-            response.reply(`VoHiYo Commands and help: https://jubewe.github.io/modlookup`);
+        case "help":
+        case "commands": {
+            response.reply(`VoHiYo Commands and help: https://jubewe.github.io/modlookup API: https://modlookup.jubewe.de/`);
 
             break;
         };
@@ -566,6 +558,44 @@ j.client.onWHISPER(async response => {
             } catch (e) {
                 response.reply(`Error: Could not evaluate string: ${e.message}`);
             }
+
+            break;
+        };
+
+        case "join": {
+            let joinchan = ((permission.num >= c.perm.botdefault) ? response.messageArguments[1] : response.senderUserName);
+            if (!joinchan) return response.reply(`Error: No channel to join given PoroSad`);
+            joinchan = oberknechtUtils.correctChannelName(joinchan);
+            if (j.client.channels.includes(joinchan)) return response.reply(`Error: Already in channel PoroSad`);
+
+            j.client.join(joinchan)
+                .then(() => {
+                    files.clientChannels.channels.push(joinchan.split("#")[1]);
+                    response.reply(`VoHiYo Successfully joined ${joinchan}`);
+                })
+                .catch(e => {
+                    console.error(e);
+                    response.reply(`Errored: ${e.error?.message ?? e.message ?? e} PoroSad`);
+                });
+
+            break;
+        };
+
+        case "part": {
+            let partchan = ((permission.num >= c.perm.botdefault) ? response.messageArguments[1] : response.senderUserName);
+            if (!partchan) return response.reply(`Error: No channel to part given PoroSad`);
+            partchan = oberknechtUtils.correctChannelName(partchan);
+            if (!j.client.channels.includes(partchan)) return response.reply(`Error: Not in channel PoroSad`);
+
+            j.client.part(partchan)
+                .then(() => {
+                    if (files.clientChannels.channels.includes(partchan.split("#")[1])) files.clientChannels.channels.splice(files.clientChannels.channels.indexOf(partchan.split("#")[1]), 1);
+                    response.reply(`VoHiYo Successfully parted ${partchan}`);
+                })
+                .catch(e => {
+                    console.error(e);
+                    response.reply(`Errored: ${e.error?.message ?? e.message ?? e} PoroSad`);
+                });
 
             break;
         };
