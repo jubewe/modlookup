@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link
+      rel="icon"
+      href="https://modlookup-api.jubewe.de/html/img/OkayChamp_modding.ico"
+    />
+    <link
+      rel="stylesheet"
+      href="https://modlookup-api.jubewe.de/html/styles.css"
+    />
+    <title>Ju / Endpoints</title>
+</head>
+<body>
+    <j_head>
+        <img
+        class="j_icon noselect"
+        src="https://modlookup-api.jubewe.de/html/img/OkayChamp_modding.png"
+      />
+      <j_title>Mod-/ Viplookup</j_title>
+    </j_head>
+    <j_body>
+        <table>
+            <thead>
+                <tr>
+                    <th>Endpoint</th>
+                    <th>Description + Chat Command</th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+        <br><br>
+        
+    </j_body>
+</body>
+</html>
+<script>
+    let endpoints = {
+        "/modlookup/users": "Tracked users (number) (ml!users)",
+        "/modlookup/channels": "Tracked channels (number) (ml!channels)",
+        "/modlookup/user/:user": "Modlookup for user (ml!user <user>)",
+        "/modlookup/channels/:channel": "Modlookup for channel (ml!channel <channel>)",
+        "": "",
+        "/viplookup/users": "Tracked users (number) (ml!vipusers)",
+        "/viplookup/channels": "Tracked channels (number) (ml!vipchannels)",
+        "/viplookup/user/:user": "Viplookup for user (ml!vipuser <user>)",
+        "/viplookup/channels/:channel": "Viplookup for channel (ml!vipchannel <channel>)"
+    };
+
+    Object.keys(endpoints).forEach(endpoint => {
+        let endpointtr = document.createElement("tr");
+        let endpointtd1 = document.createElement("td");
+        if(endpoints[endpoint].length > 0){
+            endpointtd1.onclick = () => {
+                window.open(endpointtd1.innerText.replace(/\/:(user|channel)/g, ""), "_blank");
+            };
+        };
+        endpointtd1.classList.add("j_td_1");
+        let endpointtd2 = document.createElement("td");
+        endpointtd2.classList.add("j_td_2");
+
+        endpointtd1.innerText = endpoint;
+        endpointtd2.innerText = endpoints[endpoint];
+        endpointtr.appendChild(endpointtd1);
+        endpointtr.appendChild(endpointtd2);
+        document.getElementById("tbody").appendChild(endpointtr);
+    });
+</script>
+<style>
+    .j_td_1 {
+        text-align: right;
+        text-decoration: underline;
+        cursor: pointer;
+        color: #00ffff;
+    }
+
+    .j_td_1, .j_td_2 {
+        padding: 3px;
+        margin: 3px;
+    }
+</style>
