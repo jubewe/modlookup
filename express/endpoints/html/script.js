@@ -1,5 +1,6 @@
 const url = new URL(document.baseURI).origin;
 const api_url = (url.split(".")[0].split("-dest")[0] + "-api" + (url.split(".")[0].includes("dest") ? "-dest" : "") + "." + url.split(".").slice(1).join("."));
+function apiurl(u) { return api_url + (!u.startsWith("/") ? "/" : "") + (u) };
 
 function progress(num) {
     const progress_elem = document.getElementById("j_progress");
@@ -54,7 +55,7 @@ function request(url, options, callback) {
 
 class ml {
     static users = () => {
-        request(`${api_url}/modlookup/users`, (e, r) => {
+        request(apiurl(`/modlookup/users`), (e, r) => {
             if (e) return error(e);
 
             document.getElementById("j_ml_users").style.display = "grid";
@@ -63,7 +64,7 @@ class ml {
     };
 
     static channels = () => {
-        request(`${api_url}/modlookup/channels`, (e, r) => {
+        request(apiurl(`/modlookup/channels`), (e, r) => {
             if (e) return error(e);
 
             document.getElementById("j_ml_channels").style.display = "grid";
@@ -72,7 +73,7 @@ class ml {
     };
 
     static user = (user) => {
-        request(`${api_url}/modlookup/user/${user}`, (e, r) => {
+        request(apiurl(`/modlookup/user/${user}`), (e, r) => {
             if (e) return error(e);
 
             console.debug("user", r);
@@ -99,7 +100,7 @@ class ml {
     };
 
     static channel = (channel) => {
-        request(`${api_url}/modlookup/channel/${channel}`, (e, r) => {
+        request(apiurl(`/modlookup/channel/${channel}`), (e, r) => {
             if (e) return error(e);
 
             console.debug("channel", r);
@@ -125,7 +126,7 @@ class ml {
     };
 
     static main = () => {
-        request(`${api_url}/modlookup`, (e, r) => {
+        request(apiurl(`/modlookup`), (e, r) => {
             if (e) return error(e);
 
             let mldata = r.data;
@@ -138,7 +139,7 @@ class ml {
 
 class vl {
     static users = () => {
-        request(`${api_url}/viplookup/users`, (e, r) => {
+        request(apiurl(`/viplookup/users`), (e, r) => {
             if (e) return error(e);
 
             document.getElementById("j_vl_users").style.display = "grid";
@@ -147,7 +148,7 @@ class vl {
     };
 
     static channels = () => {
-        request(`${api_url}/viplookup/channels`, (e, r) => {
+        request(apiurl(`/viplookup/channels`), (e, r) => {
             if (e) return error(e);
 
             document.getElementById("j_vl_channels").style.display = "grid";
@@ -156,7 +157,7 @@ class vl {
     };
 
     static user = (user) => {
-        request(`${api_url}/viplookup/user/${user}`, (e, r) => {
+        request(apiurl(`/viplookup/user/${user}`), (e, r) => {
             if (e) return error(e);
 
             console.debug("user", r);
@@ -182,7 +183,7 @@ class vl {
     };
 
     static channel = (channel) => {
-        request(`${api_url}/viplookup/channel/${channel}`, (e, r) => {
+        request(apiurl(`/viplookup/channel/${channel}`), (e, r) => {
             if (e) return error(e);
 
             console.debug("channel", r);
@@ -208,7 +209,7 @@ class vl {
     };
 
     static main = () => {
-        request(`${api_url}/viplookup`, (e, r) => {
+        request(apiurl(`/viplookup`), (e, r) => {
             if (e) return error(e);
 
             let vldata = r.data;
@@ -223,50 +224,64 @@ class vl {
 const currentendpoint = document.URL.replace(/http(s)*:\/\/(mod|vip)lookup(-dest)*\.jubewe\.de/g, "");
 const currentendpointparts = currentendpoint.split("/").slice(1);
 progress(0);
-switch (currentendpoint.split("/").slice(0, 3).join("/")) {
-    case "/modlookup":
-    case "/modlookup/": {
-        ml.main(); break;
-    };
+function autoexec() {
+    console.debug("autoexec");
+    switch (currentendpoint.split("/").slice(0, 3).join("/")) {
+        case "/modlookup":
+        case "/modlookup/": {
+            ml.main(); break;
+        };
 
-    case "/modlookup/users":
-    case "/modlookup/users/": {
-        ml.users(); break;
-    };
+        case "/modlookup/users":
+        case "/modlookup/users/": {
+            ml.users(); break;
+        };
 
-    case "/modlookup/channels":
-    case "/modlookup/channels/": {
-        ml.channels(); break;
-    };
+        case "/modlookup/channels":
+        case "/modlookup/channels/": {
+            ml.channels(); break;
+        };
 
-    case "/modlookup/user": {
-        if (currentendpointparts[2]) ml.user(currentendpointparts[2]); break;
-    };
+        case "/modlookup/user": {
+            if (document.getElementById('ml_user_input')?.value ?? currentendpointparts[2]) ml.user(document.getElementById('ml_user_input')?.value ?? currentendpointparts[2]); break;
+        };
 
-    case "/modlookup/channel": {
-        if (currentendpointparts[2]) ml.channel(currentendpointparts[2]); break;
-    };
+        case "/modlookup/channel": {
+            if (document.getElementById('ml_channel_input')?.value ?? currentendpointparts[2]) ml.channel(document.getElementById('ml_channel_input')?.value ?? currentendpointparts[2]); break;
+        };
 
-    case "/viplookup":
-    case "/viplookup/": {
-        vl.main(); break;
-    };
+        case "/viplookup":
+        case "/viplookup/": {
+            vl.main(); break;
+        };
 
-    case "/viplookup/users":
-    case "/viplookup/users/": {
-        vl.users(); break;
-    };
+        case "/viplookup/users":
+        case "/viplookup/users/": {
+            vl.users(); break;
+        };
 
-    case "/viplookup/channels":
-    case "/viplookup/channels/": {
-        vl.channels(); break;
-    };
+        case "/viplookup/channels":
+        case "/viplookup/channels/": {
+            vl.channels(); break;
+        };
 
-    case "/viplookup/user": {
-        if (currentendpointparts[2]) vl.user(currentendpointparts[2]); break;
-    };
+        case "/viplookup/user": {
+            if (document.getElementById('vl_user_input')?.value ?? currentendpointparts[2]) vl.user(document.getElementById('vl_user_input')?.value ?? currentendpointparts[2]); break;
+        };
 
-    case "/viplookup/channel": {
-        if (currentendpointparts[2]) vl.channel(currentendpointparts[2]); break;
+        case "/viplookup/channel": {
+            if (document.getElementById('vl_channel_input')?.value ?? currentendpointparts[2]) vl.channel(document.getElementById('vl_channel_input')?.value ?? currentendpointparts[2]); break;
+        };
     };
 };
+
+autoexec();
+
+window.addEventListener("keypress", ev => {
+    console.log(ev.key);
+    switch (ev.key) {
+        case "Enter": {
+            autoexec(); break;
+        };
+    };
+});

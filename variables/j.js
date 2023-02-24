@@ -3,6 +3,7 @@ const env = require("dotenv").config().parsed;
 const config = require("../config.json");
 const _numberspacer = require("../functions/_numberspacer");
 const express = require("express");
+const _mainpath = require("../functions/_mainpath");
 
 class j {
     static client = new oberknechtClient({
@@ -27,6 +28,7 @@ class j {
 
     static express = express();
     static expressapi = express();
+    static expresshtml = express.static(_mainpath("./express/endpoints/html"));
 };
 
 module.exports = j;

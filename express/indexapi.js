@@ -33,7 +33,7 @@ module.exports = async () => {
 
     j.expressapi.use(require("./use/default_headers"));
 
-    j.expressapi.use("/html", express.static(path.join(__dirname, "endpoints", "html")));
+    j.expressapi.use("/html", j.expresshtml);
 
     j.expressapi.listen(c.express.api.port, () => {
         _log(1, `Express API connected`);

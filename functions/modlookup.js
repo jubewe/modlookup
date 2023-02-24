@@ -49,7 +49,7 @@ class modlookup {
                     })
                     .catch(reject);
 
-                console.log(`>> Joined ${joinedChannels.length} channels (Bot joined: ${j.client.channels.length})`);
+                console.log(`>> Joined ${joinedChannels.length} channels (Bot joined: ${j.logclient.channels.length})`);
             };
         });
     };
@@ -58,7 +58,7 @@ class modlookup {
     static part = async (num) => {
         let partChannels = joinedChannels.splice(0, (num * 100));
         block_channels -= partChannels.length;
-        console.log(`>> Parted ${partChannels.length} channels (Now in ${joinedChannels.length} channels, Bot joined: ${j.client.channels.length})`);
+        console.log(`>> Parted ${partChannels.length} channels (Now in ${joinedChannels.length} channels, Bot joined: ${j.logclient.channels.length})`);
         return await j.client.partAll(partChannels);
     };
 

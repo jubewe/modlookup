@@ -2,13 +2,11 @@ const rateLimit = require("express-rate-limit");
 const j = require("../variables/j");
 const c = require("../config.json");
 const _log = require("../functions/_log");
-const modlookup = require("../functions/modlookup");
-const viplookup = require("../functions/viplookup");
 const regex = require("oberknecht-api/lib/var/regex");
 const logreq = require("./functions/logreq");
-const fs = require("fs");
 const _rf = require("../functions/_rf");
 const redirecthtml = require("./functions/redirecthtml");
+const _mainpath = require("../functions/_mainpath");
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000,
     max: 100,
@@ -34,6 +32,8 @@ module.exports = async () => {
     });
 
     j.express.use(require("./use/default_headers"));
+
+    j.express.use("/html", j.expresshtml);
 
     j.express.listen(c.express.port, () => {
         _log(1, `Express connected`);
