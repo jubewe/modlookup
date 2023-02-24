@@ -26,6 +26,7 @@ class j {
     });
 
     static express = express();
+    static expressapi = express();
 };
 
 module.exports = j;

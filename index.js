@@ -20,8 +20,9 @@ j.logclient.connect();
 
 j.client.onReady(() => {
     _log(1, `Client Ready`);
-    
+
     require("./express/index")();
+    require("./express/indexapi")();
 
     j.client.joinAll(files.clientChannels.channels);
 });

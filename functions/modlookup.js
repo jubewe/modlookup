@@ -7,18 +7,24 @@ const max_block_channels = 3000;
 
 class modlookup {
     static channel = (channelID) => {
-        return new Promise((resolve) => {
-            if (!files.modinfo.channels[channelID]) return resolve({ error: Error("channel not in logs") });
+        return new Promise((resolve, reject) => {
+            if (!files.modinfo.channels[channelID]) return reject({ error: Error("channel not in logs") });
 
-            return resolve(files.modinfo.channels[channelID]);
+            return resolve({
+                id: channelID,
+                ...files.modinfo.channels[channelID]
+            });
         });
     };
 
     static user = (userID) => {
-        return new Promise((resolve) => {
-            if (!files.modinfo.users[userID]) return resolve({ error: Error("user not in logs") });
+        return new Promise((resolve, reject) => {
+            if (!files.modinfo.users[userID]) return reject({ error: Error("user not in logs") });
 
-            return resolve(files.modinfo.users[userID]);
+            return resolve({
+                id: userID,
+                ...files.modinfo.users[userID]
+            });
         });
     };
 

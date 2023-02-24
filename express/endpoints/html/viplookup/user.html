@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      href="https://viplookup-api.jubewe.de/html/img/OkayChamp_modding.ico"
+    />
+    <link
+      rel="stylesheet"
+      href="https://viplookup-api.jubewe.de/html/styles.css"
+    />
+    <title>Ju / Viplookup / User</title>
+  </head>
+  <body>
+    <j_progress>
+      <progress
+        id="j_progress"
+        class="progress_load"
+        value="0"
+        max="100"
+      ></progress>
+    </j_progress>
+    <j_error>
+      <h id="j_error">Error</h>
+    </j_error>
+    <j_spacer></j_spacer>
+    <j_head>
+      <img
+        class="j_icon noselect"
+        src="https://viplookup-api.jubewe.de/html/img/OkayChamp_modding.png"
+      />
+      <j_title>Viplookup / User</j_title>
+    </j_head>
+    <j_body>
+      <j_spacer_smol></j_spacer_smol>
+      <input placeholder="User" id="vl_user_input" />
+      <j_spacer_smol_smol></j_spacer_smol_smol>
+      <button onclick="vl.user(document.getElementById('vl_user_input').value)">
+        Search
+      </button>
+      <j_spacer_smol_smol></j_spacer_smol_smol>
+      <div id="j_vl_user">
+        <h id="j_vl_user_info"
+          ><h id="j_vl_user_user"></h> is vip in<h
+            id="j_vl_user_channels_number"
+          ></h>
+          tracked channel</h
+        ></h>
+        <div id="j_table_div">
+          <table id="j_table">
+            <thead>
+              <tr>
+                <th>Channel-Names</th>
+              </tr>
+            </thead>
+            <!-- <tbody id="j_ml_user_channels_table_tbody"></tbody> -->
+          </table>
+        </div>
+      </div>
+    </j_body>
+  </body>
+</html>
+<script src="https://viplookup-api.jubewe.de/html/script.js"></script>
