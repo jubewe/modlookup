@@ -15,6 +15,7 @@ const _sleep = require("./functions/_sleep");
 const _cleantime = require("./functions/_cleantime");
 const _chunkArray = require("./functions/_chunkArray");
 const c = require("./config.json");
+const oberknechtUtils = require("oberknecht-utils");
 let handledMessagescache = {};
 
 j.client.connect();
@@ -232,7 +233,7 @@ j.client.onPRIVMSG(async response => {
         case "join": {
             if (permission.num < c.perm.botdefault) return response.reply("NAHHH you ain't doing that");
 
-            let joinchan = response.messageArguments[1];
+            let joinchan = oberknechtUtils.correctChannelName(response.messageArguments[1]);
 
             if (!joinchan) return response.reply(`Error: No channel to join given PoroSad`);
             if (j.client.channels.includes(joinchan)) return response.reply(`Error: Already in channel PoroSad`);
@@ -253,7 +254,7 @@ j.client.onPRIVMSG(async response => {
         case "part": {
             if (permission.num < c.perm.botdefault) return response.reply("NAHHH you ain't doing that");
 
-            let partchan = response.messageArguments[1];
+            let partchan = oberknechtUtils.correctChannelName(response.messageArguments[1]);
 
             if (!partchan) return response.reply(`Error: No channel to part given PoroSad`);
             if (!j.client.channels.includes(partchan)) return response.reply(`Error: Not in channel PoroSad`);
