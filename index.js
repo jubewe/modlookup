@@ -240,7 +240,7 @@ j.client.onPRIVMSG(async response => {
 
             j.client.join(joinchan)
                 .then(() => {
-                    files.clientChannels.channels.push(joinchan);
+                    files.clientChannels.channels.push(joinchan.split("#")[1]);
                     response.reply(`VoHiYo Successfully joined channel`);
                 })
                 .catch(e => {
@@ -261,7 +261,7 @@ j.client.onPRIVMSG(async response => {
 
             j.client.part(partchan)
                 .then(() => {
-                    if (files.clientChannels.channels.includes(partchan)) files.clientChannels.channels.splice(files.clientChannels.channels.indexOf(partchan), 1);
+                    if (files.clientChannels.channels.includes(partchan.split("#")[1])) files.clientChannels.channels.splice(files.clientChannels.channels.indexOf(partchan.split("#")[1]), 1);
                     response.reply(`VoHiYo Successfully parted channel`);
                 })
                 .catch(e => {
