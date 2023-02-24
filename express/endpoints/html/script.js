@@ -243,11 +243,13 @@ function autoexec() {
         };
 
         case "/modlookup/user": {
-            if (document.getElementById('ml_user_input')?.value ?? currentendpointparts[2]) ml.user(document.getElementById('ml_user_input')?.value ?? currentendpointparts[2]); break;
+            let currentinput = (document.getElementById('ml_user_input')?.value?.length > 0 ? document.getElementById('ml_user_input').value : currentendpointparts[2]);
+            if (currentinput) ml.user(currentinput); break;
         };
-
+        
         case "/modlookup/channel": {
-            if (document.getElementById('ml_channel_input')?.value ?? currentendpointparts[2]) ml.channel(document.getElementById('ml_channel_input')?.value ?? currentendpointparts[2]); break;
+            let currentinput = (document.getElementById('ml_channel_input')?.value?.length > 0 ? document.getElementById('ml_channel_input').value : currentendpointparts[2]);
+            if (currentinput) ml.channel(currentinput); break;
         };
 
         case "/viplookup":
@@ -266,11 +268,13 @@ function autoexec() {
         };
 
         case "/viplookup/user": {
-            if (document.getElementById('vl_user_input')?.value ?? currentendpointparts[2]) vl.user(document.getElementById('vl_user_input')?.value ?? currentendpointparts[2]); break;
+            let currentinput = (document.getElementById('vl_user_input')?.value?.length > 0 ? document.getElementById('vl_user_input').value : currentendpointparts[2]);
+            if (currentinput) vl.user(currentinput); break;
         };
 
         case "/viplookup/channel": {
-            if (document.getElementById('vl_channel_input')?.value ?? currentendpointparts[2]) vl.channel(document.getElementById('vl_channel_input')?.value ?? currentendpointparts[2]); break;
+            let currentinput = (document.getElementById('vl_channel_input')?.value?.length > 0 ? document.getElementById('vl_channel_input').value : currentendpointparts[2]);
+            if (currentinput) vl.channel(currentinput); break;
         };
     };
 };
