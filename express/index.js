@@ -3,7 +3,6 @@ const j = require("../variables/j");
 const c = require("../config.json");
 const _log = require("../functions/_log");
 const modlookup = require("../functions/modlookup");
-const files = require("../variables/files");
 const viplookup = require("../functions/viplookup");
 const regex = require("oberknecht-api/lib/var/regex");
 const logreq = require("./functions/logreq");
@@ -18,6 +17,7 @@ const limiter = rateLimit({
 });
 
 module.exports = async () => {
+    let files = require("../variables/files");
     j.express.use(limiter);
     j.express.use((req, res, next) => {
         res.sendWC = async (stuff, status) => {
@@ -28,7 +28,7 @@ module.exports = async () => {
         logreq(req, res);
 
         if(!files.lel.handledRequests) files.lel.handledRequests = 0;
-        files.lel.handledAPIrequests++;
+        files.lel.handledRequests++;
 
         next();
     });

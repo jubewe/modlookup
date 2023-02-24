@@ -1,5 +1,7 @@
 require("./handlers/_")();
 
+const development_start = new Date("2023-02-17T00:00:00.000Z");
+
 const os = require("os");
 const j = require("./variables/j");
 const _log = require("./functions/_log");
@@ -113,7 +115,7 @@ j.client.onPRIVMSG(async response => {
 
             response.reply(
                 `Pong! Your command took ${response.serverDelay}ms to get to me; `
-                + `I've handled ${files.lel.handledMessages} messages of the logclient so far; Current memory usage: `
+                + `I've handled ${files.lel.handledMessages} messages of the logclient (in ${_cleantime(Date.now()-development_start.getTime(), 4).time.join(" and ")}); Current memory usage: `
                 + `${Math.round(memory.used / 1048576)} (computer-wide) ${Math.round(process.memoryUsage.rss() / 1048576)} / ${Math.round(memory.total / 1048576)} mb; `
                 + `(Modlookup) Tracked ${Object.keys(files.modinfo.channels).length} channels and ${Object.keys(files.modinfo.users).length} users; `
                 + `(Viplookup) Tracked ${Object.keys(files.vipinfo.channels).length} channels and ${Object.keys(files.vipinfo.users).length} users; `
@@ -375,7 +377,7 @@ j.client.onWHISPER(async response => {
             let memory = { used: (os.totalmem() - os.freemem()), total: os.totalmem(), free: os.freemem() };
 
             response.reply(`Pong! Your command took ${response.serverDelay}ms to get to me; `
-                + `I've handled ${files.lel.handledMessages} messages of the logclient so far; Current memory usage: `
+                + `I've handled ${files.lel.handledMessages} messages of the logclient (in ${_cleantime(Date.now()-development_start.getTime(), 4).time.join(" and ")}); Current memory usage: `
                 + `${Math.round(memory.used / 1048576)} (computer-wide) ${Math.round(process.memoryUsage.rss() / 1048576)} / ${Math.round(memory.total / 1048576)} mb; `
                 + `(Modlookup) Tracked ${Object.keys(files.modinfo.channels).length} channels and ${Object.keys(files.modinfo.users).length} users; `
                 + `(Viplookup) Tracked ${Object.keys(files.vipinfo.channels).length} channels and ${Object.keys(files.vipinfo.users).length} users; `

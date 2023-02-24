@@ -25,7 +25,6 @@ module.exports = async () => {
             return res.json({ status: 200, "data": (["number", "object"].includes(typeof stuff) ? stuff : stuff) });
         };
         
-
         if(!files.lel.handledAPIRequests) files.lel.handledAPIRequests = 0;
         files.lel.handledAPIRequests++;
 
