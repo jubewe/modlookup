@@ -370,6 +370,20 @@ j.client.onPRIVMSG(async response => {
 
             break;
         };
+
+        case "update": {
+            if (permission.num < c.perm.botdefault) return response.reply("NAHHH you ain't doing that");
+
+            try {
+                require("child_process").execSync("git pull && pm2 restart modlookup");
+
+                response.reply(`Successfully pulled updates and restarted`);
+            } catch(e){
+                response.reply(`Error: Could not execute command: ${e.message ?? e}`);
+            };
+
+            break;
+        };
     }
 });
 
@@ -608,6 +622,20 @@ j.client.onWHISPER(async response => {
                     console.error(e);
                     response.reply(`Errored: ${e.error?.message ?? e.message ?? e} PoroSad`);
                 });
+
+            break;
+        };
+
+        case "update": {
+            if (permission.num < c.perm.botdefault) return response.reply("NAHHH you ain't doing that");
+
+            try {
+                require("child_process").execSync("git pull && pm2 restart modlookup");
+
+                response.reply(`Successfully pulled updates and restarted`);
+            } catch(e){
+                response.reply(`Error: Could not execute command: ${e.message ?? e}`);
+            };
 
             break;
         };
