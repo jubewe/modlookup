@@ -139,4 +139,8 @@ module.exports = async () => {
             res.send(_rf("./express/endpoints/html/viplookup/channel.html"));
         }
     });
+
+    j.express.get("/validate", async (req, res) => {
+        res.send(_rf("./express/endpoints/html/validate.html"));
+    });
 };

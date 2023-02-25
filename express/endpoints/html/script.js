@@ -222,6 +222,24 @@ class vl {
     };
 };
 
+function validatetoken() {
+    if (!document.URL.includes("#access_token=")) return;
+    let token = document.URL.split("#access_token=")[1].split("&")[0];
+    let request = new XMLHttpRequest();
+    request.open("GET", `https://id.twitch.tv/oauth2/validate`);
+    request.setRequestHeader("Authorization", `Bearer ${token}`);
+    request.addEventListener("load", async (r) => {
+        let dat = JSON.parse(request.response);
+        if (dat.status !== undefined) {
+            dat = {
+                ...dat,
+                token: token
+            };
+            window.localStorage.setItem("j_token", JSON.stringify());
+            window.close();
+        } 
+    })
+};
 
 const currentendpoint = document.URL.replace(/http(s)*:\/\/(mod|vip)lookup(-dest)*\.jubewe\.de/g, "");
 const currentendpointparts = currentendpoint.split("/").slice(1);
@@ -248,13 +266,13 @@ function autoexec() {
 
         case "/modlookup/channel": {
             let currentinput = (document.getElementById('ml_channel_input')?.value?.length > 0 ? document.getElementById('ml_channel_input').value : currentendpointparts[2]);
-            if(autoexecs > 1 && document.getElementById('ml_channel_input')?.value?.length > 0) redirect(siteurl('/modlookup/channel/' + document.getElementById('ml_channel_input').value))
+            if (autoexecs > 1 && document.getElementById('ml_channel_input')?.value?.length > 0) redirect(siteurl('/modlookup/channel/' + document.getElementById('ml_channel_input').value))
             if (currentinput) ml.channel(currentinput); break;
         };
 
         case "/modlookup/user": {
             let currentinput = (document.getElementById('ml_user_input')?.value?.length > 0 ? document.getElementById('ml_user_input').value : currentendpointparts[2]);
-            if(autoexecs > 1 && document.getElementById('ml_user_input')?.value?.length > 0) redirect(siteurl('/modlookup/user/' + document.getElementById('ml_user_input').value))
+            if (autoexecs > 1 && document.getElementById('ml_user_input')?.value?.length > 0) redirect(siteurl('/modlookup/user/' + document.getElementById('ml_user_input').value))
             if (currentinput) ml.user(currentinput); break;
         };
 
@@ -276,16 +294,19 @@ function autoexec() {
 
         case "/viplookup/channel": {
             let currentinput = (document.getElementById('vl_channel_input')?.value?.length > 0 ? document.getElementById('vl_channel_input').value : currentendpointparts[2]);
-            if(autoexecs > 1 && document.getElementById('vl_channel_input')?.value?.length > 0) redirect(siteurl('/viplookup/channel/' + document.getElementById('vl_channel_input').value))
+            if (autoexecs > 1 && document.getElementById('vl_channel_input')?.value?.length > 0) redirect(siteurl('/viplookup/channel/' + document.getElementById('vl_channel_input').value))
             if (currentinput) vl.channel(currentinput); break;
         };
 
         case "/viplookup/user": {
             let currentinput = (document.getElementById('vl_user_input')?.value?.length > 0 ? document.getElementById('vl_user_input').value : currentendpointparts[2]);
-            if(autoexecs > 1 && document.getElementById('vl_user_input')?.value?.length > 0) redirect(siteurl('/viplookup/user/' + document.getElementById('vl_user_input').value))
+            if (autoexecs > 1 && document.getElementById('vl_user_input')?.value?.length > 0) redirect(siteurl('/viplookup/user/' + document.getElementById('vl_user_input').value))
             if (currentinput) vl.user(currentinput); break;
         };
 
+        case "/validate": {
+            validatetoken(); break;
+        };
 
         default: {
             progress(-1);

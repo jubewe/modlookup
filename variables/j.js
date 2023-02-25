@@ -23,8 +23,12 @@ class j {
 
     static logclient = new oberknechtClient({
         token: env.T_TOKEN,
-        anonymus: true
+        botStatus: "verified"
     });
+    // static logclient = new oberknechtClient({
+    //     token: env.T_TOKEN,
+    //     anonymus: true
+    // });
 
     static express = express();
     static expressapi = express();

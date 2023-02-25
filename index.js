@@ -28,6 +28,14 @@ j.client.onReady(() => {
     require("./express/indexapi")();
 
     j.client.joinAll(files.clientChannels.channels);
+
+    setInterval(() => {
+        console.log(`Currently in ${j.logclient.channels.length} channels`);
+    }, 10000);
+
+    setTimeout(() => {
+        process.exit(2);
+    }, (12*60*60*1000));
 });
 
 j.logclient.onReady(async () => {
@@ -80,6 +88,10 @@ setInterval(() => {
 //         delete handledMessagescache[b];
 //     });
 // }, 60000);
+
+// j.logclient.on("irc:_message", response => {
+//     console.log(response);
+// });
 
 j.logclient.onPRIVMSG(response => {
     if (c.trackers.vips) {
