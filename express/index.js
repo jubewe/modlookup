@@ -140,7 +140,7 @@ module.exports = async () => {
         }
     });
 
-    j.express.get("/validate", async (req, res) => {
-        res.send(_rf("./express/endpoints/html/validate.html"));
-    });
+    // j.express.get("/validate", async (req, res) => {
+    //     res.send(_rf("./express/endpoints/html/validate.html"));
+    // });
 };

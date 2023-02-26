@@ -17,6 +17,11 @@ _log(1, `Index: Loaded packages (Took ${_cleantime(Date.now() - loadstart, 4).ti
 if (c.connect.twitch) j.client.connect();
 if (c.connect.twitch_log && (c.trackers.mods || c.trackers.vips)) j.logclient.connect();
 
+if(c.connect.express) {
+    require("./express/index")();
+    require("./express/indexapi")();
+};
+
 j.client.onReady(require("./handlers/twitch/ready"));
 j.logclient.onReady(require("./handlers/twitch/logclient/ready"));
 

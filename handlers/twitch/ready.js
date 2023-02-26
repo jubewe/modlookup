@@ -5,9 +5,6 @@ const j = require("../../variables/j");
 module.exports = async () => {
     _log(1, `Client Ready`);
 
-    require("../../express/index")();
-    require("../../express/indexapi")();
-
     j.client.joinAll(files.clientChannels.channels);
 
     setInterval(() => {

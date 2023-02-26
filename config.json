@@ -33,9 +33,10 @@
         }
     },
     "connect": {
-        "discord": true,
-        "twitch": true,
-        "twitch_log": true
+        "express": true,
+        "discord": false,
+        "twitch": false,
+        "twitch_log": false
     },
     "default": {
         "color": "Aqua",

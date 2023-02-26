@@ -7,7 +7,6 @@
  * @param {Boolean} firstcap Makes the first letter of the number name capital
  * @param {String} numspacerreplacer
  * @param {Number} decimals
- * @returns {String | Number}
  */
 
 const _numberspacer = require("./_numberspacer");
@@ -17,8 +16,8 @@ function _cleannumber(num, numopt, numdigits, numspacer, insertnumname, firstcap
     numopt = (numopt ?? 1);
     numdigits = (numdigits ?? 4);
     numspacer = (numspacer ?? false);
-    insertnumname = (insertnumname ?? " ");
-    firstcap = (firstcap ?? true);
+    insertnumname = (insertnumname ?? "");
+    firstcap = (firstcap ?? false);
     decimals = (decimals ?? 1);
 
     if(num_.length <= numdigits) return (numspacer ? _numberspacer(num) : num);

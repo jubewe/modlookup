@@ -5,6 +5,6 @@ module.exports = {
     name: "chans",
     /** @param {j_} response */
     exec: async (response) => {
-        response.reply(`VoHiYo Currently tracking ${j.logclient.channels.length} channels`);
+        response.reply(`VoHiYo Currently tracking ${j.logclient?.channels?.length ?? 0} channels`);
     }
 };

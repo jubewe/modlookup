@@ -55,7 +55,11 @@
         let endpointtd1 = document.createElement("td");
         if(endpoints[endpoint].length > 0){
             endpointtd1.onclick = () => {
-                window.open(endpointtd1.innerText.replace(/\/:(user|channel)/g, ""), "_blank");
+                let url = new URL(document.URL);
+                let addurl = "";
+                if(!new RegExp(`^${endpointtd1.innerText.split("/")[1]}+(-dest)*.+`).test(url.host.split(".")[0])) 
+                addurl = url.href.replace(/(mod|vip)lookup/g, endpointtd1.innerText.split("/")[1]).replace(/\/$/g, "");
+                window.open(addurl + endpointtd1.innerText.replace(/\/:(user|channel)/g, ""), "_blank");
             };
         };
         endpointtd1.classList.add("j_td_1");

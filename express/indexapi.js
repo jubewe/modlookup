@@ -8,8 +8,7 @@ const viplookup = require("../functions/viplookup");
 const _rf = require("../functions/_rf");
 const _mainpath = require("../functions/_mainpath");
 const regex = require("oberknecht-api/lib/var/regex");
-const express = require("express");
-const path = require("path");
+const request = require("request");
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000,
     max: 100,
@@ -24,8 +23,8 @@ module.exports = async () => {
             if ((status ?? undefined) || stuff.error) return res.json({ "status": status ?? 400, "error": stuff.error.message ?? stuff.error ?? stuff });
             return res.json({ status: 200, "data": (["number", "object"].includes(typeof stuff) ? stuff : stuff) });
         };
-        
-        if(!files.lel.handledAPIRequests) files.lel.handledAPIRequests = 0;
+
+        if (!files.lel.handledAPIRequests) files.lel.handledAPIRequests = 0;
         files.lel.handledAPIRequests++;
 
         next();
@@ -44,7 +43,7 @@ module.exports = async () => {
     });
 
     j.expressapi.get("/modlookup", (req, res) => {
-        res.sendWC({ "users": j.modinfosplitter.getMainKey(["users", "num"]), "channels": j.modinfosplitter.getMainKey(["channels", "num"])});
+        res.sendWC({ "users": j.modinfosplitter.getMainKey(["users", "num"]), "channels": j.modinfosplitter.getMainKey(["channels", "num"]) });
     });
 
     j.expressapi.get("/modlookup/users", (req, res) => {
@@ -144,4 +143,18 @@ module.exports = async () => {
                 res.sendWC(e, 400);
             })
     });
+
+    // j.expressapi.get("/validate", async (req, res) => {
+    //     if (!req.header("Authorization")) return res.sendWC({ error: Error("header Authorization required") });
+
+    //     request(`https://id.twitch.tv/oauth2/validate`, {
+    //         headers: {
+    //             "Authorization": req.header("Authorization")
+    //         }
+    //     }, (e, r) => {
+    //         if (e) return res.sendWC({ error: Error(e) });
+
+
+    //     });
+    // });
 };
