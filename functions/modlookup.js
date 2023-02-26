@@ -1,5 +1,5 @@
-const files = require("../variables/files");
 const j = require("../variables/j");
+const _returnerr = require("./_returnerr");
 let pagination;
 let joinedChannels = [];
 let block_channels = 0;
@@ -8,23 +8,33 @@ const max_block_channels = 3000;
 class modlookup {
     static channel = (channelID) => {
         return new Promise((resolve, reject) => {
-            if (!files.modinfo.channels[channelID]) return reject({ error: Error("channel not in logs") });
+            try {
+                let ch = j.modinfosplitter.getKey(["channels", channelID]);
+                if (!ch) return reject({ error: Error("channel not in logs") });
 
-            return resolve({
-                id: channelID,
-                ...files.modinfo.channels[channelID]
-            });
+                return resolve({
+                    id: channelID,
+                    ...ch
+                });
+            } catch (e) {
+                return reject({ error: new Error(_returnerr(e)) });
+            };
         });
     };
 
     static user = (userID) => {
         return new Promise((resolve, reject) => {
-            if (!files.modinfo.users[userID]) return reject({ error: Error("user not in logs") });
+            try {
+                let us = j.modinfosplitter.getKey(["users", userID]);
+                if (!us) return reject({ error: Error("user not in logs") });
 
-            return resolve({
-                id: userID,
-                ...files.modinfo.users[userID]
-            });
+                return resolve({
+                    id: userID,
+                    ...us
+                });
+            } catch (e) {
+                return reject({ error: new Error(_returnerr(e)) });
+            }
         });
     };
 
@@ -45,7 +55,7 @@ class modlookup {
                         block_channels += 100;
                         joinedChannels.push(...streamLogins);
                         j.logclient.joinAll(streamLogins);
-                        if (block_channels < max_block_channels) join(); else resolve(joinedChannels);
+                        if (block_channels < ((num * 100) ?? max_block_channels)) join(); else resolve(joinedChannels);
                     })
                     .catch(reject);
 

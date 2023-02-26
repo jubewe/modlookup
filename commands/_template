@@ -1,0 +1,18 @@
+const j_ = require("../classes/j_");
+const j = require("../variables/j");
+
+module.exports = {
+    name: "",
+    id: null,
+    // id: "",
+    permission: null,
+    // permission: j.config.perm.default,
+    cooldown: null,
+    // cooldown: j.config.cooldown.default,
+    cooldown_user: null,
+    // static cooldown_user = j.config.cooldown.user.default,
+    /** @param {j_} response */
+    exec: async (response) => {
+
+    }
+};

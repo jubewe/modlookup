@@ -1,6 +1,6 @@
 /**
  * @param {number} num 
- * @returns {string} Split number
+ * @returns {string?} Split number
  */
 
 function _numberspacer(num, replacer){

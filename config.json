@@ -16,14 +16,38 @@
             "admin": 30
         }
     },
+    "cooldown": {
+        "default": 10000,
+        "user": {
+            "default": 30000
+        }
+    },
     "trackers":{
-        "mods": false,
+        "mods": true,
         "vips": false
     },
     "express": {
         "port": 2005,
         "api": {
             "port": 2006
+        }
+    },
+    "connect": {
+        "discord": true,
+        "twitch": true,
+        "twitch_log": true
+    },
+    "default": {
+        "color": "#1d3956",
+        "discord": {
+            "images": {
+                "error": "https://cdn.discordapp.com/attachments/921717855937003621/921718973450567740/error_message.png"
+            }
+        }
+    },
+    "twitch": {
+        "dm": {
+            "max_tracker_num": 50
         }
     }
 }

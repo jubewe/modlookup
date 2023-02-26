@@ -1,11 +1,11 @@
 async function getuserperm(guuser, badge) {
   return new Promise((resolve, reject) => {
     let files = require("../variables/files");
-    
-    if(!(guuser ?? undefined)) return files.permissions.permissions["10"];
+
+    if (!(guuser ?? undefined)) return files.permissions.permissions["10"];
     guuser = guuser.toString();
     if (files.permissions.users[guuser]) {
-      return resolve({...files.permissions.permissions[files.permissions.users[guuser]], num:files.permissions.users[guuser]});
+      return resolve({ ...files.permissions.permissions[files.permissions.users[guuser]], num: files.permissions.users[guuser] });
     } else {
       if (badge) {
         let badges = {};
