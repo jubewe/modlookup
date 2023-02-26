@@ -46,11 +46,6 @@ j.discordclient.on("ready", require("./handlers/discord/ready"));
 j.discordclient.on("messageCreate", require("./handlers/discord/messageCreate"));
 
 process.on("unhandledRejection", e => { console.error(e) });
-
-setTimeout(() => {
-    throw new Error("lol");
-}, 10000)
-
 process.on("uncaughtException", e => {
     console.error(e);
 
@@ -60,5 +55,5 @@ process.on("uncaughtException", e => {
                 new _discordembed(undefined, `Error:\n\`\`\`${e.stack}\`\`\``)
             ]
         })
-    }
+    };
 });
