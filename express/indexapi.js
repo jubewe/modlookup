@@ -44,15 +44,15 @@ module.exports = async () => {
     });
 
     j.expressapi.get("/modlookup", (req, res) => {
-        res.sendWC({ "users": Object.keys(files.modinfo.users).length, "channels": Object.keys(files.modinfo.channels).length });
+        res.sendWC({ "users": j.modinfosplitter.getMainKey(["users", "num"]), "channels": j.modinfosplitter.getMainKey(["channels", "num"])});
     });
 
     j.expressapi.get("/modlookup/users", (req, res) => {
-        res.sendWC(Object.keys(files.modinfo.users).length);
+        res.sendWC(j.modinfosplitter.getMainKey(["users", "num"]));
     });
 
     j.expressapi.get("/modlookup/channels", (req, res) => {
-        res.sendWC(Object.keys(files.modinfo.channels).length);
+        res.sendWC(j.modinfosplitter.getMainKey(["channels", "num"]));
     });
 
     j.expressapi.get("/modlookup/user/:userid", async (req, res) => {
@@ -100,11 +100,11 @@ module.exports = async () => {
     });
 
     j.expressapi.get("/viplookup/users", (req, res) => {
-        res.sendWC(Object.keys(files.vipinfo.users).length);
+        res.sendWC(j.vipinfosplitter.getMainKey(["users", "num"]));
     });
 
     j.expressapi.get("/viplookup/channels", (req, res) => {
-        res.sendWC(Object.keys(files.vipinfo.channels).length);
+        res.sendWC(j.vipinfosplitter.getMainKey(["channels", "num"]));
     });
 
     j.expressapi.get("/viplookup/user/:userid", async (req, res) => {

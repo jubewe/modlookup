@@ -8,6 +8,7 @@ const j = require("./variables/j");
 const files = require("./variables/files");
 const _cleantime = require("./functions/_cleantime");
 const c = require("./config.json");
+const _discordembed = require("./functions/_discordembed");
 const env = require("dotenv").config().parsed;
 let handledMessagescache = j.handledMessagescache;
 
@@ -29,7 +30,9 @@ setInterval(() => {
     });
 }, 60000);
 
-setInterval(() => { handledMessagescache[Date.now()] = files.lel.handledMessages; }, 15000);
+setInterval(() => {
+    handledMessagescache[Date.now()] = files.lel.handledMessages;
+}, 15000);
 
 j.logclient.onPRIVMSG(require("./handlers/twitch/logclient/privmsg_mod"));
 j.logclient.onPRIVMSG(require("./handlers/twitch/logclient/privmsg_vip"));
@@ -43,4 +46,19 @@ j.discordclient.on("ready", require("./handlers/discord/ready"));
 j.discordclient.on("messageCreate", require("./handlers/discord/messageCreate"));
 
 process.on("unhandledRejection", e => { console.error(e) });
-process.on("uncaughtException", e => { console.error(e) });
+
+setTimeout(() => {
+    throw new Error("lol");
+}, 10000)
+
+process.on("uncaughtException", e => {
+    console.error(e);
+
+    if (c.connect.discord) {
+        j.discordclient.channels.cache.get(j.config.discord.channels.errorlog).send({
+            embeds: [
+                new _discordembed(undefined, `Error:\n\`\`\`${e.stack}\`\`\``)
+            ]
+        })
+    }
+});

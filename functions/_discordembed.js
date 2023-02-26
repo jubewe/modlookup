@@ -1,4 +1,4 @@
-const { Embed } = require("discord.js");
+const { Embed, resolveColor } = require("discord.js");
 const c = require("../config.json");
 
 module.exports = class _discordembed {
@@ -7,7 +7,7 @@ module.exports = class _discordembed {
         this.title = data.title = title ?? "";
         this.description = data.description = description ?? "<Empty>";
         this.timestamp = data.timestamp = timestamp ?? new Date();
-        this.color = data.color = color ?? c.default.color;
+        this.color = data.color = resolveColor(color ?? c.default.color);
         this.fields = data.fields = fields ?? [];
         this.author = data.author = author ?? {};
         this.thumbnail = data.thumbnail = thumbnail ?? {};
@@ -17,9 +17,9 @@ module.exports = class _discordembed {
 
         if ((url ?? undefined)) this.url = data.url = url;
 
-        if (!(title ?? undefined) && this.description && this.description?.startsWith("error")) {
+        if (!(title ?? undefined) && this.description && this.description?.toLowerCase()?.startsWith("error")) {
             this.image = data.image = (image ?? { url: c.default.discord.images.error + "?size=300" });
-            this.color = data.color = "#FF0000";
+            this.color = data.color = resolveColor("Red");
             this.title = data.title = title = description.split("\n")[0];
             this.description = data.description = description.substring(description.split("\n")[0].length + 1);
         };

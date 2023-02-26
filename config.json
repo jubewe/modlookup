@@ -24,7 +24,7 @@
     },
     "trackers":{
         "mods": true,
-        "vips": false
+        "vips": true
     },
     "express": {
         "port": 2005,
@@ -38,7 +38,7 @@
         "twitch_log": true
     },
     "default": {
-        "color": "#1d3956",
+        "color": "Aqua",
         "discord": {
             "images": {
                 "error": "https://cdn.discordapp.com/attachments/921717855937003621/921718973450567740/error_message.png"
@@ -48,6 +48,11 @@
     "twitch": {
         "dm": {
             "max_tracker_num": 50
+        }
+    },
+    "discord": {
+        "channels": {
+            "errorlog": "1079483745033265312"
         }
     }
 }

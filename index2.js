@@ -101,4 +101,6 @@ const j = require("./variables/j");
 
 // console.log(j.modinfosplitter.editKey(["users", "263830208"], j.modinfosplitter.addKeysToObject(j.modinfosplitter.getKey(["users", "263830208", "channels"]), ["123"], {"name": "asd"})));
 // console.log(j.modinfosplitter.getKey(["users", "263830208"]));
-console.log(j.modinfosplitter.getMainKey(["users", "1234", "channels"]));
+// console.log(j.modinfosplitter.getMainKey(["users", "1234", "channels"]));
+
+console.log(j.vipinfosplitter.getMainKey(["users", "num"]));
