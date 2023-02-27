@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/html/img/OkayChamp_modding.ico" />
+    <link rel="stylesheet" href="/html/styles.css" />
+    <title>Ju / Admin</title>
+  </head>
+  <body>
+    <button id="j_login" onclick="login()">Login</button>
+    <j_progress>
+      <progress
+        id="j_progress"
+        class="progress_load"
+        value="0"
+        max="100"
+      ></progress>
+    </j_progress>
+    <j_error>
+      <h id="j_error">Error</h>
+    </j_error>
+    <j_spacer></j_spacer>
+    <j_head>
+      <img class="j_icon noselect" src="/html/img/OkayChamp_modding.png" />
+      <j_title>Admin</j_title>
+      <j_spacer></j_spacer>
+    </j_head>
+    <j_body>
+      <div id="_login">
+        <j_h>Please <button class="j_login" onclick="login()">Login</button> to view this page</j_h>
+      </div>
+      <div id="_noperm">
+        <j_h>Unfortunately, you dont have permission to view this page </j_h>
+        <br>
+        <j_emote><center><img class="emote" src="/html/img/Sadge.png"></center></j_emote>
+      </div>
+      <div id="_admin">
+        <j_h>Nothing to see here yet lol</j_h>
+      </div>
+    </j_body>
+  </body>
+</html>
+<script src="/html/script.js"></script>

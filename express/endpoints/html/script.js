@@ -12,7 +12,9 @@ function progress(num) {
     if (num_ < 100) progress_elem.classList.replace("progress_load_end", "progress_load");
     if (num_ === 100) progress_elem.classList.replace("progress_load", "progress_load_end");
 
-    progress_elem.style.display = (num >= 0 ? "grid" : "none");
+    setTimeout(() => {
+        progress_elem.style.display = (num > 0 && num < 100 ? "grid" : "none");
+    }, (num > 0 && num < 100 ? 0 : 1500))
     progress_elem.value = num_;
 };
 
@@ -225,15 +227,71 @@ class vl {
 function validatetoken() {
     if (!document.URL.includes("#access_token=")) return;
     let token = document.URL.split("#access_token=")[1].split("&")[0];
-    fetch(`${api_url}/validate`, {
-        headers: {
-            "Authorization": `Bearer ${token}`
-        }
+    fetch(`${api_url}/validate`, { headers: { "authorization": token } })
+        .then(async req => {
+            await req.json();
+            console.log(`Successfully authorized`)
+            localStorage.setItem("authorization", token);
+            window.close();
+        })
+        .catch(e => {
+            error(e);
+        });
+};
+
+function login() {
+    window.open(`https://id.twitch.tv/oauth2/authorize?client_id=1pnta1kpjqm4xth9e60czubvo1j7af&redirect_uri=${url}/validate&scope=&response_type=token`, "_blank");
+    new Promise((resolve) => {
+        let int = setInterval(waitfortoken, 500);
+        function waitfortoken() {
+            if (!localStorage.getItem("authorization")) return;
+            clearInterval(int);
+            resolve();
+        };
     })
-    .then(async req => {
-        let res = await req.json();
-        console.log(res);
-    });
+        .then(() => {
+            document.location.reload();
+        })
+};
+
+function logout() {
+    localStorage.removeItem("authorization");
+    document.getElementById("j_login").innerText = "Login";
+    document.getElementById("j_login").onclick = login;
+
+    document.getElementById("_admin").style.display = "none";
+    document.getElementById("_login").style.display = "block";
+};
+
+function loadadmin() {
+    if (!localStorage.getItem("authorization")) {
+        progress(-1);
+        return document.getElementById("_login").style.display = "block";
+    };
+    fetch(`${api_url}/admin`, { headers: { "authorization": localStorage.getItem("authorization") } })
+        .then(async req => {
+            let dat = await req.json();
+            console.log(dat);
+            if (dat.status !== 200) {
+                switch (dat.status) {
+                    case 401: { document.getElementById("_noperm").style.display = "block"; break; };
+                    default: { return error(dat); };
+                };
+            } else {
+                document.getElementById("_admin").style.display = "block";
+            }
+        })
+        .catch(e => {
+            error(e);
+        });
+    progress(100);
+};
+
+if (document.getElementById("j_login")) {
+    if (localStorage.getItem("authorization")) {
+        document.getElementById("j_login").innerText = "Logout";
+        document.getElementById("j_login").onclick = logout;
+    };
 };
 
 const currentendpoint = document.URL.replace(/http(s)*:\/\/(mod|vip)lookup(-dest)*\.jubewe\.de/g, "");
@@ -302,6 +360,10 @@ function autoexec() {
 
         case "/validate": {
             validatetoken(); break;
+        };
+
+        case "/admin": {
+            loadadmin(); break;
         };
 
         default: {

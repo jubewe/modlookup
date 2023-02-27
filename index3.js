@@ -1,3 +1,5 @@
-const _discordembed = require("./functions/_discordembed");
+const osUtils = require("os-utils");
 
-console.log(new _discordembed(undefined, "test"))
+(async () => {
+    console.log(await new Promise((resolve) => {osUtils.cpuUsage(resolve)}))
+})();

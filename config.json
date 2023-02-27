@@ -35,7 +35,7 @@
     "connect": {
         "express": true,
         "discord": false,
-        "twitch": false,
+        "twitch": true,
         "twitch_log": false
     },
     "default": {

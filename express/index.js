@@ -6,7 +6,6 @@ const regex = require("oberknecht-api/lib/var/regex");
 const logreq = require("./functions/logreq");
 const _rf = require("../functions/_rf");
 const redirecthtml = require("./functions/redirecthtml");
-const _mainpath = require("../functions/_mainpath");
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000,
     max: 100,
@@ -25,14 +24,14 @@ module.exports = async () => {
 
         logreq(req, res);
 
-        if(!files.lel.handledRequests) files.lel.handledRequests = 0;
+        if (!files.lel.handledRequests) files.lel.handledRequests = 0;
         files.lel.handledRequests++;
 
         next();
     });
 
     j.express.use(require("./use/default_headers"));
-
+    j.express.use(require("./use/req_perm"));
     j.express.use("/html", j.expresshtml);
 
     j.express.listen(c.express.port, () => {
@@ -73,7 +72,7 @@ module.exports = async () => {
         }
     });
 
-    
+
     j.express.get("/modlookup/channel", async (req, res) => {
         res.send(_rf("./express/endpoints/html/modlookup/channel.html"));
     });
@@ -91,11 +90,11 @@ module.exports = async () => {
             res.send(_rf("./express/endpoints/html/modlookup/channel.html"));
         }
     });
-    
+
     j.express.get("/viplookup", (req, res) => {
         res.send(_rf("./express/endpoints/html/viplookup/index.html"));
     });
-    
+
     j.express.get("/viplookup/users", (req, res) => {
         res.send(_rf("./express/endpoints/html/viplookup/users.html"));
     });
@@ -140,7 +139,11 @@ module.exports = async () => {
         }
     });
 
-    // j.express.get("/validate", async (req, res) => {
-    //     res.send(_rf("./express/endpoints/html/validate.html"));
-    // });
+    j.express.get("/validate", async (req, res) => {
+        res.send(_rf("./express/endpoints/html/validate.html"));
+    });
+
+    j.express.get("/admin", async (req, res) => {
+        res.send(_rf("./express/endpoints/html/admin.html"));
+    });
 };

@@ -9,6 +9,9 @@ const _rf = require("../functions/_rf");
 const _mainpath = require("../functions/_mainpath");
 const regex = require("oberknecht-api/lib/var/regex");
 const request = require("request");
+const os = require("os");
+const osUtils = require("os-utils");
+const _percentage = require("../functions/_percentage");
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000,
     max: 100,
@@ -31,6 +34,7 @@ module.exports = async () => {
     });
 
     j.expressapi.use(require("./use/default_headers"));
+    j.expressapi.use(require("./use/req_perm"));
 
     j.expressapi.use("/html", j.expresshtml);
 
@@ -58,9 +62,10 @@ module.exports = async () => {
         let userid = req.params.userid;
 
         if (!regex.numregex().test(userid)) {
-            await j.client.API.getUsers(userid)
+            console.log(userid)
+            await j.client.getuser(userid)
                 .then(u => {
-                    userid = u.data[0].id;
+                    userid = u.id;
                 });
         };
 
@@ -78,9 +83,9 @@ module.exports = async () => {
         let channelid = req.params.channelid;
 
         if (!regex.numregex().test(channelid)) {
-            await j.client.API.getUsers(channelid)
+            await j.client.getuser(channelid)
                 .then(u => {
-                    channelid = u.data[0].id;
+                    channelid = u.id;
                 });
         };
 
@@ -110,10 +115,13 @@ module.exports = async () => {
         let userid = req.params.userid;
 
         if (!regex.numregex().test(userid)) {
-            await j.client.API.getUsers(userid)
+            await j.client.getuser(userid)
                 .then(u => {
-                    userid = u.data[0].id;
-                });
+                    userid = u.id;
+                })
+                .catch(e => {
+                    res.sendWC(e, 400);
+                })
         };
 
         viplookup.user(userid)
@@ -144,17 +152,61 @@ module.exports = async () => {
             })
     });
 
-    // j.expressapi.get("/validate", async (req, res) => {
-    //     if (!req.header("Authorization")) return res.sendWC({ error: Error("header Authorization required") });
+    j.expressapi.get("/validate", async (req, res) => {
+        if (!req.header("authorization")) return res.sendWC({ error: Error("header authorization required") });
 
-    //     request(`https://id.twitch.tv/oauth2/validate`, {
-    //         headers: {
-    //             "Authorization": req.header("Authorization")
-    //         }
-    //     }, (e, r) => {
-    //         if (e) return res.sendWC({ error: Error(e) });
+        let token = req.header("authorization").replace(/^Bearer\s/, "").toLowerCase();
 
+        request(`https://id.twitch.tv/oauth2/validate`, {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        }, (e, r) => {
+            if (e || (r.statusCode !== 200)) return res.sendWC({ error: Error(e ?? r.body) });
 
-    //     });
-    // });
+            let dat = JSON.parse(r.body);
+
+            files.express_auth.tokens[token] = dat;
+            files.express_auth.ids[dat.user_id] = token;
+            return res.sendWC(dat);
+        });
+    });
+
+    j.expressapi.get("/admin", async (req, res) => {
+        if ((req.permission?.num ?? 10) < j.config.perm.bothigh) return res.sendWC({ error: Error("no permission") }, 401);
+
+        let cpuUsage = await new Promise((resolve) => { osUtils.cpuUsage(resolve) });
+
+        res.sendWC({
+            "logchannels": (j.logclient?.channels ?? null),
+            "channels": (j.client?.channels ?? null),
+            "modlookup": {
+                "channels": j.modinfosplitter.getMainKey(["channels", "num"]),
+                "users": j.modinfosplitter.getMainKey(["users", "num"])
+            },
+            "viplookup": {
+                "channels": j.vipinfosplitter.getMainKey(["channels", "num"]),
+                "users": j.vipinfosplitter.getMainKey(["users", "num"])
+            },
+            "memory": {
+                "os": {
+                    "free": os.freemem(),
+                    "total": os.totalmem(),
+                    "used": (os.totalmem() - os.freemem()),
+                    "usedpercent": _percentage(os.totalmem(), (os.totalmem() - os.freemem())),
+                    "freepercent": _percentage(os.totalmem(), os.freemem())
+                },
+                "process": {
+                    "free": process.memoryUsage.rss(),
+                    "total": os.totalmem(),
+                    "used": (os.totalmem() - process.memoryUsage.rss()),
+                    "usedpercent": _percentage(os.totalmem(), (os.totalmem() - process.memoryUsage.rss()))
+                }
+            },
+            "cpu": {
+                "used": cpuUsage,
+                "usedpercent": (cpuUsage * 100)
+            }
+        });
+    });
 };

@@ -6,7 +6,8 @@ let files = {
     // vipinfo: _rf(paths.vipinfo, true),
     lel: _rf(paths.lel, true),
     clientChannels: _rf(paths.clientChannels, true),
-    permissions: _rf(paths.permissions, true)
+    permissions: _rf(paths.permissions, true),
+    express_auth: _rf(paths.express_auth, true)
 };
 
 module.exports = files;
