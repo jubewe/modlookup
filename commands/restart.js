@@ -1,5 +1,6 @@
 const j_ = require("../classes/j_");
 const _cleantime = require("../functions/_cleantime");
+const _sleep = require("../functions/_sleep");
 const j = require("../variables/j");
 
 module.exports = {
