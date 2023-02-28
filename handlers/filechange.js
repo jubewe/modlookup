@@ -13,7 +13,7 @@ module.exports = () => {
     let paths = require("../variables/paths");
 
     if (isdebug("filechange")) {
-        _log(1, `${_stackname("handlers", "filechange")[3]} executed`);
+        _log(0, `${_stackname("handlers", "filechange")[3]} executed`);
     };
 
     let changed_files = 0;
@@ -46,6 +46,6 @@ module.exports = () => {
     filechange(files);
 
     if (isdebug("filechange")) {
-        _log(1, `${_stackname("handlers", "filechange")[3]} executed\t(Changed ${changed_files} and Re-read ${readnew_files} files)`);
+        _log(0, `${_stackname("handlers", "filechange")[3]} executed\t(Changed ${changed_files} and Re-read ${readnew_files} files)`);
     };
 }

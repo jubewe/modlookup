@@ -9,18 +9,16 @@ const _rf = require("../functions/_rf");
 const _mainpath = require("../functions/_mainpath");
 const regex = require("oberknecht-api/lib/var/regex");
 const request = require("request");
-const os = require("os");
-const osUtils = require("os-utils");
-const _percentage = require("../functions/_percentage");
-const limiter = rateLimit({
+const getApiAdmin = require("../functions/getApiAdmin");
+let limiter = rateLimit({
     windowMs: 5 * 60 * 1000,
-    max: 100,
     standardHeaders: true,
-    legacyHeaders: true
+    legacyHeaders: true,
+    max: (req, res) => (req.permission?.num >= j.config.perm.bothigh ? 0 : 50),
+    skip: (req, res) => (req.path.startsWith("/html"))
 });
 
 module.exports = async () => {
-    j.expressapi.use(limiter);
     j.expressapi.use((req, res, next) => {
         res.sendWC = async (stuff, status) => {
             if ((status ?? undefined) || stuff.error) return res.json({ "status": status ?? 400, "error": stuff.error.message ?? stuff.error ?? stuff });
@@ -30,34 +28,26 @@ module.exports = async () => {
         if (!files.lel.handledAPIRequests) files.lel.handledAPIRequests = 0;
         files.lel.handledAPIRequests++;
 
+        if(!files.lel.handledAPIEndpointRequests) files.lel.handledAPIEndpointRequests = {};
+        if(!files.lel.handledAPIEndpointRequests[req.path]) files.lel.handledAPIEndpointRequests[req.path] = 0;
+        files.lel.handledAPIEndpointRequests[req.path]++;
+
         next();
     });
 
     j.expressapi.use(require("./use/default_headers"));
     j.expressapi.use(require("./use/req_perm"));
 
+    j.expressapi.use(limiter);
+
     j.expressapi.use("/html", j.expresshtml);
 
-    j.expressapi.listen(c.express.api.port, () => {
-        _log(1, `Express API connected`);
-    });
+    j.expressapi.listen(c.express.api.port, () => { _log(1, `Express API connected`); });
 
-    j.expressapi.get("/", (req, res) => {
-        res.send(_rf(_mainpath("./express/endpoints/endpoints.html")).toString());
-    });
-
-    j.expressapi.get("/modlookup", (req, res) => {
-        res.sendWC({ "users": j.modinfosplitter.getMainKey(["users", "num"]), "channels": j.modinfosplitter.getMainKey(["channels", "num"]) });
-    });
-
-    j.expressapi.get("/modlookup/users", (req, res) => {
-        res.sendWC(j.modinfosplitter.getMainKey(["users", "num"]));
-    });
-
-    j.expressapi.get("/modlookup/channels", (req, res) => {
-        res.sendWC(j.modinfosplitter.getMainKey(["channels", "num"]));
-    });
-
+    j.expressapi.get("/", (req, res) => { res.send(_rf(_mainpath("./express/endpoints/endpoints.html"))); });
+    j.expressapi.get("/modlookup", (req, res) => { res.sendWC({ "users": j.modinfosplitter.getMainKey(["users", "num"]), "channels": j.modinfosplitter.getMainKey(["channels", "num"]) }); });
+    j.expressapi.get("/modlookup/users", (req, res) => { res.sendWC(j.modinfosplitter.getMainKey(["users", "num"])); });
+    j.expressapi.get("/modlookup/channels", (req, res) => { res.sendWC(j.modinfosplitter.getMainKey(["channels", "num"])); });
     j.expressapi.get("/modlookup/user/:userid", async (req, res) => {
         let userid = req.params.userid;
 
@@ -78,7 +68,6 @@ module.exports = async () => {
                 res.sendWC(e);
             })
     });
-
     j.expressapi.get("/modlookup/channel/:channelid", async (req, res) => {
         let channelid = req.params.channelid;
 
@@ -98,19 +87,9 @@ module.exports = async () => {
             })
     });
 
-
-    j.expressapi.get("/viplookup", (req, res) => {
-        res.sendWC({ "users": Object.keys(files.vipinfo.users).length, "channels": Object.keys(files.vipinfo.channels).length });
-    });
-
-    j.expressapi.get("/viplookup/users", (req, res) => {
-        res.sendWC(j.vipinfosplitter.getMainKey(["users", "num"]));
-    });
-
-    j.expressapi.get("/viplookup/channels", (req, res) => {
-        res.sendWC(j.vipinfosplitter.getMainKey(["channels", "num"]));
-    });
-
+    j.expressapi.get("/viplookup", (req, res) => { res.sendWC({ "users": Object.keys(files.vipinfo.users).length, "channels": Object.keys(files.vipinfo.channels).length }); });
+    j.expressapi.get("/viplookup/users", (req, res) => { res.sendWC(j.vipinfosplitter.getMainKey(["users", "num"])); });
+    j.expressapi.get("/viplookup/channels", (req, res) => { res.sendWC(j.vipinfosplitter.getMainKey(["channels", "num"])); });
     j.expressapi.get("/viplookup/user/:userid", async (req, res) => {
         let userid = req.params.userid;
 
@@ -132,7 +111,6 @@ module.exports = async () => {
                 res.sendWC(e, 400);
             })
     });
-
     j.expressapi.get("/viplookup/channel/:channelid", async (req, res) => {
         let channelid = req.params.channelid;
 
@@ -151,7 +129,6 @@ module.exports = async () => {
                 res.sendWC(e, 400);
             })
     });
-
     j.expressapi.get("/validate", async (req, res) => {
         if (!req.header("authorization")) return res.sendWC({ error: Error("header authorization required") });
 
@@ -171,42 +148,10 @@ module.exports = async () => {
             return res.sendWC(dat);
         });
     });
-
     j.expressapi.get("/admin", async (req, res) => {
         if ((req.permission?.num ?? 10) < j.config.perm.bothigh) return res.sendWC({ error: Error("no permission") }, 401);
 
-        let cpuUsage = await new Promise((resolve) => { osUtils.cpuUsage(resolve) });
-
-        res.sendWC({
-            "logchannels": (j.logclient?.channels ?? null),
-            "channels": (j.client?.channels ?? null),
-            "modlookup": {
-                "channels": j.modinfosplitter.getMainKey(["channels", "num"]),
-                "users": j.modinfosplitter.getMainKey(["users", "num"])
-            },
-            "viplookup": {
-                "channels": j.vipinfosplitter.getMainKey(["channels", "num"]),
-                "users": j.vipinfosplitter.getMainKey(["users", "num"])
-            },
-            "memory": {
-                "os": {
-                    "free": os.freemem(),
-                    "total": os.totalmem(),
-                    "used": (os.totalmem() - os.freemem()),
-                    "usedpercent": _percentage(os.totalmem(), (os.totalmem() - os.freemem())),
-                    "freepercent": _percentage(os.totalmem(), os.freemem())
-                },
-                "process": {
-                    "free": process.memoryUsage.rss(),
-                    "total": os.totalmem(),
-                    "used": (os.totalmem() - process.memoryUsage.rss()),
-                    "usedpercent": _percentage(os.totalmem(), (os.totalmem() - process.memoryUsage.rss()))
-                }
-            },
-            "cpu": {
-                "used": cpuUsage,
-                "usedpercent": (cpuUsage * 100)
-            }
-        });
+        let apiadmin = await getApiAdmin();
+        res.sendWC(apiadmin);
     });
 };

@@ -3,19 +3,10 @@ const files = require("../../variables/files");
 
 /**@param {import("express").Request} req @param {import("express").Response} res @param {Function} next */
 module.exports = (req, res, next) => {
-    // function checkadminpage(){
-    //     if(send_noadmin && /^\/admin/.test(req.url)){
-    //         return res.send(_rf("./express/endpoints/login.html"));
-    //     } 
-    //     next();
-    // };
-
     req.permission = {
         "num": 10,
-        "id": undefined,
-        "token": undefined,
-        "_raw": undefined
     };
+
     if(!req.header("authorization")) return next();
 
     let token = req.header("authorization").replace(/^Bearer\s/i, "").toLowerCase();

@@ -1,15 +1,12 @@
 const _log = require("../../functions/_log");
+const _stackname = require("../../functions/_stackname");
 const files = require("../../variables/files");
 const j = require("../../variables/j");
 
 module.exports = async () => {
-    _log(1, `Client Ready`);
+    _log(1, `${_stackname("client")[3]} Ready`);
 
     j.client.joinAll(files.clientChannels.channels);
-
-    setInterval(() => {
-        console.log(`Currently logging ${j.logclient.channels.length} channels`);
-    }, 10000);
 
     setTimeout(() => {
         process.exit(2);

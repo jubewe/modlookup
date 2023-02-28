@@ -10,7 +10,8 @@ const limiter = rateLimit({
     windowMs: 5 * 60 * 1000,
     max: 100,
     standardHeaders: true,
-    legacyHeaders: true
+    legacyHeaders: true,
+    skip: (req, res) => req.path.startsWith("/html")
 });
 
 module.exports = async () => {
@@ -24,14 +25,19 @@ module.exports = async () => {
 
         logreq(req, res);
 
-        if (!files.lel.handledRequests) files.lel.handledRequests = 0;
-        files.lel.handledRequests++;
+        if (!files.lel.handledWebsiteRequests) files.lel.handledWebsiteRequests = 0;
+        files.lel.handledWebsiteRequests++;
+
+        if(!files.lel.handledWebsiteEndpointRequests) files.lel.handledWebsiteEndpointRequests = {};
+        if(!files.lel.handledWebsiteEndpointRequests[req.path]) files.lel.handledWebsiteEndpointRequests[req.path] = 0;
+        files.lel.handledWebsiteEndpointRequests[req.path]++;
 
         next();
     });
 
     j.express.use(require("./use/default_headers"));
     j.express.use(require("./use/req_perm"));
+    
     j.express.use("/html", j.expresshtml);
 
     j.express.listen(c.express.port, () => {

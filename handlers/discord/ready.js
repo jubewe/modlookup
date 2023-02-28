@@ -1,9 +1,10 @@
 const _log = require("../../functions/_log");
 const _cleannumber = require("../../functions/_cleannumber");
 const j = require("../../variables/j");
+const _stackname = require("../../functions/_stackname");
 
 module.exports = async () => {
-    _log(1, `Discordclient Connected`);
+    _log(1, `${_stackname("discordclient")[3]} Ready`);
 
     j.discordclient.user.setPresence({
         status: "online",

@@ -1,5 +1,5 @@
 {
-    "prefix": "ml!",
+    "prefix": "mlb!",
     "debug": {
         "filechange": true
     },
@@ -32,11 +32,16 @@
             "port": 2006
         }
     },
+    "ws": {
+        "port": 2007,
+        "heartbeat_interval": 300000,
+        "pings_before_close": 2
+    },
     "connect": {
         "express": true,
-        "discord": true,
+        "discord": false,
         "twitch": true,
-        "twitch_log": true
+        "twitch_log": false
     },
     "default": {
         "color": "Aqua",

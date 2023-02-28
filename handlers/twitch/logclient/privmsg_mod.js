@@ -1,10 +1,8 @@
 const privmsgMessage = require("oberknecht-client/lib/parser/PRIVMSG.Message");
-const files = require("../../../variables/files");
 const j = require("../../../variables/j");
 
 /** @param {privmsgMessage} response */
 module.exports = async (response) => {
-    files.lel.handledMessages++;
     if (j.config.trackers.mods) {
         if (!response.userstate.isMod && j.modinfosplitter.getKey(["users", response.userstate.id, "channels", response.channelID])) j.modinfosplitter.deleteKey(["users", response.userstate.id, "channels", response.channelID]);
 

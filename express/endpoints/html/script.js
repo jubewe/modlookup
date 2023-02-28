@@ -1,8 +1,16 @@
 const url = new URL(document.baseURI).origin;
 const api_url = (url.split(".")[0].split("-dest")[0] + "-api" + (url.split(".")[0].includes("dest") ? "-dest" : "") + "." + url.split(".").slice(1).join("."));
+const ws_url = (url.split(".")[0].split("-dest")[0] + "-ws" + (url.split(".")[0].includes("dest") ? "-dest" : "") + "." + url.split(".").slice(1).join("."));
 function apiurl(u) { return api_url + (!u.startsWith("/") ? "/" : "") + (u) };
 function siteurl(u) { return url + (!u.startsWith("/") ? "/" : "") + (u) };
 function redirect(url) { document.location.replace(url); };
+const currentendpoint = document.URL.replace(/http(s)*:\/\/(mod|vip)lookup(-dest)*\.jubewe\.de/g, "");
+const currentendpointpath = currentendpoint.split("/").slice(0, 3).join("/").split(/#|\?/)[0];
+const currentendpointparts = currentendpoint.split("/").slice(1);
+let autoexecs = 0;
+let admin_interval;
+let page_data = {};
+progress(0);
 
 function progress(num) {
     const progress_elem = document.getElementById("j_progress");
@@ -263,28 +271,230 @@ function logout() {
     document.getElementById("_login").style.display = "block";
 };
 
+function getKeyFromObject(object, keys) {
+    let value = object;
+    for (let i = 0; i < keys.length; i++) {
+        if (value.hasOwnProperty(keys[i])) {
+            value = value[keys[i]];
+        } else {
+            return undefined;
+        }
+    }
+    return value;
+};
+
 function loadadmin() {
+    let isFirst = (admin_interval ?? undefined);
+
     if (!localStorage.getItem("authorization")) {
         progress(-1);
-        return document.getElementById("_login").style.display = "block";
+        document.getElementById("_login").style.display = "block";
+        if (admin_interval) clearInterval(admin_interval);
+        return;
     };
+
     fetch(`${api_url}/admin`, { headers: { "authorization": localStorage.getItem("authorization") } })
         .then(async req => {
-            let dat = await req.json();
-            console.log(dat);
-            if (dat.status !== 200) {
-                switch (dat.status) {
-                    case 401: { document.getElementById("_noperm").style.display = "block"; break; };
-                    default: { return error(dat); };
+            let dat_ = await req.json();
+
+            if (dat_.status !== 200) {
+                switch (dat_.status) {
+                    case 401: {
+                        document.getElementById("_noperm").style.display = "block";
+                        if (admin_interval) clearInterval(admin_interval);
+                        return;
+                    };
+                    default: {
+                        document.getElementById("_admin").style.display = "none";
+                        if (admin_interval) clearInterval(admin_interval);
+                        return error(dat_);
+                    };
                 };
             } else {
                 document.getElementById("_admin").style.display = "block";
-            }
+            };
+
+            let dat = dat_.data;
+
+            console.log(dat);
+
+            let tables = {
+                "0": {
+                    "names": [
+                        "Channels",
+                        "Logchannels",
+                        "Discordservers",
+                        "CPU Usage",
+                        "Memory Usage",
+                        "Total Memory Usage"
+                    ],
+                    "keypaths": [
+                        ["channels"],
+                        ["logchannels"],
+                        ["discordservers"],
+                        ["cpu", "usedpercent"],
+                        ["memory", "process", "usedpercent"],
+                        ["memory", "os", "usedpercent"]
+                    ]
+                },
+                "1": {
+                    "names": [
+                        "",
+                        "Channels",
+                        "Users"
+                    ],
+                    "keypaths": [
+                        "Modlookup",
+                        ["modlookup", "channels"],
+                        ["modlookup", "users"],
+                        "\n",
+                        "Viplookup",
+                        ["viplookup", "channels"],
+                        ["viplookup", "users"]
+                    ]
+                },
+                "2": {
+                    "names": [
+                        "",
+                        "Messages/sec",
+                        "Messages/min",
+                        "Commands/sec",
+                        "Commands/min",
+                        "Handles",
+                        "Handled Commands"
+                    ],
+                    "keypaths": [
+                        "Client",
+                        ["handledSecond", "handledClient"],
+                        ["handledMinute", "handledClient"],
+                        ["handledSecond", "handledClientCommands"],
+                        ["handledMinute", "handledClientCommands"],
+                        ["handled", "handledClient"],
+                        ["handled", "handledClientCommands"],
+                        "\n",
+                        "Discord Client",
+                        ["handledSecond", "handledDiscord"],
+                        ["handledMinute", "handledDiscord"],
+                        ["handledSecond", "handledDiscordCommands"],
+                        ["handledMinute", "handledDiscordCommands"],
+                        ["handled", "handledDiscord"],
+                        ["handled", "handledDiscordCommands"],
+                        "\n",
+                        "LogClient",
+                        ["handledSecond", "handledLog"],
+                        ["handledMinute", "handledLog"],
+                        "",
+                        "",
+                        ["handled", "handledLog"],
+                        "",
+                    ]
+                },
+                "3": {
+                    "names": [
+                        "",
+                        "Requests/sec",
+                        "Requests/min",
+                        "Handles"
+                    ],
+                    "keypaths": [
+                        "Website",
+                        ["handledSecond", "handledWebsiteRequests"],
+                        ["handledMinute", "handledWebsiteRequests"],
+                        ["handled", "handledWebsiteRequests"],
+                        "\n",
+                        "API",
+                        ["handledSecond", "handledAPIRequests"],
+                        ["handledMinute", "handledAPIRequests"],
+                        ["handled", "handledAPIRequests"]
+                    ]
+                }
+            };
+
+            Object.keys(tables).forEach((a, i) => {
+                if (document.getElementById(`_admin_table_${i}`) === null) {
+                    let table_elem = document.createElement("table");
+                    table_elem.id = `_admin_table_${i}`;
+                    table_elem.classList.add("_admin_table");
+
+                    let th_tr_elem = document.createElement("tr");
+                    let tr_elem = document.createElement("tr");
+                    tr_elem.id = `_admin_table_${i}_tr_0`;
+                    tr_elem.classList.add(`_admin_table_${i}_tr`);
+
+                    tables[a].names.forEach((b, i2) => {
+                        let th_elem = document.createElement("th");
+                        th_elem.innerText = (b ?? "");
+                        if ((b?.toString()?.length ?? 0) === 0) th_elem.classList.add("noborder");
+                        th_elem.classList.add("_admin_table_th");
+
+                        th_tr_elem.appendChild(th_elem);
+                    });
+
+                    table_elem.appendChild(th_tr_elem);
+                    table_elem.appendChild(tr_elem);
+
+                    document.getElementById("_admin").appendChild(table_elem);
+                };
+
+                let tabletr = document.getElementById(`_admin_table_${i}_tr_0`);
+
+                tables[a].keypaths.forEach((b, i2) => {
+                    let val = (!Array.isArray(b) ? b : getKeyFromObject(dat, b));
+
+                    if (Array.isArray(val)) {
+                        val = val.length;
+                    } else if (["string", "number"].includes(typeof val) && val.toString().includes(".")) {
+                        val = val.toString();
+                        val = val.slice(0, (val.split(".")[0].length + 1 + 2)) + "%";
+                    };
+
+                    let key_elem_id = `_admin_table_${i}_${i2}`;
+
+                    if (document.getElementById(key_elem_id) !== null) {
+                        document.getElementById(key_elem_id).innerText = val;
+                        return;
+                    };
+
+                    if (val === "\n") {
+                        const tabletrold = tabletr;
+                        const tabletroldnum = (tabletrold.id.split("_")[tabletrold.id.split("_").length - 1]);
+                        let tabletr_id = `${tabletrold.id.slice(0, (tabletrold.id.length - tabletroldnum.length))}${parseInt(tabletroldnum) + 1}`
+
+                        if (document.getElementById(tabletr_id)) {
+                            tabletr = document.getElementById(tabletr_id);
+                            return;
+                        };
+
+                        tabletr = document.createElement("tr");
+                        tabletr.id = tabletr_id;
+                        tabletr.classList.add(`_admin_table_${i}_tr`);
+
+                        document.getElementById(`_admin_table_${i}`).appendChild(tabletr);
+                    } else {
+                        if (document.getElementById(key_elem_id) === null) {
+                            let key_elem = document.createElement("td");
+                            key_elem.classList.add("_admin_table_td");
+                            key_elem.id = key_elem_id;
+                            key_elem.innerText = val;
+                            if ((val?.toString()?.length ?? 0) === 0) key_elem.classList.add("noborder");
+                            key_elem.classList.add(`_admin_table_${i}_td`);
+
+                            tabletr.appendChild(key_elem);
+                        } else {
+                            document.getElementById(`_admin_table_${i}_${i2}`).innerText = val;
+                        };
+                    }
+                });
+            });
+
+            if (isFirst) progress(100);
         })
         .catch(e => {
             error(e);
+            document.getElementById("_admin").style.display = "none";
+            if (admin_interval) clearInterval(admin_interval);
+            return;
         });
-    progress(100);
 };
 
 if (document.getElementById("j_login")) {
@@ -294,14 +504,8 @@ if (document.getElementById("j_login")) {
     };
 };
 
-const currentendpoint = document.URL.replace(/http(s)*:\/\/(mod|vip)lookup(-dest)*\.jubewe\.de/g, "");
-const currentendpointparts = currentendpoint.split("/").slice(1);
-progress(0);
-let autoexecs = 0;
 function autoexec() {
-    console.debug("autoexec");
     autoexecs++;
-    const currentendpointpath = currentendpoint.split("/").slice(0, 3).join("/").split(/#|\?/)[0];
     switch (currentendpointpath) {
         case "/modlookup":
         case "/modlookup/": {
@@ -363,7 +567,9 @@ function autoexec() {
         };
 
         case "/admin": {
-            loadadmin(); break;
+            loadadmin();
+            admin_interval = setInterval(loadadmin, 1000);
+            break;
         };
 
         default: {

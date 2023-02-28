@@ -1,4 +1,5 @@
 const j = require("../variables/j");
+const _log = require("./_log");
 const _returnerr = require("./_returnerr");
 let pagination;
 let joinedChannels = [];
@@ -59,7 +60,7 @@ class modlookup {
                     })
                     .catch(reject);
 
-                console.log(`>> Joined ${joinedChannels.length} channels (Bot joined: ${j.logclient.channels.length})`);
+                _log(0, `>> Joined ${joinedChannels.length} channels (Bot joined: ${j.logclient.channels.length})`, "42");
             };
         });
     };
@@ -68,7 +69,7 @@ class modlookup {
     static part = async (num) => {
         let partChannels = joinedChannels.splice(0, (num * 100));
         block_channels -= partChannels.length;
-        console.log(`>> Parted ${partChannels.length} channels (Now in ${joinedChannels.length} channels, Bot joined: ${j.logclient.channels.length})`);
+        _log(0, `>> Parted ${partChannels.length} channels (Now in ${joinedChannels.length} channels, Bot joined: ${j.logclient.channels.length})`, "42");
         return await j.client.partAll(partChannels);
     };
 

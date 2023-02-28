@@ -4,14 +4,8 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="icon"
-      href="/html/img/OkayChamp_modding.ico"
-    />
-    <link
-      rel="stylesheet"
-      href="/html/styles.css"
-    />
+    <link rel="icon" href="/html/img/OkayChamp_modding.ico" />
+    <link rel="stylesheet" href="/html/styles.css" />
     <title>Ju / Viplookup / Channel</title>
   </head>
   <body>
@@ -28,22 +22,26 @@
     </j_error>
     <j_spacer></j_spacer>
     <j_head>
-      <img
-        class="j_icon noselect"
-        src="/html/img/OkayChamp_modding.png"
-      />
+      <j_icon
+        ><img class="j_icon noselect" src="/html/img/OkayChamp_modding.png"
+      /></j_icon>
       <j_title>Viplookup / Channel</j_title>
     </j_head>
     <j_body>
       <j_spacer_smol></j_spacer_smol>
       <input placeholder="Channel" id="vl_channel_input" />
       <j_spacer_smol_smol></j_spacer_smol_smol>
-      <button onclick="redirect(siteurl('/viplookup/channel/' + document.getElementById('vl_channel_input').value))">
+      <button
+        onclick="redirect(siteurl('/viplookup/channel/' + document.getElementById('vl_channel_input').value))"
+      >
         Search
       </button>
       <j_spacer_smol_smol></j_spacer_smol_smol>
       <div id="j_vl_channel">
-        <h id="j_vl_channel_info"><h id="j_vl_channel_channel"></h> has <h id="j_vl_channel_users_number"></h> tracked vip</h>
+        <h id="j_vl_channel_info"
+          ><h id="j_vl_channel_channel"></h> has
+          <h id="j_vl_channel_users_number"></h> tracked vip</h
+        >
         <div id="j_table_div">
           <table id="j_table">
             <thead>

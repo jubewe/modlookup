@@ -10,45 +10,93 @@ const _cleantime = require("./functions/_cleantime");
 const c = require("./config.json");
 const _discordembed = require("./functions/_discordembed");
 const env = require("dotenv").config().parsed;
-let handledMessagescache = j.handledMessagescache;
 
 _log(1, `Index: Loaded packages (Took ${_cleantime(Date.now() - loadstart, 4).time.join(" and ")})`, null, "42");
 
 if (c.connect.twitch) j.client.connect();
 if (c.connect.twitch_log && (c.trackers.mods || c.trackers.vips)) j.logclient.connect();
 
-if(c.connect.express) {
+if (c.connect.express) {
     require("./express/index")();
     require("./express/indexapi")();
 };
 
-j.client.onReady(require("./handlers/twitch/ready"));
-j.logclient.onReady(require("./handlers/twitch/logclient/ready"));
+if (c.connect.twitch) {
+    j.client.on("_all", () => {
+        if (!files.lel.handledClient) files.lel.handledClient = 0;
 
-j.client.onError(require("./handlers/twitch/error"));
-j.logclient.onError(require("./handlers/twitch/logclient/error"));
+        files.lel.handled++;
+        files.lel.handledClient++;
+    });
+
+    j.client.onReady(require("./handlers/twitch/ready"));
+    j.client.onError(require("./handlers/twitch/error"));
+
+    j.client.onPRIVMSG(require("./handlers/twitch/privmsg"));
+    j.client.onWHISPER(require("./handlers/twitch/whisper"));
+};
+
+if (c.connect.twitch_log) {
+    j.logclient.on("_all", () => {
+        if (!files.lel.handledLog) files.lel.handledLog = files.lel.handledMessages;
+
+        files.lel.handled++;
+        files.lel.handledLog++;
+    });
+
+    j.logclient.onReady(require("./handlers/twitch/logclient/ready"));
+    j.logclient.onError(require("./handlers/twitch/logclient/error"));
+
+    j.logclient.onPRIVMSG(require("./handlers/twitch/logclient/privmsg_mod"));
+    j.logclient.onPRIVMSG(require("./handlers/twitch/logclient/privmsg_vip"));
+};
+
+if (c.connect.discord) {
+    j.discordclient.login(env.DC_TOKEN);
+
+    j.discordclient.on("ready", require("./handlers/discord/ready"));
+    j.discordclient.on("messageCreate", require("./handlers/discord/messageCreate"));
+};
 
 setInterval(() => {
-    const a = Object.keys(handledMessagescache).filter(a => a < (Date.now() - 60000));
-    a.forEach(b => {
-        delete handledMessagescache[b];
+    Object.keys(j.handledCache).forEach(cache => {
+        const a = Object.keys(j.handledCache[cache]).filter(b => b < (Date.now() - 60000));
+        a.forEach(b => { delete j.handledCache[cache][b]; });
     });
 }, 60000);
 
 setInterval(() => {
-    handledMessagescache[Date.now()] = files.lel.handledMessages;
-}, 15000);
+    let d = Date.now();
 
-j.logclient.onPRIVMSG(require("./handlers/twitch/logclient/privmsg_mod"));
-j.logclient.onPRIVMSG(require("./handlers/twitch/logclient/privmsg_vip"));
+    j.handledCache.handled[d] = (files.lel.handled ?? 0);
+    j.handledCache.handledLog[d] = (files.lel.handledLog ?? 0);
+    j.handledCache.handledClient[d] = (files.lel.handledClient ?? 0);
+    j.handledCache.handledDiscord[d] = (files.lel.handledDiscord ?? 0);
 
-j.client.onPRIVMSG(require("./handlers/twitch/privmsg"));
-j.client.onWHISPER(require("./handlers/twitch/whisper"));
+    j.handledCache.handledCommands[d] = (files.lel.handledCommands ?? 0);
+    j.handledCache.handledClientCommands[d] = (files.lel.handledClientCommands ?? 0);
+    j.handledCache.handledDiscordCommands[d] = (files.lel.handledDiscordCommands ?? 0);
 
-if (c.connect.discord) j.discordclient.login(env.DC_TOKEN);
+    j.handledCache.handledWebsiteRequests[d] = (files.lel.handledWebsiteRequests ?? 0);
+    j.handledCache.handledAPIRequests[d] = (files.lel.handledAPIRequests ?? 0);
 
-j.discordclient.on("ready", require("./handlers/discord/ready"));
-j.discordclient.on("messageCreate", require("./handlers/discord/messageCreate"));
+    j.handledCache.handledAPIEndpointRequests = {};
+    j.handledCache.handledWebsiteEndpointRequests = {};
+
+    if(files.lel.handledAPIEndpointRequests){
+        Object.keys(j.handledCache.handledAPIEndpointRequests).forEach(a => {
+            if(!j.handledCache.handledAPIEndpointRequests[a]) j.handledCache.handledAPIEndpointRequests[a] = {};
+            j.handledCache.handledAPIEndpointRequests[a][d] = (files.lel.handledAPIEndpointRequests[a] ?? 0);
+        });
+    };
+    
+    if(files.lel.handledWebsiteEndpointRequests){
+        Object.keys(j.handledCache.handledWebsiteEndpointRequests).forEach(a => {
+            if(!j.handledCache.handledWebsiteEndpointRequests[a]) j.handledCache.handledWebsiteEndpointRequests[a] = {};
+            j.handledCache.handledWebsiteEndpointRequests[a][d] = (files.lel.handledWebsiteEndpointRequests[a] ?? 0);
+        });
+    };
+}, 1000);
 
 process.on("unhandledRejection", e => { console.error(e) });
 process.on("uncaughtException", e => {
