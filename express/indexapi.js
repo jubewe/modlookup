@@ -1,4 +1,4 @@
-const rateLimit = require("express-rate-limit");
+const { rateLimit } = require("express-rate-limit");
 const j = require("../variables/j");
 const c = require("../config.json");
 const _log = require("../functions/_log");
@@ -14,8 +14,8 @@ let limiter = rateLimit({
     windowMs: 5 * 60 * 1000,
     standardHeaders: true,
     legacyHeaders: true,
-    max: 50,
-    skip: (req, res) => (req.permission?.num >= j.config.perm.bothigh)
+    max: 100,
+    skip: (req, res) => req.permission?.num >= j.config.perm.bothigh
 });
 
 module.exports = async () => {
@@ -28,8 +28,8 @@ module.exports = async () => {
         if (!files.lel.handledAPIRequests) files.lel.handledAPIRequests = 0;
         files.lel.handledAPIRequests++;
 
-        if(!files.lel.handledAPIEndpointRequests) files.lel.handledAPIEndpointRequests = {};
-        if(!files.lel.handledAPIEndpointRequests[req.path]) files.lel.handledAPIEndpointRequests[req.path] = 0;
+        if (!files.lel.handledAPIEndpointRequests) files.lel.handledAPIEndpointRequests = {};
+        if (!files.lel.handledAPIEndpointRequests[req.path]) files.lel.handledAPIEndpointRequests[req.path] = 0;
         files.lel.handledAPIEndpointRequests[req.path]++;
 
         next();

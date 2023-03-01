@@ -286,6 +286,10 @@ function getKeyFromObject(object, keys) {
     return value;
 };
 
+function _numberspacer(num, replacer){
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, replacer || " ");
+};
+
 function loadadmin() {
     let isFirst = (admin_interval ?? undefined);
 
