@@ -3,11 +3,20 @@ const os = require("os");
 const _percentage = require("./_percentage");
 const getHandles = require("./getHandles");
 const osUtils = require("os-utils");
+const _cleantime = require("./_cleantime");
 
 async function getApiAdmin() {
     let cpuUsage = await new Promise((resolve) => { osUtils.cpuUsage(resolve) });
 
-    return {
+    let _logs = global.logs;
+    let logs = {};
+
+    Object.keys(_logs).forEach(a => {
+        logs[a] = {};
+        Object.keys(_logs[a]).slice((Object.keys(_logs[a]).length - 50)).forEach(b => logs[a][b] = _logs[a][b]);
+    });
+
+    let r = {
         "logchannels": (j.logclient?.channels?.length ?? null),
         "channels": (j.client?.channels?.length ?? null),
         "discordservers": (j.discordclient.guilds.cache.size ?? null),
@@ -41,7 +50,28 @@ async function getApiAdmin() {
         "handled": getHandles(0),
         "handledSecond": getHandles(1000),
         "handledMinute": getHandles(60 * 1000),
+        "uptime": {
+            "raw": {
+                "os": (os.uptime() * 1000),
+                "process": (process.uptime() * 1000),
+                "client": j.client?.uptime ?? "-",
+                "clientws": j.client?.wsUptime ?? "-",
+                "logclient": j.logclient?.uptime ?? "-",
+                "logclientws": j.logclient?.wsUptime ?? "-",
+                "discordclient": j.discordclient?.uptime ?? "-"
+            },
+            "parsed": {}
+        },
+        "logs": logs
     };
+
+    Object.keys(r.uptime.raw).forEach(a => {
+        if (typeof r.uptime.raw[a] !== "number") return r.uptime.parsed[a] = r.uptime.raw[a];
+
+        r.uptime.parsed[a] = _cleantime(r.uptime.raw[a], 4).time.join(", ")
+    })
+
+    return r;
 };
 
 module.exports = getApiAdmin;

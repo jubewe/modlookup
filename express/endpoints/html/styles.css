@@ -3,6 +3,8 @@
   font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
     "Lucida Sans", Arial, sans-serif;
   border-radius: 5px;
+  word-break: break-all;
+  line-break: anywhere;
 }
 
 body {
@@ -36,7 +38,7 @@ j_error {
 #j_error {
   display: none;
   background-color: red;
-  margin: 3px;
+  margin: 2px;
   padding: 3px;
   place-self: center;
 }
@@ -177,15 +179,51 @@ j_emote {
   place-items: center;
 }
 
+#_admin_body {
+  display: grid;
+  place-items: center;
+}
+
 ._admin_table {
+  background-color: #008c8cd4;
   width: 100%;
   padding: 4px;
+  border: 1px solid;
+  margin: 5px;
+}
+
+._admin_table ._admin_table_td-hasval {
+  background-color: #28a09c95;
+}
+
+._admin_table-title {
+  background-color: #2aaba7 !important;
 }
 
 ._admin_table * {
-  padding: 2px;
+  user-select: none;
+}
+
+._admin_table_td,
+._admin_table_th {
+  padding: 3px;
   border: 1px solid;
   text-align: center;
+}
+
+._admin_progress {
+  height: 5px;
+  width: 90%;
+  border: 1px solid;
+  background-color: darkcyan;
+}
+._admin_progress::-moz-progress-bar {
+  background: black;
+}
+
+._admin_table_td-noval, ._admin_table_th-noval {
+  padding: 0;
+  margin: 0;
 }
 
 ._admin_table_0_td {
@@ -193,5 +231,25 @@ j_emote {
 }
 
 ._admin_table_1_td {
-  width: 33.33%;
+  width: 16%;
+}
+
+#_admin_table_1_td_1 {
+  width: 24%;
+}
+
+._admin_table_2_td {
+  width: 11%;
+}
+
+._admin_table_3_td {
+  width: 26.666666666666668%;
+}
+
+._admin_table_1_td_2, ._admin_table_2_td_4 {
+  width: 3%;
+}
+
+._admin_table_1_td_0, ._admin_table_1_td_3, ._admin_table_2_td_0, ._admin_table_3_td_0 {
+  width: 20%;
 }

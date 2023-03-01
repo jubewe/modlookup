@@ -14,8 +14,8 @@ let limiter = rateLimit({
     windowMs: 5 * 60 * 1000,
     standardHeaders: true,
     legacyHeaders: true,
-    max: (req, res) => (req.permission?.num >= j.config.perm.bothigh ? 0 : 50),
-    skip: (req, res) => (req.path.startsWith("/html"))
+    max: 50,
+    skip: (req, res) => (req.permission?.num >= j.config.perm.bothigh)
 });
 
 module.exports = async () => {

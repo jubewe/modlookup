@@ -13,15 +13,14 @@ const env = require("dotenv").config().parsed;
 
 _log(1, `Index: Loaded packages (Took ${_cleantime(Date.now() - loadstart, 4).time.join(" and ")})`, null, "42");
 
-if (c.connect.twitch) j.client.connect();
-if (c.connect.twitch_log && (c.trackers.mods || c.trackers.vips)) j.logclient.connect();
-
 if (c.connect.express) {
     require("./express/index")();
     require("./express/indexapi")();
 };
 
 if (c.connect.twitch) {
+    j.client.connect();
+
     j.client.on("_all", () => {
         if (!files.lel.handledClient) files.lel.handledClient = 0;
 
@@ -36,7 +35,9 @@ if (c.connect.twitch) {
     j.client.onWHISPER(require("./handlers/twitch/whisper"));
 };
 
-if (c.connect.twitch_log) {
+if (c.connect.twitch_log && (c.trackers.mods || c.trackers.vips)) {
+    j.logclient.connect();
+
     j.logclient.on("_all", () => {
         if (!files.lel.handledLog) files.lel.handledLog = files.lel.handledMessages;
 
@@ -63,6 +64,12 @@ setInterval(() => {
         const a = Object.keys(j.handledCache[cache]).filter(b => b < (Date.now() - 60000));
         a.forEach(b => { delete j.handledCache[cache][b]; });
     });
+
+    Object.keys(global.logs).forEach(a => {
+        Object.keys(global.logs[a]).slice(0, ((Object.keys(global.logs[a]).length >= 100 ? (Object.keys(global.logs[a]).length - 100) : 0))).forEach(b => {
+            delete global.logs[a][b];
+        });
+    });
 }, 60000);
 
 setInterval(() => {
@@ -83,16 +90,16 @@ setInterval(() => {
     j.handledCache.handledAPIEndpointRequests = {};
     j.handledCache.handledWebsiteEndpointRequests = {};
 
-    if(files.lel.handledAPIEndpointRequests){
+    if (files.lel.handledAPIEndpointRequests) {
         Object.keys(j.handledCache.handledAPIEndpointRequests).forEach(a => {
-            if(!j.handledCache.handledAPIEndpointRequests[a]) j.handledCache.handledAPIEndpointRequests[a] = {};
+            if (!j.handledCache.handledAPIEndpointRequests[a]) j.handledCache.handledAPIEndpointRequests[a] = {};
             j.handledCache.handledAPIEndpointRequests[a][d] = (files.lel.handledAPIEndpointRequests[a] ?? 0);
         });
     };
-    
-    if(files.lel.handledWebsiteEndpointRequests){
+
+    if (files.lel.handledWebsiteEndpointRequests) {
         Object.keys(j.handledCache.handledWebsiteEndpointRequests).forEach(a => {
-            if(!j.handledCache.handledWebsiteEndpointRequests[a]) j.handledCache.handledWebsiteEndpointRequests[a] = {};
+            if (!j.handledCache.handledWebsiteEndpointRequests[a]) j.handledCache.handledWebsiteEndpointRequests[a] = {};
             j.handledCache.handledWebsiteEndpointRequests[a][d] = (files.lel.handledWebsiteEndpointRequests[a] ?? 0);
         });
     };

@@ -8,8 +8,11 @@ const currentendpoint = document.URL.replace(/http(s)*:\/\/(mod|vip)lookup(-dest
 const currentendpointpath = currentendpoint.split("/").slice(0, 3).join("/").split(/#|\?/)[0];
 const currentendpointparts = currentendpoint.split("/").slice(1);
 let autoexecs = 0;
+let admin_interval_time = 3000;
+let admin_requests_failed = 0;
 let admin_interval;
 let page_data = {};
+let devMode = false;
 progress(0);
 
 function progress(num) {
@@ -293,30 +296,32 @@ function loadadmin() {
         return;
     };
 
-    fetch(`${api_url}/admin`, { headers: { "authorization": localStorage.getItem("authorization") } })
+    fetch(`${api_url}/admin`, { headers: { "authorization": localStorage.getItem("authorization") }, method: "GET" })
         .then(async req => {
             let dat_ = await req.json();
 
             if (dat_.status !== 200) {
+                admin_requests_failed++;
+
                 switch (dat_.status) {
                     case 401: {
                         document.getElementById("_noperm").style.display = "block";
-                        if (admin_interval) clearInterval(admin_interval);
-                        return;
+                        break;
                     };
                     default: {
                         document.getElementById("_admin").style.display = "none";
-                        if (admin_interval) clearInterval(admin_interval);
-                        return error(dat_);
+                        error(dat_);
                     };
                 };
+                
+                if (admin_interval && admin_requests_failed > 1) clearInterval(admin_interval);
             } else {
                 document.getElementById("_admin").style.display = "block";
             };
 
             let dat = dat_.data;
 
-            console.log(dat);
+            if(devMode) console.debug("api response", dat);
 
             let tables = {
                 "0": {
@@ -332,80 +337,110 @@ function loadadmin() {
                         ["channels"],
                         ["logchannels"],
                         ["discordservers"],
-                        ["cpu", "usedpercent"],
-                        ["memory", "process", "usedpercent"],
-                        ["memory", "os", "usedpercent"]
+                        ["@@progress", "cpu", "usedpercent"],
+                        ["@@progress", "memory", "process", "usedpercent"],
+                        ["@@progress", "memory", "os", "usedpercent"]
                     ]
                 },
                 "1": {
                     "names": [
                         "",
+                        "Uptime",
+                        "",
+                        "",
                         "Channels",
                         "Users"
                     ],
                     "keypaths": [
-                        "Modlookup",
+                        "@@thOS",
+                        ["uptime", "parsed", "os"],
+                        "",
+                        "@@thModlookup",
                         ["modlookup", "channels"],
                         ["modlookup", "users"],
                         "\n",
-                        "Viplookup",
+                        "@@thProcess",
+                        ["uptime", "parsed", "process"],
+                        "",
+                        "@@thViplookup",
                         ["viplookup", "channels"],
-                        ["viplookup", "users"]
+                        ["viplookup", "users"],
+                        "\n",
+                        "@@thClient (WS)",
+                        ["uptime", "parsed", "clientws"],
+                        "",
+                        "",
+                        "",
+                        "\n",
+                        "@@thLogclient (WS)",
+                        ["uptime", "parsed", "logclientws"],
+                        "",
+                        "",
+                        "",
+                        "\n",
+                        "@@thDiscord Client",
+                        ["uptime", "parsed", "discordclient"],
+                        "",
+                        "",
+                        ""
                     ]
                 },
                 "2": {
                     "names": [
                         "",
+                        "Handles",
                         "Messages/sec",
                         "Messages/min",
+                        "",
+                        "Handled Commands",
                         "Commands/sec",
-                        "Commands/min",
-                        "Handles",
-                        "Handled Commands"
+                        "Commands/min"
                     ],
                     "keypaths": [
-                        "Client",
+                        "@@thClient",
+                        ["handled", "handledClient"],
                         ["handledSecond", "handledClient"],
                         ["handledMinute", "handledClient"],
+                        "",
+                        ["handled", "handledClientCommands"],
                         ["handledSecond", "handledClientCommands"],
                         ["handledMinute", "handledClientCommands"],
-                        ["handled", "handledClient"],
-                        ["handled", "handledClientCommands"],
                         "\n",
-                        "Discord Client",
-                        ["handledSecond", "handledDiscord"],
-                        ["handledMinute", "handledDiscord"],
-                        ["handledSecond", "handledDiscordCommands"],
-                        ["handledMinute", "handledDiscordCommands"],
-                        ["handled", "handledDiscord"],
-                        ["handled", "handledDiscordCommands"],
-                        "\n",
-                        "LogClient",
+                        "@@thLogclient",
+                        ["handled", "handledLog"],
                         ["handledSecond", "handledLog"],
                         ["handledMinute", "handledLog"],
                         "",
                         "",
-                        ["handled", "handledLog"],
                         "",
+                        "\n",
+                        "@@thDiscord Client",
+                        ["handled", "handledDiscord"],
+                        ["handledSecond", "handledDiscord"],
+                        ["handledMinute", "handledDiscord"],
+                        "",
+                        ["handled", "handledDiscordCommands"],
+                        ["handledSecond", "handledDiscordCommands"],
+                        ["handledMinute", "handledDiscordCommands"]
                     ]
                 },
                 "3": {
                     "names": [
                         "",
+                        "Handles",
                         "Requests/sec",
-                        "Requests/min",
-                        "Handles"
+                        "Requests/min"
                     ],
                     "keypaths": [
-                        "Website",
+                        "@@thWebsite",
+                        ["handled", "handledWebsiteRequests"],
                         ["handledSecond", "handledWebsiteRequests"],
                         ["handledMinute", "handledWebsiteRequests"],
-                        ["handled", "handledWebsiteRequests"],
                         "\n",
-                        "API",
+                        "@@thAPI",
+                        ["handled", "handledAPIRequests"],
                         ["handledSecond", "handledAPIRequests"],
-                        ["handledMinute", "handledAPIRequests"],
-                        ["handled", "handledAPIRequests"]
+                        ["handledMinute", "handledAPIRequests"]
                     ]
                 }
             };
@@ -424,7 +459,11 @@ function loadadmin() {
                     tables[a].names.forEach((b, i2) => {
                         let th_elem = document.createElement("th");
                         th_elem.innerText = (b ?? "");
-                        if ((b?.toString()?.length ?? 0) === 0) th_elem.classList.add("noborder");
+                        if ((b?.toString()?.length ?? 0) === 0) {
+                            th_elem.classList.add("noborder", "_admin_table_th-noval");
+                        } else {
+                            th_elem.classList.add("_admin_table_th-hasval", "_admin_table-title");
+                        }
                         th_elem.classList.add("_admin_table_th");
 
                         th_tr_elem.appendChild(th_elem);
@@ -433,29 +472,38 @@ function loadadmin() {
                     table_elem.appendChild(th_tr_elem);
                     table_elem.appendChild(tr_elem);
 
-                    document.getElementById("_admin").appendChild(table_elem);
+                    document.getElementById("_admin_body").appendChild(table_elem);
                 };
 
                 let tabletr = document.getElementById(`_admin_table_${i}_tr_0`);
+                let key_elem_index = 0;
 
                 tables[a].keypaths.forEach((b, i2) => {
-                    let val = (!Array.isArray(b) ? b : getKeyFromObject(dat, b));
+                    let key_elem_id = `_admin_table_${i}_td_${i2}`;
+                    let key_elem_val_id = `_admin_table_${i}_td_${i2}_val`;
+                    let key_elem_progress_id = `_admin_table_${i}_td_${i2}_progress`;
 
+                    let iab = Array.isArray(b);
+                    let isProgress = (iab && b[0] === "@@progress"); if (isProgress) b = b.slice(1);
+                    let skipVal = (iab && b[0] === "@@skipval"); if (skipVal) b = b.slice(1);
+                    let isTH = (!iab && b.startsWith("@@th")); if (isTH) b = b.replace("@@th", "");
+
+                    let val = (!iab ? b : getKeyFromObject(dat, b));
+
+                    let val_ = val;
                     if (Array.isArray(val)) {
-                        val = val.length;
+                        val_ = val.length;
                     } else if (["string", "number"].includes(typeof val) && val.toString().includes(".")) {
-                        val = val.toString();
-                        val = val.slice(0, (val.split(".")[0].length + 1 + 2)) + "%";
-                    };
-
-                    let key_elem_id = `_admin_table_${i}_${i2}`;
-
-                    if (document.getElementById(key_elem_id) !== null) {
-                        document.getElementById(key_elem_id).innerText = val;
-                        return;
+                        val_ = val.toString();
+                        val_ = val_.slice(0, (val_.split(".")[0].length + 1 + 2)) + "%";
+                    } else if(["number"].includes(typeof val)){
+                        val_ = val.toString();
+                        val_
                     };
 
                     if (val === "\n") {
+                        key_elem_index = 0;
+
                         const tabletrold = tabletr;
                         const tabletroldnum = (tabletrold.id.split("_")[tabletrold.id.split("_").length - 1]);
                         let tabletr_id = `${tabletrold.id.slice(0, (tabletrold.id.length - tabletroldnum.length))}${parseInt(tabletroldnum) + 1}`
@@ -472,27 +520,58 @@ function loadadmin() {
                         document.getElementById(`_admin_table_${i}`).appendChild(tabletr);
                     } else {
                         if (document.getElementById(key_elem_id) === null) {
-                            let key_elem = document.createElement("td");
-                            key_elem.classList.add("_admin_table_td");
+                            let key_elem = document.createElement((isTH ? "th" : "td"));
+                            key_elem.classList.add("_admin_table_td", `_admin_table_${i}_td`, `_admin_table_td_${key_elem_index}`, `_admin_table_${i}_td_${key_elem_index}`);
                             key_elem.id = key_elem_id;
-                            key_elem.innerText = val;
-                            if ((val?.toString()?.length ?? 0) === 0) key_elem.classList.add("noborder");
-                            key_elem.classList.add(`_admin_table_${i}_td`);
+
+                            if ((val_?.toString()?.length ?? 0) === 0) {
+                                key_elem.classList.add("noborder", "_admin_table_td-noval");
+                            } else {
+                                key_elem.classList.add("_admin_table_td-hasval");
+                            };
+
+                            let key_elem_val = document.createElement("h");
+                            key_elem_val.id = key_elem_val_id;
+                            key_elem_val.classList.add(`_admin_val`, `_admin_table_${i}_val`);
+                            if (!skipVal) key_elem_val.innerText = val_;
+
+                            if (isTH) {
+                                key_elem.classList.add("_admin_table-title");
+                            };
+
+                            key_elem.appendChild(key_elem_val);
+
+                            if (isProgress) {
+                                let progress_elem = document.createElement("progress");
+                                progress_elem.max = 100;
+                                progress_elem.value = val;
+                                progress_elem.classList.add("_admin_progress");
+                                progress_elem.id = key_elem_progress_id;
+
+                                key_elem.classList.add("_admin_progress_parent");
+                                key_elem.appendChild(progress_elem);
+                            };
 
                             tabletr.appendChild(key_elem);
+                        } else if (isProgress && document.getElementById(`${key_elem_id}_progress`) !== null) {
+                            document.getElementById(`${key_elem_id}_progress`).value = val;
+                            document.getElementById(key_elem_val_id).innerText = val_;
                         } else {
-                            document.getElementById(`_admin_table_${i}_${i2}`).innerText = val;
+                            document.getElementById(key_elem_val_id).innerText = val_;
                         };
-                    }
+
+                        key_elem_index++;
+                    };
                 });
             });
 
             if (isFirst) progress(100);
         })
         .catch(e => {
+            admin_requests_failed++;
             error(e);
             document.getElementById("_admin").style.display = "none";
-            if (admin_interval) clearInterval(admin_interval);
+            if (admin_interval && admin_requests_failed > 1) clearInterval(admin_interval);
             return;
         });
 };
@@ -568,7 +647,7 @@ function autoexec() {
 
         case "/admin": {
             loadadmin();
-            admin_interval = setInterval(loadadmin, 1000);
+            if (!devMode) admin_interval = setInterval(loadadmin, admin_interval_time);
             break;
         };
 

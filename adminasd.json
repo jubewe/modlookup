@@ -1,74 +1,113 @@
 {
-    "logchannels": [],
-    "channels": [
-        "#jubewe",
-        "#dau8bot"
-    ],
-    "discordservers": 0,
-    "modlookup": {
-        "channels": 47417,
-        "users": 91574
+    "0": {
+        "names": [
+            "Channels",
+            "Logchannels",
+            "Discordservers",
+            "CPU Usage",
+            "Memory Usage",
+            "Total Memory Usage"
+        ],
+        "keypaths": [
+            ["channels"],
+            ["logchannels"],
+            ["discordservers"],
+            ["@@progress", "cpu", "usedpercent"],
+            ["@@progress", "memory", "process", "usedpercent"],
+            ["@@progress", "memory", "os", "usedpercent"]
+        ]
     },
-    "viplookup": {
-        "channels": 23311,
-        "users": 73722
+    "1": {
+        "names": [
+            "",
+            "Uptime"
+        ],
+        "keypaths": [
+            "OS",
+            ["uptime", "parsed", "os"],
+            "\n",
+            "Process",
+            ["uptime", "parsed", "process"],
+            "\n",
+            "Client (WS)",
+            ["uptime", "parsed", "clientws"],
+            "\n",
+            "Logclient (WS)",
+            ["uptime", "parsed", "logclientws"],
+            "\n",
+            "Discordclient",
+            ["uptime", "parsed", "discordclient"]
+        ]
     },
-    "memory": {
-        "os": {
-            "free": 15612579840,
-            "total": 33602772992,
-            "used": 17990193152,
-            "usedpercent": "46.46",
-            "freepercent": "53.54"
-        },
-        "process": {
-            "free": 550154240,
-            "total": 33602772992,
-            "used": 33052618752,
-            "usedpercent": "1.64"
-        }
+    "2": {
+        "names": [
+            "",
+            "Channels",
+            "Users"
+        ],
+        "keypaths": [
+            "Modlookup",
+            ["modlookup", "channels"],
+            ["modlookup", "users"],
+            "\n",
+            "Viplookup",
+            ["viplookup", "channels"],
+            ["viplookup", "users"]
+        ]
     },
-    "cpu": {
-        "used": 0.21628289473684215,
-        "usedpercent": 21.628289473684216
+    "3": {
+        "names": [
+            "",
+            "Handles",
+            "Messages/sec",
+            "Messages/min",
+            "Commands/sec",
+            "Commands/min",
+            "Handled Commands"
+        ],
+        "keypaths": [
+            "Client",
+            ["handled", "handledClient"],
+            ["handledSecond", "handledClient"],
+            ["handledMinute", "handledClient"],
+            ["handledSecond", "handledClientCommands"],
+            ["handledMinute", "handledClientCommands"],
+            ["handled", "handledClientCommands"],
+            "\n",
+            "Discord Client",
+            ["handled", "handledDiscord"],
+            ["handledSecond", "handledDiscord"],
+            ["handledMinute", "handledDiscord"],
+            ["handledSecond", "handledDiscordCommands"],
+            ["handledMinute", "handledDiscordCommands"],
+            ["handled", "handledDiscordCommands"],
+            "\n",
+            "LogClient",
+            ["handled", "handledLog"],
+            ["handledSecond", "handledLog"],
+            ["handledMinute", "handledLog"],
+            "",
+            "",
+            ""
+        ]
     },
-    "handled": {
-        "handled": 6317907,
-        "handledLog": 6317268,
-        "handledClient": 2480,
-        "handledDiscord": 0,
-        "handledCommands": 0,
-        "handledClientCommands": 0,
-        "handledDiscordCommands": 0,
-        "handledWebsiteRequests": 937,
-        "handledAPIRequests": 498,
-        "handledWebsiteEndpointRequests": null,
-        "handledAPIEndpointRequests": null
-    },
-    "handledSecond": {
-        "handled": 0,
-        "handledLog": 0,
-        "handledClient": 0,
-        "handledDiscord": 0,
-        "handledCommands": 0,
-        "handledClientCommands": 0,
-        "handledDiscordCommands": 0,
-        "handledWebsiteRequests": 5,
-        "handledAPIRequests": 2,
-        "handledWebsiteEndpointRequests": null,
-        "handledAPIEndpointRequests": null
-    },
-    "handledMinute": {
-        "handled": 26,
-        "handledLog": 0,
-        "handledClient": 26,
-        "handledDiscord": 0,
-        "handledCommands": 0,
-        "handledClientCommands": 0,
-        "handledDiscordCommands": 0,
-        "handledWebsiteRequests": 6,
-        "handledAPIRequests": 2,
-        "handledWebsiteEndpointRequests": null,
-        "handledAPIEndpointRequests": null
+    "4": {
+        "names": [
+            "",
+            "Requests/sec",
+            "Requests/min",
+            "Handles"
+        ],
+        "keypaths": [
+            "Website",
+            ["handledSecond", "handledWebsiteRequests"],
+            ["handledMinute", "handledWebsiteRequests"],
+            ["handled", "handledWebsiteRequests"],
+            "\n",
+            "API",
+            ["handledSecond", "handledAPIRequests"],
+            ["handledMinute", "handledAPIRequests"],
+            ["handled", "handledAPIRequests"]
+        ]
     }
 }
