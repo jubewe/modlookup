@@ -1,5 +1,5 @@
 {
-    "prefix": "mlb!",
+    "prefix": "ml!",
     "debug": {
         "filechange": true
     },
@@ -37,7 +37,7 @@
     },
     "connect": {
         "express": true,
-        "discord": false,
+        "discord": true,
         "twitch": true,
         "twitch_log": true
     },

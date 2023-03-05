@@ -1,6 +1,6 @@
 # Custom
-# data/
-# data_old/
+data/
+data_old/
 logs/
 .tmp.*/
 ./config.json

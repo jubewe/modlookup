@@ -3,7 +3,7 @@ const api_url = (url.split(".")[0].split("-dest")[0] + "-api" + (url.split(".")[
 const ws_url = (url.split(".")[0].split("-dest")[0] + "-ws" + (url.split(".")[0].includes("dest") ? "-dest" : "") + "." + url.split(".").slice(1).join("."));
 function apiurl(u) { return api_url + (!u.startsWith("/") ? "/" : "") + (u) };
 function siteurl(u) { return url + (!u.startsWith("/") ? "/" : "") + (u) };
-function redirect(url) { document.location.replace(url); };
+function redirect(url) { window.open(url, "_self") };
 const currentendpoint = document.URL.replace(/http(s)*:\/\/(mod|vip)lookup(-dest)*\.jubewe\.de/g, "");
 const currentendpointpath = currentendpoint.split("/").slice(0, 3).join("/").split(/#|\?/)[0];
 const currentendpointparts = currentendpoint.split("/").slice(1);

@@ -1,4 +1,3 @@
-const { rateLimit } = require("express-rate-limit");
 const j = require("../variables/j");
 const c = require("../config.json");
 const _log = require("../functions/_log");
@@ -6,17 +5,9 @@ const regex = require("oberknecht-api/lib/var/regex");
 const logreq = require("./functions/logreq");
 const _rf = require("../functions/_rf");
 const redirecthtml = require("./functions/redirecthtml");
-const limiter = rateLimit({
-    windowMs: 5 * 60 * 1000,
-    standardHeaders: true,
-    legacyHeaders: true,
-    max: 100,
-    skip: (req, res) => req.permission?.num >= j.config.perm.bothigh
-});
 
 module.exports = async () => {
     let files = require("../variables/files");
-    j.express.use(limiter);
     j.express.use((req, res, next) => {
         res.sendWC = async (stuff, status) => {
             if ((status ?? undefined) || stuff.error) return res.json({ "status": status ?? 400, "error": stuff.error.message ?? stuff.error ?? stuff });
@@ -67,6 +58,7 @@ module.exports = async () => {
     j.express.get("/modlookup/user/:userid", async (req, res) => {
         let userid = req.params.userid;
 
+        return res.send(_rf("./express/endpoints/html/modlookup/user.html"));
         if (!regex.numregex().test(userid)) {
             await j.client.API.getUsers(userid)
                 .then(u => {
@@ -86,6 +78,7 @@ module.exports = async () => {
     j.express.get("/modlookup/channel/:channelid", async (req, res) => {
         let channelid = req.params.channelid;
 
+        return res.send(_rf("./express/endpoints/html/modlookup/channel.html"));
         if (!regex.numregex().test(channelid)) {
             await j.client.API.getUsers(channelid)
                 .then(u => {
@@ -116,6 +109,7 @@ module.exports = async () => {
     j.express.get("/viplookup/user/:userid", async (req, res) => {
         let userid = req.params.userid;
 
+        return res.send(_rf("./express/endpoints/html/viplookup/user.html"));
         if (!regex.numregex().test(userid)) {
             await j.client.API.getUsers(userid)
                 .then(u => {
@@ -134,6 +128,7 @@ module.exports = async () => {
     j.express.get("/viplookup/channel/:channelid", async (req, res) => {
         let channelid = req.params.channelid;
 
+        return res.send(_rf("./express/endpoints/html/viplookup/channel.html"));
         if (!regex.numregex().test(channelid)) {
             await j.client.API.getUsers(channelid)
                 .then(u => {

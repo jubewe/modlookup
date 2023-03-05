@@ -4,10 +4,10 @@ const paths = require("./variables/paths");
 
 // _wf(paths.suggestedchannels, { "channels": {}, "users": {} });
 
-files.clientChannels.permanentlogchannels = [];
-_wf(paths.clientChannels, files.clientChannels);
 
 
+// files.clientChannels.permanentlogchannels = [];
+// _wf(paths.clientChannels, files.clientChannels);
 
 // files.lel.handled = files.lel.handledMessages;
 // files.lel.handledLog = files.lel.handledMessages;

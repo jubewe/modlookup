@@ -12,11 +12,6 @@ async function getApiAdmin() {
     let logs = {
         "all": {}
     };
-
-    // Object.keys(_logs).forEach(a => {
-    //     logs[a] = {};
-    //     Object.keys(_logs[a]).slice((Object.keys(_logs[a]).length - 50)).forEach(b => logs[a][b] = _logs[a][b]);
-    // });
     
     Object.keys(_logs.all).slice((Object.keys(_logs.all).length - 50)).forEach(a => {
         logs.all[a] = _logs.all[a];

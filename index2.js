@@ -41,13 +41,30 @@ const j = require("./variables/j");
 // Object.keys(requestusers.channels).forEach(channel => { requestusers.channels[channel].forEach(user => { if (!filteredrequestusers.channels.includes(user)) { filteredrequestusers.channels.push(user) } }) });
 
 
-let modinfo = _rf("./data_old/modinfo.json", true);
-let vipinfo = _rf("./data_old/vipinfo.json", true);
+// let modinfo = _rf("./data_old/modinfo.json", true);
+// let vipinfo = _rf("./data_old/vipinfo.json", true);
 
-console.log(j.modinfosplitter.create(modinfo) ? "Successfully splitted json Pag heCrazy" : "sadE ?!");
-console.log(j.vipinfosplitter.create(vipinfo) ? "Successfully splitted json Pag heCrazy" : "sadE ?!");
+let modinfo = {
+    "users": {
+        "263830208": {
+            "name": "jubewe",
+            "channels": {}
+        }
+    },
+    "channels": {
+        "263830208": {
+            "name": "jubewe",
+            "users": {}
+        }
+    }
+};
 
-return;
+let vipinfo = modinfo;
+
+// console.log(j.modinfosplitter.create(modinfo) ? "Successfully splitted json Pag heCrazy" : "sadE ?!");
+// console.log(j.vipinfosplitter.create(vipinfo) ? "Successfully splitted json Pag heCrazy" : "sadE ?!");
+
+// return;
 
 
 // console.log(j.modinfosplitter.getMainPath(["channels"]))
@@ -57,16 +74,18 @@ return;
 
 // console.log(j.modinfosplitter.getKey(["users", "263830208"]));
 (async () => {
-    console.log(await j.modinfosplitter.getKey(["channels", "21841789"], true));
-    
-    await j.modinfosplitter.addKey(["channels", "21841789"], { "name": "dest", "users": {} });
-    
-    console.log(await j.modinfosplitter.getKey(["channels", "21841789"], true));
-    
-    await j.modinfosplitter.editKey(["channels", "21841789", "users", "321"], { "name": "tesd" });
-    
-    console.log(await j.modinfosplitter.getKey(["channels", "21841789"], true));
-    
+    console.log(await j.modinfosplitter.getMainKey(["channels", "keys", "21841789"], true))
+
+    // console.log(await j.modinfosplitter.getKey(["channels", "21841789"], true));
+
+    // await j.modinfosplitter.addKey(["channels", "21841789"], { "name": "dest", "users": {} });
+
+    // console.log(await j.modinfosplitter.getKey(["channels", "21841789"], true));
+
+    // await j.modinfosplitter.editKey(["channels", "21841789", "users", "321"], { "name": "tesd" });
+
+    // console.log(await j.modinfosplitter.getKey(["channels", "21841789"], true));
+
     // console.log(await j.modinfosplitter.getKey(["users", "263830208", "channels"]));
     // await j.modinfosplitter.editKey(["users", "263830208", "channels", "187"], { "name": "PauseChamp" });
     // console.log(await j.modinfosplitter.getKey(["users", "263830208", "channels"]));

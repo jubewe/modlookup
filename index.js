@@ -59,6 +59,9 @@ if (c.connect.discord) {
     j.discordclient.on("messageCreate", require("./handlers/discord/messageCreate"));
 };
 
+if (j.modinfosplitter) { j.modinfosplitter.onError(e => { }); };
+if (j.vipinfosplitter) { j.vipinfosplitter.onError(e => { }); };
+
 setInterval(() => {
     Object.keys(j.handledCache).forEach(cache => {
         const a = Object.keys(j.handledCache[cache]).filter(b => b < (Date.now() - 60000));

@@ -34,16 +34,13 @@
   let endpoints = {
     "/modlookup/users": "Tracked users (number) (ml!users)",
     "/modlookup/channels": "Tracked channels (number) (ml!channels)",
-    "/modlookup/user/:user":
-      `Modlookup for user - Will only return the first ${firstnum} results (ml!user <user>)`,
-    "/modlookup/channel/:channel":
-      `Modlookup for channel - Will only return the first ${firstnum} results (ml!channel <channel>)`,
+    "/modlookup/user/:user": `Modlookup for user - Will only return the first ${firstnum} results (ml!user <user>)`,
+    "/modlookup/channel/:channel": `Modlookup for channel - Will only return the first ${firstnum} results (ml!channel <channel>)`,
     "": "",
     "/viplookup/users": "Tracked users (number) (ml!vipusers)",
     "/viplookup/channels": "Tracked channels (number) (ml!vipchannels)",
     "/viplookup/user/:user": `Viplookup for user - Will only return the first ${firstnum} results (ml!vipuser <user>)`,
-    "/viplookup/channel/:channel":
-      `Viplookup for channel - Will only return the first ${firstnum} results (ml!vipchannel <channel>)`,
+    "/viplookup/channel/:channel": `Viplookup for channel - Will only return the first ${firstnum} results (ml!vipchannel <channel>)`,
     "": "",
     "/suggestchannel": "Suggest Channel to be permanently logged",
     "": "",
@@ -61,10 +58,13 @@
           !new RegExp(
             `^${endpointtd1.innerText.split("/")[1]}+(-dest)*.+`
           ).test(url.host.split(".")[0])
-        )
-          addurl = url.href
-            .replace(/(mod|vip)lookup/g, endpointtd1.innerText.split("/")[1])
-            .replace(/\/$/g, "");
+        ) {
+          if (endpointtd1.innerText.split("/")[2]) {
+            addurl = url.href
+              .replace(/(mod|vip)lookup/g, endpointtd1.innerText.split("/")[1])
+              .replace(/\/$/g, "");
+          }
+        }
         window.open(
           addurl + endpointtd1.innerText.replace(/\/:(user|channel)/g, ""),
           "_blank"

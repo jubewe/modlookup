@@ -43,7 +43,7 @@ module.exports = async () => {
     j.expressapi.use(require("./use/default_headers"));
     j.expressapi.use(require("./use/req_perm"));
     
-    j.expressapi.use(limiter);
+    // j.expressapi.use(limiter);
     j.expressapi.use((req, res, next) => {
         _log(0, `${_stackname("api")[3]} ${req.method} ${req.path}`);
         next();
