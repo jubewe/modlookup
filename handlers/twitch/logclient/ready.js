@@ -1,16 +1,19 @@
 const modlookup = require("../../../functions/modlookup");
 const _log = require("../../../functions/_log");
 const _stackname = require("../../../functions/_stackname");
+const files = require("../../../variables/files");
 const j = require("../../../variables/j");
 
 module.exports = async () => {
-    _log(1, `${_stackname("logclient")} Ready`);
+    _log(1, `${_stackname("logclient")[3]} Ready`);
 
     if (j.config.trackers.mods || j.config.trackers.vips) {
-        await modlookup.join(30)
+        await modlookup.join(30, true)
             .then(a => {
                 _log(0, `${_stackname("logclient")[3]} Joined ${a.length} channels`, "42");
             });
+
+        j.logclient.joinAll(files.clientChannels.permanentlogchannels);
 
         setInterval(() => {
             _log(0, `${_stackname("logclient")[3]} Currently logging ${j.logclient.channels.length} channels`, "42")

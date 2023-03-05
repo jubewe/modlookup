@@ -5,6 +5,6 @@ module.exports = {
     name: "channels",
     /** @param {j_} response */
     exec: async (response) => {
-        response.reply(`VoHiYo Found ${j.modinfosplitter.getMainKey(["channels", "num"])} mod-channels in the database`);
+        response.reply(`VoHiYo Found ${await j.modinfosplitter?.getMainKey(["channels", "num"]) ?? 0} mod-channels in the database`);
     }
 };

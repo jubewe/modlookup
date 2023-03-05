@@ -1,19 +1,32 @@
-const _rf = require("../../functions/_rf");
 const files = require("../../variables/files");
+const validatetoken = require("../../functions/validatetoken");
 
 /**@param {import("express").Request} req @param {import("express").Response} res @param {Function} next */
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
     req.permission = {
         "num": 10,
     };
 
-    if(!req.header("authorization")) return next();
+    if (!req.headers["auth"]) return next();
 
-    let token = req.header("authorization").replace(/^Bearer\s/i, "").toLowerCase();
-
-    if(!files.express_auth.tokens[token]) return next();
-    
+    let auth = JSON.parse(req.headers["auth"]);
+    let token = auth.token;
     let perm = files.express_auth.tokens[token];
+
+    if (!perm) {
+        await validatetoken(token)
+            .then(dat => {
+                req.auth = dat;
+            })
+            .catch();
+
+        return next();
+    } else {
+        req.auth = {
+            ...perm,
+            token: token
+        };
+    };
 
     req.permission = {
         "num": parseInt(files.permissions.users[perm.user_id] ?? 10),

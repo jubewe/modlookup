@@ -12,9 +12,7 @@
     <j_progress>
       <progress id="j_progress" class="progress_load" value="0" max="100" ></progress>
     </j_progress>
-    <j_error>
-      <h id="j_error">Error</h>
-    </j_error>
+    <j_notification><div></div></j_notification>
     <j_spacer></j_spacer>
     <j_head>
       <j_icon><img class="j_icon noselect" src="/html/img/OkayChamp_modding.png" /></j_icon>
@@ -31,10 +29,11 @@
       <div id="j_ml_user">
         <h id="j_ml_user_info"><h id="j_ml_user_user"></h> is mod in <h id="j_ml_user_channels_number"></h> tracked channel</h></h>
         <div id="j_table_div">
-          <table id="j_table">
+          <table id="j_table" class="j_table">
             <thead>
               <tr>
-                <th>Channel-Names</th>
+                <th class="j_table_title">Channel-Names</th>
+                <th class="j_table_title">Channel-IDs</th>
               </tr>
             </thead>
             <!-- <tbody id="j_ml_user_channels_table_tbody"></tbody> -->

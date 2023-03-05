@@ -17,9 +17,7 @@
         max="100"
       ></progress>
     </j_progress>
-    <j_error>
-      <h id="j_error">Error</h>
-    </j_error>
+    <j_notification><div></div></j_notification>
     <j_spacer></j_spacer>
     <j_head>
       <j_icon
@@ -38,15 +36,13 @@
       </button>
       <j_spacer_smol_smol></j_spacer_smol_smol>
       <div id="j_ml_channel">
-        <h id="j_ml_channel_info"
-          ><h id="j_ml_channel_channel"></h> has
-          <h id="j_ml_channel_users_number"></h> tracked mod</h
-        >
+        <h id="j_ml_channel_info"><h id="j_ml_channel_channel"></h> has <h id="j_ml_channel_users_number"></h> tracked mod</h>
         <div id="j_table_div">
-          <table id="j_table">
+          <table id="j_table" class="j_table">
             <thead>
-              <tr>
+              <tr class="j_table_title">
                 <th>Moderator-Names</th>
+                <th>Moderator-IDs</th>
               </tr>
             </thead>
           </table>

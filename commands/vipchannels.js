@@ -5,6 +5,6 @@ module.exports = {
     name: "vipchannels",
     /** @param {j_} response */
     exec: async (response) => {
-        response.reply(`VoHiYo Found ${j.vipinfosplitter.getMainKey(["channels", "num"])} (tracked) vip-channels in the database`);
+        response.reply(`VoHiYo Found ${await j.vipinfosplitter?.getMainKey(["channels", "num"]) ?? 0} (tracked) vip-channels in the database`);
     }
 };

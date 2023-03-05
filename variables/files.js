@@ -2,12 +2,11 @@ const _rf = require("../functions/_rf");
 const paths = require("./paths");
 
 let files = {
-    // modinfo: _rf(paths.modinfo, true),
-    // vipinfo: _rf(paths.vipinfo, true),
     lel: _rf(paths.lel, true),
     clientChannels: _rf(paths.clientChannels, true),
     permissions: _rf(paths.permissions, true),
-    express_auth: _rf(paths.express_auth, true)
+    express_auth: _rf(paths.express_auth, true),
+    suggestedchannels: _rf(paths.suggestedchannels, true)
 };
 
 module.exports = files;

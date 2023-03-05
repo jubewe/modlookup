@@ -10,7 +10,9 @@
   </head>
   <body>
     <j_head>
-      <j_icon><img class="j_icon noselect" src="/html/img/OkayChamp_modding.png" /></j_icon>
+      <j_icon
+        ><img class="j_icon noselect" src="/html/img/OkayChamp_modding.png"
+      /></j_icon>
       <j_title>Mod-/ Viplookup</j_title>
     </j_head>
     <j_body>
@@ -28,18 +30,24 @@
   </body>
 </html>
 <script>
+  const firstnum = 300;
   let endpoints = {
     "/modlookup/users": "Tracked users (number) (ml!users)",
     "/modlookup/channels": "Tracked channels (number) (ml!channels)",
-    "/modlookup/user/:user": "Modlookup for user (ml!user <user>)",
+    "/modlookup/user/:user":
+      `Modlookup for user - Will only return the first ${firstnum} results (ml!user <user>)`,
     "/modlookup/channel/:channel":
-      "Modlookup for channel (ml!channel <channel>)",
+      `Modlookup for channel - Will only return the first ${firstnum} results (ml!channel <channel>)`,
     "": "",
     "/viplookup/users": "Tracked users (number) (ml!vipusers)",
     "/viplookup/channels": "Tracked channels (number) (ml!vipchannels)",
-    "/viplookup/user/:user": "Viplookup for user (ml!vipuser <user>)",
+    "/viplookup/user/:user": `Viplookup for user - Will only return the first ${firstnum} results (ml!vipuser <user>)`,
     "/viplookup/channel/:channel":
-      "Viplookup for channel (ml!vipchannel <channel>)",
+      `Viplookup for channel - Will only return the first ${firstnum} results (ml!vipchannel <channel>)`,
+    "": "",
+    "/suggestchannel": "Suggest Channel to be permanently logged",
+    "": "",
+    "/admin": "Admin area",
   };
 
   Object.keys(endpoints).forEach((endpoint) => {

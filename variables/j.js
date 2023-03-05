@@ -8,7 +8,6 @@ const config = require("../config.json");
 const express = require("express");
 const _mainpath = require("../functions/_mainpath");
 const _cleannumber = require("../functions/_cleannumber");
-const { WebSocket, WebSocketServer } = require("ws");
 
 class j {
     static client = new oberknechtClient({
@@ -59,24 +58,15 @@ class j {
     
     static development_start = new Date("2023-02-17T00:00:00.000Z");
 
-    static modinfosplitter = new jsonsplitter({ startpath: "./data/modinfo", debug: 3 });
-    static vipinfosplitter = new jsonsplitter({ startpath: "./data/vipinfo", debug: 3 });
+    static modinfosplitter = new jsonsplitter({ startpath: "./data/modinfo", debug: 2 });
+    static vipinfosplitter = new jsonsplitter({ startpath: "./data/vipinfo", debug: 2 });
 
     static modules = class {
         static oberknechtClient = oberknechtClient;
         static oberknechtUtils = oberknechtUtils;
     };
 
-    static ws = class {
-        static server = WebSocketServer;
-        // static server = new WebSocketServer()
-    };
+    static joinedChannels = [];
 };
-
-if (config.connect.ws) {
-    j.ws.server = new WebSocketServer({
-        port: config.ws.port
-    });
-}
 
 module.exports = j;

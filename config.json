@@ -32,16 +32,14 @@
             "port": 2006
         }
     },
-    "ws": {
-        "port": 2007,
-        "heartbeat_interval": 300000,
-        "pings_before_close": 2
+    "api": {
+        "max_num": 300
     },
     "connect": {
         "express": true,
         "discord": false,
         "twitch": true,
-        "twitch_log": false
+        "twitch_log": true
     },
     "default": {
         "color": "Aqua",

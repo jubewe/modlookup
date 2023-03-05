@@ -9,11 +9,17 @@ async function getApiAdmin() {
     let cpuUsage = await new Promise((resolve) => { osUtils.cpuUsage(resolve) });
 
     let _logs = global.logs;
-    let logs = {};
+    let logs = {
+        "all": {}
+    };
 
-    Object.keys(_logs).forEach(a => {
-        logs[a] = {};
-        Object.keys(_logs[a]).slice((Object.keys(_logs[a]).length - 50)).forEach(b => logs[a][b] = _logs[a][b]);
+    // Object.keys(_logs).forEach(a => {
+    //     logs[a] = {};
+    //     Object.keys(_logs[a]).slice((Object.keys(_logs[a]).length - 50)).forEach(b => logs[a][b] = _logs[a][b]);
+    // });
+    
+    Object.keys(_logs.all).slice((Object.keys(_logs.all).length - 50)).forEach(a => {
+        logs.all[a] = _logs.all[a];
     });
 
     let r = {
@@ -21,12 +27,12 @@ async function getApiAdmin() {
         "channels": (j.client?.channels?.length ?? null),
         "discordservers": (j.discordclient.guilds.cache.size ?? null),
         "modlookup": {
-            "channels": j.modinfosplitter.getMainKey(["channels", "num"]),
-            "users": j.modinfosplitter.getMainKey(["users", "num"])
+            "channels": await j.modinfosplitter.getMainKey(["channels", "num"]),
+            "users": await j.modinfosplitter.getMainKey(["users", "num"])
         },
         "viplookup": {
-            "channels": j.vipinfosplitter.getMainKey(["channels", "num"]),
-            "users": j.vipinfosplitter.getMainKey(["users", "num"])
+            "channels": await j.vipinfosplitter.getMainKey(["channels", "num"]),
+            "users": await j.vipinfosplitter.getMainKey(["users", "num"])
         },
         "memory": {
             "os": {
@@ -48,7 +54,7 @@ async function getApiAdmin() {
             "usedpercent": (cpuUsage * 100)
         },
         "handled": getHandles(0),
-        "handledSecond": getHandles(1000),
+        "handledSecond": getHandles(1001),
         "handledMinute": getHandles(60 * 1000),
         "uptime": {
             "raw": {

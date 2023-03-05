@@ -6,10 +6,10 @@
 // const _wf = require("./functions/_wf");
 // const env = require("dotenv").config().parsed;
 
+const _rf = require("./functions/_rf");
 const files = require("./variables/files");
 const j = require("./variables/j");
 
-// let modinfo = _rf(paths.modinfo, true);
 // let modinfostring = JSON.stringify(modinfo);
 // let requestusers = {
 //     "users": {},
@@ -40,60 +40,39 @@ const j = require("./variables/j");
 // Object.keys(requestusers.users).forEach(user => { requestusers.users[user].forEach(channel => { if (!filteredrequestusers.users.includes(channel)) { filteredrequestusers.users.push(channel) } }) });
 // Object.keys(requestusers.channels).forEach(channel => { requestusers.channels[channel].forEach(user => { if (!filteredrequestusers.channels.includes(user)) { filteredrequestusers.channels.push(user) } }) });
 
-// (async () => {
-//     await API.verify();
 
-//     let chunked = {
-//         // "users": _chunkArray(filteredrequestusers.users, 100),
-//         // "channels": _chunkArray(filteredrequestusers.channels, 100)
-//         "all": _chunkArray([...filteredrequestusers.channels, ...filteredrequestusers.users], 100)
-//     };
+let modinfo = _rf("./data_old/modinfo.json", true);
+let vipinfo = _rf("./data_old/vipinfo.json", true);
 
-//     let replaced = {};
-//     let errored = {};
+console.log(j.modinfosplitter.create(modinfo) ? "Successfully splitted json Pag heCrazy" : "sadE ?!");
+console.log(j.vipinfosplitter.create(vipinfo) ? "Successfully splitted json Pag heCrazy" : "sadE ?!");
 
-//     Object.keys(chunked).forEach(async (chunkedkey) => {
-//         console.log(`Key: ${chunkedkey}`);
-//         let matches = 0;
-//         await Promise.all(chunked[chunkedkey].map(async (chunk, i) => {
-//             console.log(`Chunk: ${i}`);
-//             return await API.getUsers([], chunk);
-//         }))
-//             .then(chunkdata => {
-//                 let data = [];
-//                 chunkdata.forEach(a => data.push(...a.data));
-//                 console.log(`${chunkdata.length} returned data: ${data.length}`);
-//                 data.forEach(u => {
-//                     matches += modinfostring.match(new RegExp(`"name":"${u.id}"`, "gi")).length ?? 0;
-//                     modinfostring = modinfostring.replace(new RegExp(`"name":"${u.id}"`, "gi"), `"name":"${u.login}"`);
-//                     // if (!replaced[chunkedkey]) replaced[chunkedkey] = [];
+return;
 
-//                     // Object.keys(requestusers[chunkedkey]).forEach(asd => {
-//                     //     if (requestusers[chunkedkey][asd][(chunkedkey == "users" ? "channels" : "users")][u.id]) {
-//                     //         modinfo[chunkedkey][asd][(chunkedkey == "users" ? "channels" : "users")][u.id].name = u.login;
-//                     //         requestusers[chunkedkey][asd][(chunkedkey == "users" ? "channels" : "users")][u.id].name = u.login;
-//                     //         replaced[chunkedkey].push(u.id);
-//                     //     };
-//                     // });
-//                 });
 
-//             })
-//             .catch(e => {
-//                 if (!errored[chunkedkey]) errored[chunkedkey] = [];
-
-//                 errored[chunkedkey].push(e);
-//             });
-
-//         console.log(`Successfully replaced ${replaced[chunkedkey]?.length ?? 0} ${chunkedkey} (matched: ${matches})`, `> Errored on ${errored[chunkedkey]?.length ?? 0}`);
-//         _wf(paths.modinfo, modinfostring);
-//     });
-// })();
-
-// console.log(j.modinfosplitter.create(files.modinfo) ? "Successfully splitted json Pag heCrazy" : "sadE ?!");
-// console.log(j.vipinfosplitter.create(files.vipinfo) ? "Successfully splitted json Pag heCrazy" : "sadE ?!");
+// console.log(j.modinfosplitter.getMainPath(["channels"]))
+// console.log(j.modinfosplitter.getMainKey(["channels", "num"]));
 
 // console.log(j.modinfosplitter.editKey(["users", "263830208", "channels", "187"], {"name":"PauseChamp"}));
+
 // console.log(j.modinfosplitter.getKey(["users", "263830208"]));
+(async () => {
+    console.log(await j.modinfosplitter.getKey(["channels", "21841789"], true));
+    
+    await j.modinfosplitter.addKey(["channels", "21841789"], { "name": "dest", "users": {} });
+    
+    console.log(await j.modinfosplitter.getKey(["channels", "21841789"], true));
+    
+    await j.modinfosplitter.editKey(["channels", "21841789", "users", "321"], { "name": "tesd" });
+    
+    console.log(await j.modinfosplitter.getKey(["channels", "21841789"], true));
+    
+    // console.log(await j.modinfosplitter.getKey(["users", "263830208", "channels"]));
+    // await j.modinfosplitter.editKey(["users", "263830208", "channels", "187"], { "name": "PauseChamp" });
+    // console.log(await j.modinfosplitter.getKey(["users", "263830208", "channels"]));
+})();
+// console.log(j.modinfosplitter.getKey(["users", "263830208"]));
+
 // console.log(j.modinfosplitter.editKey(["users", "263830208", "channels", "123"], {"name": "asd"}));
 // console.log(j.modinfosplitter.getKeyFromObject(j.modinfosplitter.getKey(["users", "263830208"]), ["channels"]));
 // console.log(j.modinfosplitter.addKeysToObject(j.modinfosplitter.getKey(["users", "263830208"]), ["channels", "123"], {"name": "descht"}));
@@ -103,4 +82,4 @@ const j = require("./variables/j");
 // console.log(j.modinfosplitter.getKey(["users", "263830208"]));
 // console.log(j.modinfosplitter.getMainKey(["users", "1234", "channels"]));
 
-console.log(j.vipinfosplitter.getMainKey(["users", "num"]));
+// console.log(j.vipinfosplitter.getMainKey(["users", "num"]));

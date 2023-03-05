@@ -21,13 +21,13 @@ module.exports = async () => {
 
     let activitynum = 0;
 
-    function activity() {
+    async function activity() {
         let acts = [
-            `${_cleannumber(j.logclient.channels.length)} Channels`,
-            `${_cleannumber(j.modinfosplitter.getMainKey(["channels", "num"]))} Modchannels`,
-            `${_cleannumber(j.modinfosplitter.getMainKey(["users", "num"]))} Mods`,
-            `${_cleannumber(j.vipinfosplitter.getMainKey(["channels", "num"]))} Vipchannels`,
-            `${_cleannumber(j.vipinfosplitter.getMainKey(["users", "num"]))} Vips`
+            `${_cleannumber(j.logclient?.channels?.length) ?? 0} Channels`,
+            `${_cleannumber(await j.modinfosplitter?.getMainKey(["channels", "num"])) ?? 0} Modchannels`,
+            `${_cleannumber(await j.modinfosplitter?.getMainKey(["users", "num"])) ?? 0} Mods`,
+            `${_cleannumber(await j.vipinfosplitter?.getMainKey(["channels", "num"])) ?? 0} Vipchannels`,
+            `${_cleannumber(await j.vipinfosplitter?.getMainKey(["users", "num"])) ?? 0} Vips`
         ];
 
         if (activitynum >= acts.length) activitynum = 0;
@@ -39,8 +39,8 @@ module.exports = async () => {
         };
     };
 
-    function changeActivity() {
-        let act = activity();
+    async function changeActivity() {
+        let act = await activity();
         j.discordclient.user.setActivity(act);
     };
 };

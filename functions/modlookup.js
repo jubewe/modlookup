@@ -1,21 +1,31 @@
+const files = require("../variables/files");
 const j = require("../variables/j");
 const _log = require("./_log");
 const _returnerr = require("./_returnerr");
 let pagination;
-let joinedChannels = [];
+let joinedChannels = j.joinedChannels;
 let block_channels = 0;
 const max_block_channels = 3000;
 
 class modlookup {
-    static channel = (channelID) => {
-        return new Promise((resolve, reject) => {
+    static channel = (channelID, maxnum) => {
+        return new Promise(async (resolve, reject) => {
             try {
-                let ch = j.modinfosplitter.getKey(["channels", channelID]);
+                let ch = await j.modinfosplitter.getKey(["channels", channelID]);
                 if (!ch) return reject({ error: Error("channel not in logs") });
+                let r = { ...ch };
+
+                if (maxnum) {
+                    r.users = {};
+                    Object.keys(ch.users).slice(0, j.config.api.max_num).forEach(a => {
+                        r.users[a] = ch.users[a];
+                    });
+                };
 
                 return resolve({
                     id: channelID,
-                    ...ch
+                    num: Object.keys(ch.users).length,
+                    ...r
                 });
             } catch (e) {
                 return reject({ error: new Error(_returnerr(e)) });
@@ -23,15 +33,24 @@ class modlookup {
         });
     };
 
-    static user = (userID) => {
-        return new Promise((resolve, reject) => {
+    static user = (userID, maxnum) => {
+        return new Promise(async (resolve, reject) => {
             try {
-                let us = j.modinfosplitter.getKey(["users", userID]);
+                let us = await j.modinfosplitter.getKey(["users", userID]);
                 if (!us) return reject({ error: Error("user not in logs") });
+                let r = { ...us };
+
+                if (maxnum) {
+                    r.channels = {};
+                    Object.keys(us.channels).slice(0, j.config.api.max_num).forEach(a => {
+                        r.channels[a] = us.channels[a];
+                    });
+                };
 
                 return resolve({
                     id: userID,
-                    ...us
+                    num: Object.keys(us.channels).length,
+                    ...r
                 });
             } catch (e) {
                 return reject({ error: new Error(_returnerr(e)) });
@@ -67,7 +86,7 @@ class modlookup {
 
     /** @param {number} num in hundrets (*100) */
     static part = async (num) => {
-        let partChannels = joinedChannels.splice(0, (num * 100));
+        let partChannels = joinedChannels.filter(a => !files.clientChannels.permanentlogchannels.includes(a)).splice(0, (num * 100));
         block_channels -= partChannels.length;
         _log(0, `>> Parted ${partChannels.length} channels (Now in ${joinedChannels.length} channels, Bot joined: ${j.logclient.channels.length})`, "42");
         return await j.client.partAll(partChannels);

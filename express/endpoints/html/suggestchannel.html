@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/html/img/OkayChamp_modding.ico" />
+    <link rel="stylesheet" href="/html/styles.css" />
+    <title>Ju / Suggestchannel</title>
+  </head>
+  <body>
+    <button id="j_login" onclick="login()">Login</button>
+    <j_progress>
+      <progress
+        id="j_progress"
+        class="progress_load"
+        value="0"
+        max="100"
+      ></progress>
+    </j_progress>
+    <j_notification><div></div></j_notification>
+    <j_spacer_smol_smol></j_spacer_smol_smol>
+    <j_head>
+      <j_icon
+        ><img class="j_icon noselect" src="/html/img/OkayChamp_modding.png"
+      /></j_icon>
+      <j_title>Suggestchannel</j_title>
+      <j_spacer></j_spacer>
+    </j_head>
+    <j_body>
+      <div id="_login">
+        <j_h
+          >Please <button class="j_login" onclick="login()">Login</button> to
+          use this page</j_h
+        >
+      </div>
+      <div id="_suggestchannel_admin_switch"></div>
+      <div id="_suggestchannel">
+        <j_title_2>Suggest channel:</j_title_2>
+        <j_spacer_smol_smol></j_spacer_smol_smol>
+        <input id="_suggestchannel_input" placeholder="Channelname" />
+        <button id="_suggestchannel_submit" class="button_submit" onclick="channelsuggestion.submit()">Submit Suggestion</button>
+        <j_spacer></j_spacer>
+        <h id="_suggestchannel_h"></h>
+        <div id="_suggestchannel_div">
+          <j_title_2>Your Suggested channels:</j_title_2>
+          <j_spacer_smol_smol></j_spacer_smol_smol>
+          <table
+            class="j_table _suggestchannel_table"
+            id="_suggestchannel_table"
+          >
+            <tr>
+              <th class="j_table_th">Channel Name</th>
+              <th class="j_table_th">Channel ID</th>
+              <th class="j_table_th">Status</th>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <h id="_suggestchannel_admin_h"></h>
+      <div id="_suggestchannel_admin">
+        <j_title_2>Pending Suggestions:</j_title_2>
+        <j_spacer_smol_smol></j_spacer_smol_smol>
+        <table
+          class="j_table _suggestchannel_table"
+          id="_suggestchannel_admin_table"
+        >
+          <thead>
+            <tr>
+              <th class="j_table_th j_table-title">Channel Name</th>
+              <th class="j_table_th j_table-title">Channel ID</th>
+              <th class="j_table_th j_table-title">Suggested by</th>
+              <th class="j_table_th j_table-title">Status</th>
+              <th></th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </j_body>
+  </body>
+</html>
+<script src="/html/script.js"></script>

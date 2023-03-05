@@ -1,17 +1,26 @@
 const privmsgMessage = require("oberknecht-client/lib/parser/PRIVMSG.Message");
 const j = require("../../../variables/j");
+const fs = require("fs");
+const _mainpath = require("../../../functions/_mainpath");
 
 /** @param {privmsgMessage} response */
 module.exports = async (response) => {
     if (j.config.trackers.vips) {
-        if (!response.userstate.badges["vip"] && j.vipinfosplitter.getKey(["users", response.userstate.id, "channels", response.channelID])) j.vipinfosplitter.deleteKey(["users", response.userstate.id, "channels", response.channelID]);
+        try {
+            if (!response.userstate.badges["vip"]) {
+                if(await j.vipinfosplitter.getKey(["users", response.userstate.id, "channels", response.channelID], true)) await j.vipinfosplitter.deleteKey(["users", response.userstate.id, "channels", response.channelID], true);
+                if(await j.vipinfosplitter.getKey(["channels", response.channelID, "users", response.userstate.id], true)) await j.vipinfosplitter.deleteKey(["channels", response.channelID, "users", response.userstate.id], true);
+                return;
+            };
 
-        if (!response.userstate.badges["vip"]) return;
+            if (!await j.vipinfosplitter.getMainKey(["channels", "keys", response.channel.id], true)) await j.vipinfosplitter.addKey(["channels", response.channel.id], { "name": response.channel.name, "users": {} });
+            if (!await j.vipinfosplitter.getMainKey(["users", "keys", response.userstate.id], true)) await j.vipinfosplitter.addKey(["users", response.userstate.id], { "name": response.userstate.username, "channels": {} });
 
-        if (!j.vipinfosplitter.getKey(["users", response.userstate.id])) j.vipinfosplitter.addKey(["users", response.userstate.id], { "name": response.userstate.username, "channels": {} });
-        if (!j.vipinfosplitter.getKey(["channels", response.channel.id])) j.vipinfosplitter.addKey(["channels", response.channel.id], { "name": response.channel.name, "users": {} });
-
-        j.vipinfosplitter.editKey(["users", response.userstate.id, "channels", response.channel.id], { "name": response.channel.name });
-        j.vipinfosplitter.editKey(["channels", response.channel.id, "users", response.userstate.id], { "name": response.userstate.username });
+            await j.vipinfosplitter.editKey(["channels", response.channel.id, "users", response.userstate.id], { "name": response.userstate.username });
+            await j.vipinfosplitter.editKey(["users", response.userstate.id, "channels", response.channel.id], { "name": response.channel.name });
+        } catch (e) {
+            console.error("vip", e);
+            fs.appendFileSync(_mainpath("./errors.txt"), `\n${JSON.stringify(e.message)} ${JSON.stringify(e.stack)}`);
+        }
     };
 };

@@ -1,4 +1,4 @@
-const rateLimit = require("express-rate-limit");
+const { rateLimit } = require("express-rate-limit");
 const j = require("../variables/j");
 const c = require("../config.json");
 const _log = require("../functions/_log");
@@ -8,10 +8,10 @@ const _rf = require("../functions/_rf");
 const redirecthtml = require("./functions/redirecthtml");
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000,
-    max: 100,
     standardHeaders: true,
     legacyHeaders: true,
-    skip: (req, res) => req.path.startsWith("/html")
+    max: 100,
+    skip: (req, res) => req.permission?.num >= j.config.perm.bothigh
 });
 
 module.exports = async () => {
@@ -28,8 +28,8 @@ module.exports = async () => {
         if (!files.lel.handledWebsiteRequests) files.lel.handledWebsiteRequests = 0;
         files.lel.handledWebsiteRequests++;
 
-        if(!files.lel.handledWebsiteEndpointRequests) files.lel.handledWebsiteEndpointRequests = {};
-        if(!files.lel.handledWebsiteEndpointRequests[req.path]) files.lel.handledWebsiteEndpointRequests[req.path] = 0;
+        if (!files.lel.handledWebsiteEndpointRequests) files.lel.handledWebsiteEndpointRequests = {};
+        if (!files.lel.handledWebsiteEndpointRequests[req.path]) files.lel.handledWebsiteEndpointRequests[req.path] = 0;
         files.lel.handledWebsiteEndpointRequests[req.path]++;
 
         next();
@@ -37,7 +37,7 @@ module.exports = async () => {
 
     j.express.use(require("./use/default_headers"));
     j.express.use(require("./use/req_perm"));
-    
+
     j.express.use("/html", j.expresshtml);
 
     j.express.listen(c.express.port, () => {
@@ -145,8 +145,12 @@ module.exports = async () => {
         }
     });
 
-    j.express.get("/validate", async (req, res) => {
-        res.send(_rf("./express/endpoints/html/validate.html"));
+    j.express.get("/suggestchannel", async (req, res) => {
+        res.send(_rf("./express/endpoints/html/suggestchannel.html"));
+    });
+
+    j.express.get("/validatetoken", async (req, res) => {
+        res.send(_rf("./express/endpoints/html/validatetoken.html"));
     });
 
     j.express.get("/admin", async (req, res) => {
