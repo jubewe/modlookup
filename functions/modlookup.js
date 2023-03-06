@@ -11,19 +11,28 @@ class modlookup {
     static channel = (channelID, maxnum) => {
         return new Promise(async (resolve, reject) => {
             try {
-                let ch = await j.modinfosplitter.getKey(["channels", channelID]);
+                let ch = await j.modinfosplitter.getKey(["channels", channelID], true);
                 if (!ch) return reject({ error: Error("channel not in logs") });
                 let r = { ...ch };
 
                 if (maxnum) {
                     r.users = {};
-                    Object.keys(ch.users).slice(0, j.config.api.max_num).forEach(a => {
-                        r.users[a] = ch.users[a];
-                    });
+
+                    await Promise.all(Object.keys(us.channels).slice(0, j.config.api.max_num).map(async a => {
+                        return await j.client?.getusername(a)
+                            .then(b => {
+                                r.users[a] = {
+                                    id: a,
+                                    name: b,
+                                    ...ch.users[a]
+                                };
+                            });
+                    }));
                 };
 
                 return resolve({
                     id: channelID,
+                    name: await j.client?.getusername(channelID),
                     num: Object.keys(ch.users).length,
                     ...r
                 });
@@ -36,19 +45,28 @@ class modlookup {
     static user = (userID, maxnum) => {
         return new Promise(async (resolve, reject) => {
             try {
-                let us = await j.modinfosplitter.getKey(["users", userID]);
+                let us = await j.modinfosplitter.getKey(["users", userID], true);
                 if (!us) return reject({ error: Error("user not in logs") });
                 let r = { ...us };
-
+                
                 if (maxnum) {
                     r.channels = {};
-                    Object.keys(us.channels).slice(0, j.config.api.max_num).forEach(a => {
-                        r.channels[a] = us.channels[a];
-                    });
+                    
+                    await Promise.all(Object.keys(us.channels).slice(0, j.config.api.max_num).map(async a => {
+                        return await j.client?.getusername(a)
+                            .then(b => {
+                                r.channels[a] = {
+                                    id: a,
+                                    name: b,
+                                    ...us.channels[a]
+                                };
+                            });
+                    }));
                 };
 
                 return resolve({
                     id: userID,
+                    name: await j.client?.getusername(userID),
                     num: Object.keys(us.channels).length,
                     ...r
                 });

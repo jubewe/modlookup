@@ -14,6 +14,9 @@ class j {
         token: env.T_TOKEN,
         username: env.T_USERNAME,
         prefix: config.prefix,
+        saveIDs: true,
+        debug: 3,
+        apiStartPath: "../../data/twitch/userids",
         executeOnOutgoingPrivmsg: (m) => {
             if (m.startsWith("Error") && !m.includes("PoroSad")) m = m + " PoroSad";
             let dmatch = m.match(/(?<!\S)\d{3,}(?!\S)/g);

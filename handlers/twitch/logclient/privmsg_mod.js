@@ -13,11 +13,14 @@ module.exports = async (response) => {
                 return;
             };
 
-            if (!await j.modinfosplitter.getMainKey(["channels", "keys", response.channel.id], true)) await j.modinfosplitter.addKey(["channels", response.channel.id], { "name": response.channel.name, "users": {} });
-            if (!await j.modinfosplitter.getMainKey(["users", "keys", response.userstate.id], true)) await j.modinfosplitter.addKey(["users", response.userstate.id], { "name": response.userstate.username, "channels": {} });
+            if (!await j.modinfosplitter.getMainKey(["channels", "keys", response.channel.id], true)) await j.modinfosplitter.addKey(["channels", response.channel.id], { "users": {} });
+            if (!await j.modinfosplitter.getMainKey(["users", "keys", response.userstate.id], true)) await j.modinfosplitter.addKey(["users", response.userstate.id], { "channels": {} });
 
-            await j.modinfosplitter.editKey(["channels", response.channel.id, "users", response.userstate.id], { "name": response.userstate.username });
-            await j.modinfosplitter.editKey(["users", response.userstate.id, "channels", response.channel.id], { "name": response.channel.name });
+            if (!await j.client?.API?.userssplitter?.getKey(["ids", response.userstate.id], true)) await j.client?.API?.userssplitter?.addKey(["ids", response.userstate.id], response.userstate.username);
+            if (!await j.client?.API?.userssplitter?.getKey(["logins", response.userstate.username], true)) await j.client?.API?.userssplitter?.addKey(["logins", response.userstate.username], response.userstate.id);
+
+            await j.modinfosplitter.editKey(["channels", response.channel.id, "users", response.userstate.id], {});
+            await j.modinfosplitter.editKey(["users", response.userstate.id, "channels", response.channel.id], {});
         } catch (e) {
             console.error("mod", e);
             fs.appendFileSync(_mainpath("./errors.txt"), `\nMODERROR ${JSON.stringify(e.name)} ${JSON.stringify(e.message)} ${JSON.stringify(e.stack)}`);

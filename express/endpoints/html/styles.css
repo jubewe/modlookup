@@ -123,7 +123,7 @@ j_icon {
 }
 
 .copied {
-  background-color: #95df25;
+  background-color: #95df25 !important;
   cursor: progress !important;
 }
 

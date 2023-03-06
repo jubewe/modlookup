@@ -63,6 +63,10 @@ async function getApiAdmin() {
             },
             "parsed": {}
         },
+        "connections": {
+            "client": j.client?.wsConnections ?? "-",
+            "logclient": j.logclient?.wsConnections ?? "-"
+        },
         "logs": logs
     };
 

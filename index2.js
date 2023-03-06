@@ -45,26 +45,16 @@ const j = require("./variables/j");
 // let vipinfo = _rf("./data_old/vipinfo.json", true);
 
 let modinfo = {
-    "users": {
-        "263830208": {
-            "name": "jubewe",
-            "channels": {}
-        }
-    },
-    "channels": {
-        "263830208": {
-            "name": "jubewe",
-            "users": {}
-        }
-    }
+    "users": {},
+    "channels": {}
 };
 
 let vipinfo = modinfo;
 
-// console.log(j.modinfosplitter.create(modinfo) ? "Successfully splitted json Pag heCrazy" : "sadE ?!");
-// console.log(j.vipinfosplitter.create(vipinfo) ? "Successfully splitted json Pag heCrazy" : "sadE ?!");
+console.log(j.modinfosplitter.create(modinfo) ? "Successfully splitted json Pag heCrazy" : "sadE ?!");
+console.log(j.vipinfosplitter.create(vipinfo) ? "Successfully splitted json Pag heCrazy" : "sadE ?!");
 
-// return;
+return;
 
 
 // console.log(j.modinfosplitter.getMainPath(["channels"]))

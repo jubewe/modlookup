@@ -247,23 +247,20 @@ function loadadmin() {
                         ["viplookup", "channels"],
                         ["viplookup", "users"],
                         "\n",
-                        "@@thClient (WS)",
-                        ["uptime", "parsed", "clientws"],
-                        "",
-                        "",
-                        "",
-                        "\n",
-                        "@@thLogclient (WS)",
-                        ["uptime", "parsed", "logclientws"],
-                        "",
-                        "",
-                        "",
-                        "\n",
                         "@@thDiscord Client",
                         ["uptime", "parsed", "discordclient"],
                         "",
+                        "\n",
                         "",
-                        ""
+                        "\n",
+                        "",
+                        "@@thWS Connections",
+                        "\n",
+                        "@@thClient",
+                        ["connections", "client"],
+                        "\n",
+                        "@@thLogclient",
+                        ["connections", "logclient"]
                     ]
                 },
                 "2": {
@@ -418,6 +415,9 @@ function loadadmin() {
 
                             if (isTH) {
                                 key_elem.classList.add("j_table-title");
+                            } else {
+                                key_elem.classList.add("cursor-copy");
+                                key_elem.onclick = () => { copy(key_elem) };
                             };
 
                             key_elem.appendChild(key_elem_val);
