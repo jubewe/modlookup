@@ -8,7 +8,7 @@ module.exports = async () => {
     _log(1, `${_stackname("logclient")[3]} Ready`);
 
     if (j.config.trackers.mods || j.config.trackers.vips) {
-        await modlookup.join(0.030, true)
+        await modlookup.join(3.0, true)
             .then(a => {
                 _log(0, `${_stackname("logclient")[3]} Joined ${a.length} channels`, "42");
             });

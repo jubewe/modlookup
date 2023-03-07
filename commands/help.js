@@ -5,6 +5,6 @@ module.exports = {
     name: "help",
     /** @param {j_} response */
     exec: async (response) => {
-        response.reply(`VoHiYo Commands and help: https://jubewe.github.io/modlookup Website: https://modlookup.jubewe.de/`);
+        response.reply(`VoHiYo Commands, Website and help: https://modlookup.jubewe.de/`);
     }
 };

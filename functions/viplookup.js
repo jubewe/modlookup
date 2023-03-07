@@ -12,7 +12,7 @@ class viplookup {
                 if (maxnum) {
                     r.users = {};
                     
-                    await Promise.all(Object.keys(us.channels).slice(0, j.config.api.max_num).map(async a => {
+                    await Promise.all(Object.keys(ch.users).slice(0, j.config.api.max_num).map(async a => {
                         return await j.client?.getusername(a)
                             .then(b => {
                                 r.users[a] = {

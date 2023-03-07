@@ -6,6 +6,7 @@ const j = require("../../variables/j");
 module.exports = async () => {
     _log(1, `${_stackname("client")[3]} Ready`);
 
+    j.client.join(j.client.options.username);
     j.client.joinAll(files.clientChannels.channels);
 
     setTimeout(() => {

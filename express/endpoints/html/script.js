@@ -1,9 +1,10 @@
-const url = new URL(document.baseURI).origin;
-const api_url = (url.split(".")[0].split("-dest")[0] + "-api" + (url.split(".")[0].includes("dest") ? "-dest" : "") + "." + url.split(".").slice(1).join("."));
-const ws_url = (url.split(".")[0].split("-dest")[0] + "-ws" + (url.split(".")[0].includes("dest") ? "-dest" : "") + "." + url.split(".").slice(1).join("."));
+const url = new URL(document.baseURI);
+const api_url = (url.origin.split(".")[0].split("-dest")[0] + "-api" + (url.origin.split(".")[0].includes("dest") ? "-dest" : "") + "." + url.origin.split(".").slice(1).join("."));
+const ws_url = (url.origin.split(".")[0].split("-dest")[0] + "-ws" + (url.origin.split(".")[0].includes("dest") ? "-dest" : "") + "." + url.origin.split(".").slice(1).join("."));
 function apiurl(u) { return api_url + (!u.startsWith("/") ? "/" : "") + (u) };
-function siteurl(u) { return url + (!u.startsWith("/") ? "/" : "") + (u) };
-function redirect(url) { window.open(url, "_self") };
+function siteurl(u) { return url.origin + (!u.startsWith("/") ? "/" : "") + (u) };
+function redirect(url_, method) { window.open(url_, (method ?? "_blank")) };
+function redirectSelf(url_) { redirect(url_, "_self") };
 const currentendpoint = document.URL.replace(/http(s)*:\/\/(mod|vip)lookup(-dest)*\.jubewe\.de/g, "");
 const currentendpointpath = currentendpoint.split("/").slice(0, 3).join("/").split(/#|\?/)[0];
 const currentendpointparts = currentendpoint.split("/").slice(1);
@@ -14,6 +15,7 @@ let interval_times = {
 };
 let requests_failed = 0;
 let interval;
+let isFirst = true;
 let page_data = {};
 let devMode = false;
 
@@ -26,19 +28,18 @@ function progress(num) {
     if (num_ === 100) progress_elem.classList.replace("progress_load", "progress_load_end");
 
     setTimeout(() => {
-        progress_elem.style.display = (num > 0 && num < 100 ? "grid" : "none");
-    }, (num > 0 && num < 100 ? 0 : 1500))
+        progress_elem.style.display = (num_ >= 0 && num_ < 100 ? "block" : "none");
+    }, (num_ >= 0 && num_ < 100 ? 0 : 1500))
     progress_elem.value = num_;
 };
 
-function notification(message, timeout) {
+function notification(message, timeout, iserror) {
     const notification_elem = document.querySelector("j_notification");
-    if (!document.querySelector("j_notification div")) notification_elem.appendChild(document.createElement("div"));
 
-    const notification_elem_text = document.querySelector("j_notification div");
+    const notification_elem_text = document.querySelector("#j_notification");
     let add_classes = [];
 
-    let iserror = (message instanceof Error || (message?.error ?? message?.error));
+    iserror = (iserror ?? (message instanceof Error || (message?.error ?? message?.error)));
 
     if (iserror) {
         message = `Error: ${(message.error?.message ?? message.error ?? message.message ?? message)}`;
@@ -56,16 +57,16 @@ function notification(message, timeout) {
     }, (timeout ?? 4000));
 };
 
-let error = notification;
+let error = (message) => { notification(message, undefined, true) };
 
-function request(url, options, callback) {
+function request(u, options, callback) {
     if (!callback) {
         callback = options;
         options = {};
     }
     progress(0);
 
-    fetch(url, options)
+    fetch(u, options)
         .then(async a => {
             progress(50);
             let r = await a.json();
@@ -109,7 +110,7 @@ function validatetoken() {
 };
 
 function login() {
-    window.open(`https://id.twitch.tv/oauth2/authorize?client_id=1pnta1kpjqm4xth9e60czubvo1j7af&redirect_uri=${url}/validatetoken&scope=&response_type=token`, "_blank");
+    window.open(`https://id.twitch.tv/oauth2/authorize?client_id=1pnta1kpjqm4xth9e60czubvo1j7af&redirect_uri=${url.origin}/validatetoken&scope=&response_type=token`, "_blank");
     new Promise((resolve) => {
         let int = setInterval(waitfortoken, 500);
         function waitfortoken() {
@@ -166,8 +167,6 @@ function _sleep(time) {
 };
 
 function loadadmin() {
-    let isFirst = (interval ?? undefined);
-
     if (!auth().parsed) {
         progress(-1);
         document.getElementById("_login").style.display = "block";
@@ -500,14 +499,16 @@ class ml {
     static user = (user) => {
         request(apiurl(`/modlookup/user/${user}`), (e, r) => {
             if (e) return error(e);
+            if (devMode) console.debug("user", r);
 
-            console.debug("user", r);
             let mluser = r.data;
             document.getElementById("j_ml_user_user").innerText = `${mluser.name} (${mluser.id})`;
-            document.getElementById("j_ml_user_channels_number").innerText = mluser.num;
+            document.getElementById("j_ml_user_channels_number").innerText = (mluser.num > 0 ? mluser.num : "none of the");
             [...document.getElementsByClassName("j_table_tr")].forEach(a => a.remove());
 
-            if (Object.keys(mluser.channels).length > 1) document.getElementById("j_ml_user_info").innerText += "s";
+            document.getElementById("j_ml_user").style.display = "grid";
+            if (Object.keys(mluser.channels).length > 1 || mluser.num == 0) document.getElementById("j_ml_user_info").innerText += "s";
+            if (mluser.num == 0) return;
 
             Object.keys(mluser.channels).sort((a, b) => { return mluser.channels[a].name - mluser.channels[b].name }).forEach(channel => {
                 let channelelemtr = document.createElement("tr");
@@ -529,21 +530,24 @@ class ml {
                 document.getElementById("j_table").appendChild(channelelemtr);
             });
 
-            document.getElementById("j_ml_user").style.display = "grid";
+            document.getElementById("j_table_div").style.display = "block";
         });
     };
 
     static channel = (channel) => {
         request(apiurl(`/modlookup/channel/${channel}`), (e, r) => {
             if (e) return error(e);
-
             if (devMode) console.debug("channel", r);
+
             let mlchannel = r.data;
             document.getElementById("j_ml_channel_channel").innerText = `${mlchannel.name} (${mlchannel.id})`;
-            document.getElementById("j_ml_channel_users_number").innerText = mlchannel.num;
+            document.getElementById("j_ml_channel_users_number").innerText = (mlchannel.num > 0 ? mlchannel.num : "no");
             [...document.getElementsByClassName("j_table_tr")].forEach(a => a.remove());
 
-            if (Object.keys(mlchannel.users).length > 1) document.getElementById("j_ml_channel_info").innerText += "s";
+            document.getElementById("j_ml_channel").style.display = "grid";
+            if (Object.keys(mlchannel.users).length > 1 || mlchannel.num == 0) document.getElementById("j_ml_channel_info").innerText += "s";
+            if (mlchannel.num == 0) return;
+
             Object.keys(mlchannel.users).forEach(user => {
                 let channelelemtr = document.createElement("tr");
                 channelelemtr.id = `ml_user_${user}`;
@@ -563,7 +567,7 @@ class ml {
                 document.getElementById("j_table").appendChild(channelelemtr);
             });
 
-            document.getElementById("j_ml_channel").style.display = "grid";
+            document.getElementById("j_table_div").style.display = "block";
         });
     };
 
@@ -601,14 +605,17 @@ class vl {
     static user = (user) => {
         request(apiurl(`/viplookup/user/${user}`), (e, r) => {
             if (e) return error(e);
+            if (devMode) console.debug("user", r);
 
-            console.debug("user", r);
             let vluser = r.data;
             document.getElementById("j_vl_user_user").innerText = `${vluser.name} (${vluser.id})`;
-            document.getElementById("j_vl_user_channels_number").innerText = vluser.num;
+            document.getElementById("j_vl_user_channels_number").innerText = (vluser.num > 0 ? vluser.num : "none of the");
             [...document.getElementsByClassName("j_table_tr")].forEach(a => a.remove());
 
-            if (Object.keys(vluser.channels).length > 1) document.getElementById("j_vl_user_info").innerText += "s";
+            document.getElementById("j_vl_user").style.display = "grid";
+            if (Object.keys(vluser.channels).length > 1 || vluser.num == 0) document.getElementById("j_vl_user_info").innerText += "s";
+            if (vluser.num == 0) return;
+
             Object.keys(vluser.channels).forEach(channel => {
                 let channelelemtr = document.createElement("tr");
                 let channelelemtdname = document.createElement("td");
@@ -629,21 +636,23 @@ class vl {
                 document.getElementById("j_table").appendChild(channelelemtr);
             });
 
-            document.getElementById("j_vl_user").style.display = "grid";
+            document.getElementById("j_table_div").style.display = "block";
         });
     };
 
     static channel = (channel) => {
         request(apiurl(`/viplookup/channel/${channel}`), (e, r) => {
             if (e) return error(e);
+            if (devMode) console.debug("channel", r);
 
-            console.debug("channel", r);
             let vlchannel = r.data;
             document.getElementById("j_vl_channel_channel").innerText = `${vlchannel.name} (${vlchannel.id})`;
-            document.getElementById("j_vl_channel_users_number").innerText = vlchannel.num;
+            document.getElementById("j_vl_channel_users_number").innerText = (vlchannel.num > 0 ? vlchannel.num : "no");
             [...document.getElementsByClassName("j_table_tr")].forEach(a => a.remove());
 
-            if (Object.keys(vlchannel.users).length > 1) document.getElementById("j_vl_channel_info").innerText += "s";
+            document.getElementById("j_vl_channel").style.display = "grid";
+            if (Object.keys(vlchannel.users).length > 1 || vlchannel.num === 0) document.getElementById("j_vl_channel_info").innerText += "s";
+            if (vlchannel.num == 0) return;
             Object.keys(vlchannel.users).forEach(user => {
                 let channelelemtr = document.createElement("tr");
                 let channelelemtdname = document.createElement("td");
@@ -664,7 +673,7 @@ class vl {
                 document.getElementById("j_table").appendChild(channelelemtr);
             });
 
-            document.getElementById("j_vl_channel").style.display = "grid";
+            document.getElementById("j_table_div").style.display = "block";
         });
     };
 
@@ -738,6 +747,11 @@ class channelsuggestion {
                         });
                     };
                 };
+
+                if (isFirst) {
+                    isFirst = false;
+                    progress(100);
+                };
             });
     };
 
@@ -745,6 +759,7 @@ class channelsuggestion {
         channel = (channel ?? document.getElementById("_suggestchannel_input").value);
 
         if (channel.length === 0) return error(Error("No channel provided"));
+        progress(50);
 
         fetch(apiurl("/suggestchannel"), {
             headers: {
@@ -774,6 +789,7 @@ class channelsuggestion {
                 document.getElementById("_suggestchannel_submit").classList.add("copied");
                 document.getElementById("_suggestchannel_input").value = "";
                 notification(`Successfully submitted channel`);
+                progress(100);
 
                 _sleep(2000)
                     .then(() => {
@@ -788,6 +804,7 @@ class channelsuggestion {
         channel = (channel ?? document.getElementById("_suggestchannel_input").value);
 
         if (channel.length === 0) return error("No channel provided");
+        progress(50);
 
         request(apiurl("/suggestchannel"), {
             headers: {
@@ -813,6 +830,7 @@ class channelsuggestion {
             let dat = dat_.data;
 
             if (devMode) console.debug(dat);
+            progress(100);
 
             document.getElementById(`_suggestchannel_${channel}`).remove();
             delete this.suggestiondata.suggestedchannels[channel];
@@ -911,6 +929,7 @@ class channelsuggestion {
 
 function autoexec() {
     autoexecs++;
+
     switch (currentendpointpath) {
         case "/modlookup":
         case "/modlookup/": {
@@ -929,13 +948,13 @@ function autoexec() {
 
         case "/modlookup/channel": {
             let currentinput = (document.getElementById('ml_channel_input')?.value?.length > 0 ? document.getElementById('ml_channel_input').value : currentendpointparts[2]);
-            if (autoexecs > 1 && document.getElementById('ml_channel_input')?.value?.length > 0) redirect(siteurl('/modlookup/channel/' + document.getElementById('ml_channel_input').value))
+            if (autoexecs > 1 && document.getElementById('ml_channel_input')?.value?.length > 0) redirectSelf(siteurl('/modlookup/channel/' + document.getElementById('ml_channel_input').value))
             if (currentinput) ml.channel(currentinput); else progress(-1); break;
         };
 
         case "/modlookup/user": {
             let currentinput = (document.getElementById('ml_user_input')?.value?.length > 0 ? document.getElementById('ml_user_input').value : currentendpointparts[2]);
-            if (autoexecs > 1 && document.getElementById('ml_user_input')?.value?.length > 0) redirect(siteurl('/modlookup/user/' + document.getElementById('ml_user_input').value))
+            if (autoexecs > 1 && document.getElementById('ml_user_input')?.value?.length > 0) redirectSelf(siteurl('/modlookup/user/' + document.getElementById('ml_user_input').value))
             if (currentinput) ml.user(currentinput); else progress(-1); break;
         };
 
@@ -957,13 +976,13 @@ function autoexec() {
 
         case "/viplookup/channel": {
             let currentinput = (document.getElementById('vl_channel_input')?.value?.length > 0 ? document.getElementById('vl_channel_input').value : currentendpointparts[2]);
-            if (autoexecs > 1 && document.getElementById('vl_channel_input')?.value?.length > 0) redirect(siteurl('/viplookup/channel/' + document.getElementById('vl_channel_input').value))
+            if (autoexecs > 1 && document.getElementById('vl_channel_input')?.value?.length > 0) redirectSelf(siteurl('/viplookup/channel/' + document.getElementById('vl_channel_input').value))
             if (currentinput) vl.channel(currentinput); else progress(-1); break;
         };
 
         case "/viplookup/user": {
             let currentinput = (document.getElementById('vl_user_input')?.value?.length > 0 ? document.getElementById('vl_user_input').value : currentendpointparts[2]);
-            if (autoexecs > 1 && document.getElementById('vl_user_input')?.value?.length > 0) redirect(siteurl('/viplookup/user/' + document.getElementById('vl_user_input').value))
+            if (autoexecs > 1 && document.getElementById('vl_user_input')?.value?.length > 0) redirectSelf(siteurl('/viplookup/user/' + document.getElementById('vl_user_input').value))
             if (currentinput) vl.user(currentinput); else progress(-1); break;
         };
 
@@ -990,14 +1009,37 @@ function autoexec() {
     };
 };
 
-if (document.getElementById("j_login")) {
-    if (localStorage.getItem("auth")) {
-        document.getElementById("j_login").innerText = "Logout";
-        document.getElementById("j_login").onclick = logout;
+let icon_elems = document.querySelectorAll(".j_icon");
+let login_elem = document.querySelector("#j_login");
+let notification_elem = document.querySelector("j_notification");
+let pagename_elem = document.querySelector("#j_pagename");
+
+function _main_elems() {
+    if (icon_elems[0]) {
+        icon_elems[0].classList.add("cursor-pointer");
+        icon_elems[0].onclick = () => { redirectSelf(url.origin) };
     };
+
+    if (login_elem) {
+        if (localStorage.getItem("auth")) {
+            login_elem.innerText = "Logout";
+            login_elem.onclick = () => { logout() };
+        };
+    };
+
+    if (notification_elem) {
+        let notification_elem_h = document.createElement("h");
+        notification_elem_h.id = "j_notification";
+        notification_elem.appendChild(notification_elem_h);
+    };
+
+    if (pagename_elem) pagename_elem.innerText = currentendpointpath.split("/").slice(1).map(a => a[0].toUpperCase() + a.slice(1)).join("/");
 };
 
-progress(0);
+if (url.searchParams.get("devMode")) devMode = true;
+
+_main_elems();
+progress(25);
 autoexec();
 
 window.addEventListener("keypress", ev => {

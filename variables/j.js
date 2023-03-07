@@ -10,6 +10,8 @@ const _mainpath = require("../functions/_mainpath");
 const _cleannumber = require("../functions/_cleannumber");
 
 class j {
+    static env = env;
+
     static client = new oberknechtClient({
         token: env.T_TOKEN,
         username: env.T_USERNAME,
