@@ -39,7 +39,7 @@
         "express": true,
         "discord": true,
         "twitch": true,
-        "twitch_log": true
+        "twitch_log": false
     },
     "default": {
         "color": "Aqua",

@@ -1,6 +1,6 @@
 {
     "name": "modlookup",
-    "version": "0.4.6",
+    "version": "0.4.7",
     "description": "",
     "main": "index.js",
     "scripts": {
@@ -26,7 +26,7 @@
         "oberknecht-api": "^0.1.3",
         "oberknecht-client": "^0.1.3-6",
         "oberknecht-emitters": "^0.0.5",
-        "oberknecht-utils": "^0.0.1",
+        "oberknecht-utils": "^0.0.2",
         "os-utils": "^0.0.14",
         "request": "^2.88.2",
         "ws": "^8.12.1"

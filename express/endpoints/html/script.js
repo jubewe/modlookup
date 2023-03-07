@@ -17,7 +17,7 @@ let requests_failed = 0;
 let interval;
 let isFirst = true;
 let page_data = {};
-let devMode = false;
+let devMode = true;
 
 function progress(num) {
     const progress_elem = document.getElementById("j_progress");
@@ -700,59 +700,59 @@ class channelsuggestion {
             return;
         };
 
-        fetch(`${api_url}/suggestchannel`, {
+        request(apiurl("/suggestchannel"), {
             headers: {
                 "auth": auth().auth
             },
             method: "GET"
-        })
-            .then(async req => {
-                let dat_ = await req.json();
+        }, (e, dat_) => {
+            if (e) return error(e);
+            
+            if (devMode) console.debug("get", dat_);
 
-                if (dat_.status !== 200) {
-                    switch (dat_.status) {
-                        default: {
-                            error(dat_);
-                        };
+            if (dat_.status !== 200) {
+                switch (dat_.status) {
+                    default: {
+                        error(dat_);
                     };
-
-                    return;
                 };
 
-                let dat = dat_.data;
-                this.suggestiondata = dat;
+                return;
+            };
 
-                if (devMode) console.debug(dat);
+            let dat = dat_.data;
+            this.suggestiondata = dat;
 
-                document.getElementById("_suggestchannel").style.display = "block";
+            document.getElementById("_suggestchannel").style.display = "block";
 
-                if (dat.isAdmin) {
-                    if (Object.keys(dat.suggestedchannels).length === 0) {
-                        document.getElementById("_suggestchannel_admin_table").style.display = "none";
-                        document.getElementById("_suggestchannel_admin_h").innerText = "You're all caught up - No Pending Suggestions found";
-                        document.getElementById("_suggestchannel_admin_h").style.display = "block";
-                    } else {
-                        document.getElementById("_suggestchannel_admin").style.display = "block";
-                        Object.keys(dat.suggestedchannels).forEach(a => this.appendSuggestionAdmin(dat.suggestedchannels[a]));
-                    };
+            if (dat.isAdmin) {
+                if (Object.keys(dat.suggestedchannels).length === 0) {
+                    document.getElementById("_suggestchannel_admin_table").style.display = "none";
+                    document.getElementById("_suggestchannel_admin_h").innerText = "You're all caught up - No Pending Suggestions found";
+                    document.getElementById("_suggestchannel_admin_h").style.display = "block";
                 } else {
-                    if (Object.keys(dat.suggestedchannels).length === 0) {
-                        document.getElementById("_suggestchannel_table").style.display = "none";
-                        document.getElementById("_suggestchannel_h").innerText = "No Suggestions found.. yet";
-                        document.getElementById("_suggestchannel_h").style.display = "block";
-                    } else {
-                        document.getElementById("_suggestchannel_div").style.display = "block";
-                        Object.keys(dat.suggestedchannels).forEach(a => {
-                            this.appendSuggestion(dat.suggestedchannels[a]);
-                        });
-                    };
+                    document.getElementById("_suggestchannel_admin").style.display = "block";
+                    document.getElementById("_suggestchannel_admin_num").innerText = Object.keys(dat.suggestedchannels).length;
+                    Object.keys(dat.suggestedchannels).forEach(a => this.appendSuggestionAdmin(dat.suggestedchannels[a]));
                 };
+            } else {
+                if (Object.keys(dat.suggestedchannels).length === 0) {
+                    document.getElementById("_suggestchannel_table").style.display = "none";
+                    document.getElementById("_suggestchannel_h").innerText = "No Suggestions found.. yet";
+                    document.getElementById("_suggestchannel_h").style.display = "block";
+                } else {
+                    document.getElementById("_suggestchannel_div").style.display = "block";
+                    Object.keys(dat.suggestedchannels).forEach(a => {
+                        this.appendSuggestion(dat.suggestedchannels[a]);
+                    });
+                };
+            };
 
-                if (isFirst) {
-                    isFirst = false;
-                    progress(100);
-                };
-            });
+            if (isFirst) {
+                isFirst = false;
+                progress(100);
+            };
+        })
     };
 
     static submit = (channel) => {
@@ -761,43 +761,42 @@ class channelsuggestion {
         if (channel.length === 0) return error(Error("No channel provided"));
         progress(50);
 
-        fetch(apiurl("/suggestchannel"), {
+        request(apiurl("/suggestchannel"), {
             headers: {
                 "auth": auth().auth,
                 "suggestchannel": channel
             },
             method: "POST"
-        })
-            .then(async req => {
-                let dat_ = await req.json();
+        }, (e, dat_) => {
+            if (e) return error(e);
 
-                if (dat_.status !== 200) {
-                    switch (dat_.status) {
-                        default: {
-                            error(dat_);
-                        };
+            if(devMode) console.debug("submit", dat_);
+
+            if (dat_.status !== 200) {
+                switch (dat_.status) {
+                    default: {
+                        error(dat_);
                     };
-                    return;
                 };
+                return;
+            };
 
-                let dat = dat_.data;
+            let dat = dat_.data;
 
-                if (devMode) console.debug(dat);
+            this.suggestiondata.suggestedchannels[dat.suggestedchannel._user.id] = dat.suggestchannel;
 
-                this.suggestiondata.suggestedchannels[dat.suggestedchannel._user.id] = dat.suggestchannel;
+            document.getElementById("_suggestchannel_submit").classList.add("copied");
+            document.getElementById("_suggestchannel_input").value = "";
+            notification(`Successfully submitted channel`);
+            progress(100);
 
-                document.getElementById("_suggestchannel_submit").classList.add("copied");
-                document.getElementById("_suggestchannel_input").value = "";
-                notification(`Successfully submitted channel`);
-                progress(100);
+            _sleep(2000)
+                .then(() => {
+                    document.getElementById("_suggestchannel_submit").classList.remove("copied");
+                })
 
-                _sleep(2000)
-                    .then(() => {
-                        document.getElementById("_suggestchannel_submit").classList.remove("copied");
-                    })
-
-                this.appendSuggestion(dat.suggestedchannel);
-            });
+            this.appendSuggestion(dat.suggestedchannel);
+        });
     };
 
     static submitAdmin = (channel, status) => {
@@ -813,10 +812,10 @@ class channelsuggestion {
                 "suggestchannel_status": status
             },
             method: "PATCH"
-        }, async (e, r) => {
+        }, (e, dat_) => {
             if (e) return error(e);
 
-            let dat_ = JSON.parse(r.body);
+            if(devMode) console.debug("submitAdmin", dat_);
 
             if (dat_.status !== 200) {
                 switch (dat_.status) {
@@ -829,7 +828,6 @@ class channelsuggestion {
 
             let dat = dat_.data;
 
-            if (devMode) console.debug(dat);
             progress(100);
 
             document.getElementById(`_suggestchannel_${channel}`).remove();
