@@ -1,0 +1,46 @@
+<!-- Welcome to my messy html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/html/img/OkayChamp_modding.ico" />
+    <link rel="stylesheet" href="/html/styles.css" />
+    <title>Ju / Dashboard</title>
+  </head>
+  <body>
+    <button id="j_login" onclick="login()">Login</button>
+    <j_progress>
+      <progress
+        id="j_progress"
+        class="progress_load"
+        value="0"
+        max="100"
+      ></progress>
+    </j_progress>
+    <j_notification></j_notification>
+    <j_spacer></j_spacer>
+    <j_head>
+      <j_icon>
+        <img class="j_icon noselect" src="/html/img/OkayChamp_modding.png"/>
+      </j_icon>
+      <j_title id="j_pagename"></j_title>
+    </j_head>
+    <j_spacer></j_spacer>
+    <j_body>
+      <div id="_login">
+        <j_h>Please <button class="j_login" onclick="login()">Login</button> to view this page</j_h>
+      </div>
+      <div id="_dashboard">
+        <j_h>Welcome to your dashboard</j_h>
+        <j_spacer></j_spacer>
+        <h id="_logging_opted_out"></h>
+        <j_title>Bot Controls:</j_title>
+        <j_spacer_smol></j_spacer_smol>
+      </div>
+      <j_spacer></j_spacer>
+    </j_body>
+  </body>
+</html>
+<script src="/html/script.js"></script>

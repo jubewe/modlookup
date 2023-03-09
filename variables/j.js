@@ -27,7 +27,7 @@ class j {
                     m = m.replace(new RegExp(a, "g"), _cleannumber(a));
                 });
             };
-            return m + " Oida";
+            return m + "";
         }
     });
 
@@ -60,12 +60,16 @@ class j {
         handledWebsiteEndpointRequests: {},
         handledAPIEndpointRequests: {}
     };
-    
+
     static development_start = new Date("2023-02-17T00:00:00.000Z");
     static log_start = new Date("2023-03-07T20:00:00.000Z");
 
-    static modinfosplitter = new jsonsplitter({ startpath: "./data/modinfo", debug: 2 });
-    static vipinfosplitter = new jsonsplitter({ startpath: "./data/vipinfo", debug: 2 });
+    static modinfosplitter = new jsonsplitter({ startpath: "./data/modinfo", debug: 1 });
+    static vipinfosplitter = new jsonsplitter({ startpath: "./data/vipinfo", debug: 1 });
+
+    static channelsplitter = new jsonsplitter({ startpath: "./data/twitch", debug: 1 });
+    static usersplitter = new jsonsplitter({ startpath: "./data/twitch", debug: 1 });
+    static blacklistsplitter = new jsonsplitter({ startpath: "./data/blacklist", debug: 1 });
 
     static modules = class {
         static oberknechtClient = oberknechtClient;

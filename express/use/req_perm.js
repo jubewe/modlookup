@@ -29,10 +29,11 @@ module.exports = async (req, res, next) => {
     };
 
     req.permission = {
-        "num": parseInt(files.permissions.users[perm.user_id] ?? 10),
-        "id": perm.user_id,
-        "token": token,
-        "_raw": perm
+        num: parseInt(files.permissions.users[perm.user_id] ?? 10),
+        id: perm.user_id,
+        login: perm.login,
+        token: token,
+        _raw: perm
     };
 
     next();

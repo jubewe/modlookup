@@ -26,6 +26,7 @@
       /></j_icon>
       <j_title id="j_pagename"></j_title>
     </j_head>
+    <j_spacer></j_spacer>
     <j_body>
       <div id="_login">
         <j_h
@@ -38,7 +39,13 @@
         <j_title_2>Suggest channel:</j_title_2>
         <j_spacer_smol_smol></j_spacer_smol_smol>
         <input id="_suggestchannel_input" placeholder="Channelname" />
-        <button id="_suggestchannel_submit" class="button_submit" onclick="channelsuggestion.submit()">Submit Suggestion</button>
+        <button
+          id="_suggestchannel_submit"
+          class="button_submit"
+          onclick="channelsuggestion.submit()"
+        >
+          Submit Suggestion
+        </button>
         <j_spacer></j_spacer>
         <h id="_suggestchannel_h"></h>
         <div id="_suggestchannel_div">
@@ -52,13 +59,17 @@
               <th class="j_table_th">Channel Name</th>
               <th class="j_table_th">Channel ID</th>
               <th class="j_table_th">Status</th>
+              <th class="j_table_th">Action</th>
             </tr>
           </table>
         </div>
       </div>
       <h id="_suggestchannel_admin_h"></h>
       <div id="_suggestchannel_admin">
-        <j_title_2>Found <h id="_suggestchannel_admin_num"></h> Pending Suggestions:</j_title_2>
+        <j_title_2
+          >Found <h id="_suggestchannel_admin_num"></h> Pending
+          Suggestions:</j_title_2
+        >
         <j_spacer_smol_smol></j_spacer_smol_smol>
         <table
           class="j_table _suggestchannel_table"
@@ -68,6 +79,25 @@
             <tr>
               <th class="j_table_th j_table-title">Channel Name</th>
               <th class="j_table_th j_table-title">Channel ID</th>
+              <th class="j_table_th j_table-title">Channel Type</th>
+              <th class="j_table_th j_table-title">Suggested by</th>
+              <th class="j_table_th j_table-title">Status</th>
+              <th></th>
+            </tr>
+          </thead>
+        </table>
+        <j_spacer></j_spacer>
+      </div>
+      <div id="_suggestchannel_admin_2">
+        <table
+          class="j_table _suggestchannel_table"
+          id="_suggestchannel_admin_table_2"
+        >
+          <thead>
+            <tr>
+              <th class="j_table_th j_table-title">Channel Name</th>
+              <th class="j_table_th j_table-title">Channel ID</th>
+              <th class="j_table_th j_table-title">Channel Type</th>
               <th class="j_table_th j_table-title">Suggested by</th>
               <th class="j_table_th j_table-title">Status</th>
               <th></th>

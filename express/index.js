@@ -140,6 +140,10 @@ module.exports = async () => {
         }
     });
 
+    j.express.get("/dashboard", (req, res) => {
+        res.send(_rf("./express/endpoints/dashboard.html"));
+    });
+
     j.express.get("/suggestchannel", async (req, res) => {
         res.send(_rf("./express/endpoints/html/suggestchannel.html"));
     });

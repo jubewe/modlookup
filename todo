@@ -1,17 +1,19 @@
 ✅ DC integration 
 ✅ extern command files
 
-- admin area 
-- login for admin (-> admin area) 
-- ->- send login data as header 
-- ->- permission integration in api (twitch tokens)
+✅ admin area 
+✅ login for admin (-> admin area) 
+✅ ->- permission integration in api (twitch tokens)
 - multicore processrs
 
 - discord bot invite
 ✅ link update (/endpoints)  (mod => vipinfo für vip) 
-- update on jubewe.github.io/modlookup
-- live console (website, ws)
+✅ update on jubewe.github.io/modlookup
+✅ live console (website, ws)
 - bot controls 
-- special dauba seite mit extra viel stats und zeug lol
-- feature to log specific channels (limited requests?)
-- no website rate limits for admins
+✅ special dauba seite mit extra viel stats und zeug lol
+✅ feature to log specific channels (limited requests?)
+✅ no website rate limits for admins
+- log blacklist (channels + users)
+- log delete (self+) (channels + users)
+(- channel status + followers in /modlookup/user/:user and /viplookup/user/:user)

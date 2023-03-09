@@ -6,7 +6,7 @@ module.exports = {
     id: null,
     // id: "",
     permission: null,
-    // permission: j.config.perm.default,
+    // permission: j.config.perm.botdefault,
     cooldown: null,
     // cooldown: j.config.cooldown.default,
     cooldown_user: null,

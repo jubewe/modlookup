@@ -7,6 +7,9 @@ const _mainpath = require("../../../functions/_mainpath");
 module.exports = async (response) => {
     if (j.config.trackers.mods) {
         try {
+            if(await j.blacklistsplitter.getKey(["users", response.channelID, "status"], true) === 0) return;
+            if(await j.blacklistsplitter.getKey(["users", response.userstate.id, "status"], true) === 0) return;
+
             if (!response.userstate.isMod) {
                 if (await j.modinfosplitter.getKey(["users", response.userstate.id, "channels", response.channelID], true)) await j.modinfosplitter.deleteKey(["users", response.userstate.id, "channels", response.channelID], true);
                 if (await j.modinfosplitter.getKey(["channels", response.channelID, "users", response.senderUserID], true)) await j.modinfosplitter.deleteKey(["channels", response.channelID, "users", response.senderUserID], true);

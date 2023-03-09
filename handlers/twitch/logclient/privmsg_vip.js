@@ -7,6 +7,9 @@ const _mainpath = require("../../../functions/_mainpath");
 module.exports = async (response) => {
     if (j.config.trackers.vips) {
         try {
+            if(await j.blacklistsplitter.getKey(["users", response.channelID, "status"], true) === 0) return;
+            if(await j.blacklistsplitter.getKey(["users", response.userstate.id, "status"], true) === 0) return;
+            
             if (!response.userstate.badges["vip"]) {
                 if (await j.vipinfosplitter.getKey(["channels", response.channelID, "users", response.userstate.id], true)) await j.vipinfosplitter.deleteKey(["channels", response.channelID, "users", response.userstate.id], true);
                 if (await j.vipinfosplitter.getKey(["users", response.userstate.id, "channels", response.channelID], true)) await j.vipinfosplitter.deleteKey(["users", response.userstate.id, "channels", response.channelID], true);

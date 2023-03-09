@@ -17,7 +17,16 @@ let requests_failed = 0;
 let interval;
 let isFirst = true;
 let page_data = {};
-let devMode = true;
+let devMode = false;
+if (url.searchParams.get("devmode")) devMode = true;
+
+let icon_elems = document.querySelectorAll(".j_icon");
+let login_elem = document.querySelector("#j_login");
+let notification_elem = document.querySelector("j_notification");
+let pagename_elem = document.querySelector("#j_pagename");
+let spacer = document.createElement("j_spacer");
+let spacer_inline = document.createElement("j_spacer_inline");
+let br = document.createElement("br");
 
 function progress(num) {
     const progress_elem = document.getElementById("j_progress");
@@ -57,13 +66,16 @@ function notification(message, timeout, iserror) {
     }, (timeout ?? 4000));
 };
 
-let error = (message) => { notification(message, undefined, true) };
+let error = (message) => {
+    console.error(message);
+    notification(message, undefined, true);
+};
 
 function request(u, options, callback) {
     if (!callback) {
         callback = options;
         options = {};
-    }
+    };
     progress(0);
 
     fetch(u, options)
@@ -110,7 +122,7 @@ function validatetoken() {
 };
 
 function login() {
-    window.open(`https://id.twitch.tv/oauth2/authorize?client_id=1pnta1kpjqm4xth9e60czubvo1j7af&redirect_uri=${url.origin}/validatetoken&scope=&response_type=token`, "_blank");
+    window.open(`https://id.twitch.tv/oauth2/authorize?client_id=1pnta1kpjqm4xth9e60czubvo1j7af&redirect_uri=${url.origin}/token/validate&scope=&response_type=token`, "_blank");
     new Promise((resolve) => {
         let int = setInterval(waitfortoken, 500);
         function waitfortoken() {
@@ -127,7 +139,7 @@ function login() {
 function logout() {
     let auth_ = auth();
 
-    fetch(`${api_url}/revoketoken`, {
+    fetch(`${api_url}/token/revoke`, {
         headers: {
             "auth": auth_.auth
         },
@@ -166,312 +178,143 @@ function _sleep(time) {
     return new Promise((resolve) => setTimeout(resolve, (time ?? 1000)));
 };
 
-function loadadmin() {
-    if (!auth().parsed) {
-        progress(-1);
-        document.getElementById("_login").style.display = "block";
-        if (interval) clearInterval(interval);
-        return;
-    };
+function createTable(tables, dat, tableName, parentElement, progressName, progressClasses) {
+    Object.keys(tables).forEach((a, i) => {
+        if (document.getElementById(`${tableName}_${i}`) === null) {
+            let table_elem = document.createElement("table");
+            table_elem.id = `${tableName}_${i}`;
+            table_elem.classList.add("j_table", tableName);
 
-    fetch(`${api_url}/admin`, { headers: { "auth": auth().auth }, method: "GET" })
-        .then(async req => {
-            let dat_ = await req.json();
+            let th_tr_elem = document.createElement("tr");
+            let tr_elem = document.createElement("tr");
+            tr_elem.id = `${tableName}_${i}_tr_0`;
+            tr_elem.classList.add(`${tableName}_${i}_tr`);
 
-            if (dat_.status !== 200) {
-                requests_failed++;
-
-                switch (dat_.status) {
-                    case 401: {
-                        document.getElementById("_noperm").style.display = "grid";
-                        break;
-                    };
-                    default: {
-                        document.getElementById("_admin").style.display = "none";
-                        error(dat_);
-                    };
-                };
-
-                if (interval && requests_failed > 1) clearInterval(interval);
-
-                return;
-            } else {
-                document.getElementById("_admin").style.display = "grid";
-            };
-
-            let dat = dat_.data;
-
-            if (devMode) console.debug("api response", dat);
-
-            let tables = {
-                "0": {
-                    "names": [
-                        "Channels",
-                        "Logchannels",
-                        "Discordservers",
-                        "CPU Usage",
-                        "Memory Usage",
-                        "Total Memory Usage"
-                    ],
-                    "keypaths": [
-                        ["channels"],
-                        ["logchannels"],
-                        ["discordservers"],
-                        ["@@progress", "cpu", "usedpercent"],
-                        ["@@progress", "memory", "process", "usedpercent"],
-                        ["@@progress", "memory", "os", "usedpercent"]
-                    ]
-                },
-                "1": {
-                    "names": [
-                        "",
-                        "Uptime",
-                        "",
-                        "",
-                        "Channels",
-                        "Users"
-                    ],
-                    "keypaths": [
-                        "@@thOS",
-                        ["uptime", "parsed", "os"],
-                        "",
-                        "@@thModlookup",
-                        ["modlookup", "channels"],
-                        ["modlookup", "users"],
-                        "\n",
-                        "@@thProcess",
-                        ["uptime", "parsed", "process"],
-                        "",
-                        "@@thViplookup",
-                        ["viplookup", "channels"],
-                        ["viplookup", "users"],
-                        "\n",
-                        "@@thDiscord Client",
-                        ["uptime", "parsed", "discordclient"],
-                        "",
-                        "\n",
-                        "",
-                        "\n",
-                        "",
-                        "@@thWS Connections",
-                        "\n",
-                        "@@thClient",
-                        ["connections", "client"],
-                        "\n",
-                        "@@thLogclient",
-                        ["connections", "logclient"]
-                    ]
-                },
-                "2": {
-                    "names": [
-                        "",
-                        "Handles",
-                        "Messages/sec",
-                        "Messages/min",
-                        "",
-                        "Handled Commands",
-                        "Commands/sec",
-                        "Commands/min"
-                    ],
-                    "keypaths": [
-                        "@@thClient",
-                        ["handled", "handledClient"],
-                        ["handledSecond", "handledClient"],
-                        ["handledMinute", "handledClient"],
-                        "",
-                        ["handled", "handledClientCommands"],
-                        ["handledSecond", "handledClientCommands"],
-                        ["handledMinute", "handledClientCommands"],
-                        "\n",
-                        "@@thLogclient",
-                        ["handled", "handledLog"],
-                        ["handledSecond", "handledLog"],
-                        ["handledMinute", "handledLog"],
-                        "",
-                        "",
-                        "",
-                        "\n",
-                        "@@thDiscord Client",
-                        ["handled", "handledDiscord"],
-                        ["handledSecond", "handledDiscord"],
-                        ["handledMinute", "handledDiscord"],
-                        "",
-                        ["handled", "handledDiscordCommands"],
-                        ["handledSecond", "handledDiscordCommands"],
-                        ["handledMinute", "handledDiscordCommands"]
-                    ]
-                },
-                "3": {
-                    "names": [
-                        "",
-                        "Handles",
-                        "Requests/sec",
-                        "Requests/min"
-                    ],
-                    "keypaths": [
-                        "@@thWebsite",
-                        ["handled", "handledWebsiteRequests"],
-                        ["handledSecond", "handledWebsiteRequests"],
-                        ["handledMinute", "handledWebsiteRequests"],
-                        "\n",
-                        "@@thAPI",
-                        ["handled", "handledAPIRequests"],
-                        ["handledSecond", "handledAPIRequests"],
-                        ["handledMinute", "handledAPIRequests"]
-                    ]
+            tables[a].names.forEach((b, i2) => {
+                let th_elem = document.createElement("th");
+                th_elem.innerText = (b ?? "");
+                if ((b?.toString()?.length ?? 0) === 0) {
+                    th_elem.classList.add("noborder", "j_table-noval");
+                } else {
+                    th_elem.classList.add("j_table-hasval", "j_table-title");
                 }
+                th_elem.classList.add("j_table_th");
+
+                th_tr_elem.appendChild(th_elem);
+            });
+
+            table_elem.appendChild(th_tr_elem);
+            table_elem.appendChild(tr_elem);
+
+            document.getElementById(parentElement).appendChild(table_elem);
+        };
+
+        let tabletr = document.getElementById(`${tableName}_${i}_tr_0`);
+        let key_elem_index = 0;
+
+        tables[a].keypaths.forEach((b, i2) => {
+            let key_elem_id = `${tableName}_${i}_td_${i2}`;
+            let key_elem_val_id = `${tableName}_${i}_td_${i2}_val`;
+            let key_elem_progress_id = `${tableName}_${i}_td_${i2}_progress`;
+
+            let iab = Array.isArray(b);
+            let isProgress = (iab && b[0] === "@@progress"); if (isProgress) b = b.slice(1);
+            let skipVal = (iab && b[0] === "@@skipval"); if (skipVal) b = b.slice(1);
+            let isTH = (!iab && b.startsWith("@@th")); if (isTH) b = b.replace("@@th", "");
+            let isHTML = (iab && b[0] === "@@html"); if (isHTML) b = b.slice(1);
+
+            let val = ((!iab || isHTML) ? b : getKeyFromObject(dat, b));
+
+            let val_ = val;
+            if (Array.isArray(val)) {
+                val_ = val.length;
+            } else if (["string", "number"].includes(typeof val) && val.toString().includes(".")) {
+                val_ = val.toString();
+                val_ = val_.slice(0, (val_.split(".")[0].length + 1 + 2)) + "%";
+            } else if (["number"].includes(typeof val)) {
+                val_ = val.toString();
+                val_ = _numberspacer(val_);
             };
 
-            Object.keys(tables).forEach((a, i) => {
-                if (document.getElementById(`_admin_table_${i}`) === null) {
-                    let table_elem = document.createElement("table");
-                    table_elem.id = `_admin_table_${i}`;
-                    table_elem.classList.add("j_table", "_admin_table");
+            if (val === "\n") {
+                key_elem_index = 0;
 
-                    let th_tr_elem = document.createElement("tr");
-                    let tr_elem = document.createElement("tr");
-                    tr_elem.id = `_admin_table_${i}_tr_0`;
-                    tr_elem.classList.add(`_admin_table_${i}_tr`);
+                const tabletrold = tabletr;
+                const tabletroldnum = (tabletrold.id.split("_")[tabletrold.id.split("_").length - 1]);
+                let tabletr_id = `${tabletrold.id.slice(0, (tabletrold.id.length - tabletroldnum.length))}${parseInt(tabletroldnum) + 1}`
 
-                    tables[a].names.forEach((b, i2) => {
-                        let th_elem = document.createElement("th");
-                        th_elem.innerText = (b ?? "");
-                        if ((b?.toString()?.length ?? 0) === 0) {
-                            th_elem.classList.add("noborder", "j_table-noval");
-                        } else {
-                            th_elem.classList.add("j_table-hasval", "j_table-title");
-                        }
-                        th_elem.classList.add("j_table_th");
-
-                        th_tr_elem.appendChild(th_elem);
-                    });
-
-                    table_elem.appendChild(th_tr_elem);
-                    table_elem.appendChild(tr_elem);
-
-                    document.getElementById("_admin_body").appendChild(table_elem);
+                if (document.getElementById(tabletr_id)) {
+                    tabletr = document.getElementById(tabletr_id);
+                    return;
                 };
 
-                let tabletr = document.getElementById(`_admin_table_${i}_tr_0`);
-                let key_elem_index = 0;
+                tabletr = document.createElement("tr");
+                tabletr.id = tabletr_id;
+                tabletr.classList.add(`${tableName}_${i}_tr`);
 
-                tables[a].keypaths.forEach((b, i2) => {
-                    let key_elem_id = `_admin_table_${i}_td_${i2}`;
-                    let key_elem_val_id = `_admin_table_${i}_td_${i2}_val`;
-                    let key_elem_progress_id = `_admin_table_${i}_td_${i2}_progress`;
+                document.getElementById(`${tableName}_${i}`).appendChild(tabletr);
+            } else {
+                if (document.getElementById(key_elem_id) === null) {
+                    let key_elem = document.createElement((isTH ? "th" : "td"));
+                    key_elem.classList.add("j_table_td", `${tableName}_td`, `${tableName}_${i}_td`, `${tableName}_td_${key_elem_index}`, `${tableName}_${i}_td_${key_elem_index}`);
+                    key_elem.id = key_elem_id;
 
-                    let iab = Array.isArray(b);
-                    let isProgress = (iab && b[0] === "@@progress"); if (isProgress) b = b.slice(1);
-                    let skipVal = (iab && b[0] === "@@skipval"); if (skipVal) b = b.slice(1);
-                    let isTH = (!iab && b.startsWith("@@th")); if (isTH) b = b.replace("@@th", "");
-
-                    let val = (!iab ? b : getKeyFromObject(dat, b));
-
-                    let val_ = val;
-                    if (Array.isArray(val)) {
-                        val_ = val.length;
-                    } else if (["string", "number"].includes(typeof val) && val.toString().includes(".")) {
-                        val_ = val.toString();
-                        val_ = val_.slice(0, (val_.split(".")[0].length + 1 + 2)) + "%";
-                    } else if (["number"].includes(typeof val)) {
-                        val_ = val.toString();
-                        val_ = _numberspacer(val_);
-                    };
-
-                    if (val === "\n") {
-                        key_elem_index = 0;
-
-                        const tabletrold = tabletr;
-                        const tabletroldnum = (tabletrold.id.split("_")[tabletrold.id.split("_").length - 1]);
-                        let tabletr_id = `${tabletrold.id.slice(0, (tabletrold.id.length - tabletroldnum.length))}${parseInt(tabletroldnum) + 1}`
-
-                        if (document.getElementById(tabletr_id)) {
-                            tabletr = document.getElementById(tabletr_id);
-                            return;
-                        };
-
-                        tabletr = document.createElement("tr");
-                        tabletr.id = tabletr_id;
-                        tabletr.classList.add(`_admin_table_${i}_tr`);
-
-                        document.getElementById(`_admin_table_${i}`).appendChild(tabletr);
+                    if ((val_?.toString()?.length ?? 0) === 0) {
+                        key_elem.classList.add("noborder", "j_table-noval");
                     } else {
-                        if (document.getElementById(key_elem_id) === null) {
-                            let key_elem = document.createElement((isTH ? "th" : "td"));
-                            key_elem.classList.add("j_table_td", "_admin_table_td", `_admin_table_${i}_td`, `_admin_table_td_${key_elem_index}`, `_admin_table_${i}_td_${key_elem_index}`);
-                            key_elem.id = key_elem_id;
-
-                            if ((val_?.toString()?.length ?? 0) === 0) {
-                                key_elem.classList.add("noborder", "j_table-noval");
-                            } else {
-                                key_elem.classList.add("j_table-hasval");
-                            };
-
-                            let key_elem_val = document.createElement("h");
-                            key_elem_val.id = key_elem_val_id;
-                            key_elem_val.classList.add(`_admin_val`, `_admin_table_${i}_val`);
-                            if (!skipVal) key_elem_val.innerText = val_;
-
-                            if (isTH) {
-                                key_elem.classList.add("j_table-title");
-                            } else {
-                                key_elem.classList.add("cursor-copy");
-                                key_elem.onclick = () => { copy(key_elem) };
-                            };
-
-                            key_elem.appendChild(key_elem_val);
-
-                            if (isProgress) {
-                                let progress_elem = document.createElement("progress");
-                                progress_elem.max = 100;
-                                progress_elem.value = val;
-                                progress_elem.classList.add("_admin_progress");
-                                progress_elem.id = key_elem_progress_id;
-
-                                key_elem.classList.add("_admin_progress_parent");
-                                key_elem.appendChild(progress_elem);
-                            };
-
-                            tabletr.appendChild(key_elem);
-                        } else if (isProgress && document.getElementById(`${key_elem_id}_progress`) !== null) {
-                            document.getElementById(`${key_elem_id}_progress`).value = val;
-                            document.getElementById(key_elem_val_id).innerText = val_;
-                        } else {
-                            document.getElementById(key_elem_val_id).innerText = val_;
-                        };
-
-                        key_elem_index++;
+                        key_elem.classList.add("j_table-hasval");
                     };
-                });
-            });
 
-            let log_elem = document.getElementById("_admin_log");
-            log_elem.value = "";
+                    // let key_elem_val = (isHTML ? val : document.createElement("h"));
+                    let key_elem_val = document.createElement((isHTML ? "div" : "h"));
+                    key_elem_val.id = key_elem_val_id;
+                    key_elem_val.classList.add(`${tableName}_${i}_val`, `j_table-hasval`);
+                    if (!skipVal && !isHTML) key_elem_val.innerText = val_;
 
-            Object.keys(dat.logs.all).reverse().forEach(a => {
-                log_elem.value = `${dat.logs.all[a][2]} ${dat.logs.all[a][1]}\n${log_elem.value}`;
-            });
+                    if (isTH) {
+                        key_elem.classList.add("j_table-title");
+                    } else if (!isHTML) {
+                        key_elem.classList.add("cursor-copy");
+                        key_elem.onclick = () => { copy(key_elem) };
+                    };
 
-            if (isFirst) {
-                progress(100);
-                log_elem.scrollTop = log_elem.scrollHeight;
+                    if (isHTML) {
+                        b.forEach(a => {
+                            key_elem_val.appendChild(a);
+                        });
+                    };
+
+                    key_elem.appendChild(key_elem_val);
+
+                    if (isProgress) {
+                        let progress_elem = document.createElement("progress");
+                        progress_elem.max = 100;
+                        progress_elem.value = val;
+                        progress_elem.classList.add(...progressClasses);
+                        progress_elem.id = key_elem_progress_id;
+
+                        key_elem.classList.add(`${progressName}_progress_parent`);
+                        key_elem.appendChild(progress_elem);
+                    };
+
+                    tabletr.appendChild(key_elem);
+                } else if (isProgress && document.getElementById(`${progressName}_progress`) !== null) {
+                    document.getElementById(`${progressName}_progress`).value = val;
+                    document.getElementById(key_elem_val_id).innerText = val_;
+                } else {
+                    document.getElementById(key_elem_val_id).innerText = val_;
+                };
+
+                key_elem_index++;
             };
-
-            isFirst = false;
-        })
-        .catch(e => {
-            requests_failed++;
-            error(e);
-            document.getElementById("_admin").style.display = "none";
-            if (interval && requests_failed > 1) clearInterval(interval);
-            return;
         });
+    });
 };
 
 async function copy() {
-    navigator.clipboard.writeText((["string", "number"].includes(arguments[0]) ? arguments[0] : (arguments[0].value ?? arguments[0].innerText ?? arguments[0])));
     if (!arguments[0].innerText && (!arguments[1] || (document.getElementById(arguments[1]) === null))) return;
     let element = (arguments[0].innerText ? arguments[0] : document.getElementById(arguments[1]));
+    navigator.clipboard.writeText(arguments[1] ?? (["string", "number"].includes(arguments[0]) ? arguments[0] : (arguments[0].value ?? arguments[0].innerText ?? arguments[0])));
     element.classList.add("copied");
     await _sleep(1500);
     element.classList.remove("copied");
@@ -689,6 +532,312 @@ class vl {
     };
 };
 
+class admin {
+    static load = () => {
+        if (!auth().parsed) {
+            progress(-1);
+            document.getElementById("_login").style.display = "block";
+            if (interval) clearInterval(interval);
+            return;
+        };
+
+        fetch(`${api_url}/admin`, { headers: { "auth": auth().auth }, method: "GET" })
+            .then(async req => {
+                let dat_ = await req.json();
+
+                if (dat_.status !== 200) {
+                    requests_failed++;
+
+                    switch (dat_.status) {
+                        case 401: {
+                            document.getElementById("_noperm").style.display = "grid";
+                            break;
+                        };
+                        default: {
+                            document.getElementById("_admin").style.display = "none";
+                            error(dat_);
+                        };
+                    };
+
+                    if (interval && requests_failed > 1) clearInterval(interval);
+
+                    return;
+                } else {
+                    document.getElementById("_admin").style.display = "grid";
+                };
+
+                let dat = dat_.data;
+
+                if (devMode) console.debug("api response", dat);
+
+                let tables = {
+                    "0": {
+                        "names": [
+                            "Channels",
+                            "Logchannels",
+                            "Discordservers",
+                            "CPU Usage",
+                            "Memory Usage",
+                            "Total Memory Usage"
+                        ],
+                        "keypaths": [
+                            ["channels"],
+                            ["logchannels"],
+                            ["discordservers"],
+                            ["@@progress", "cpu", "usedpercent"],
+                            ["@@progress", "memory", "process", "usedpercent"],
+                            ["@@progress", "memory", "os", "usedpercent"]
+                        ]
+                    },
+                    "1": {
+                        "names": [
+                            "",
+                            "Uptime",
+                            "",
+                            "",
+                            "Channels",
+                            "Users"
+                        ],
+                        "keypaths": [
+                            "@@thOS",
+                            ["uptime", "parsed", "os"],
+                            "",
+                            "@@thModlookup",
+                            ["modlookup", "channels"],
+                            ["modlookup", "users"],
+                            "\n",
+                            "@@thProcess",
+                            ["uptime", "parsed", "process"],
+                            "",
+                            "@@thViplookup",
+                            ["viplookup", "channels"],
+                            ["viplookup", "users"],
+                            "\n",
+                            "@@thDiscord Client",
+                            ["uptime", "parsed", "discordclient"],
+                            "",
+                            "\n",
+                            "",
+                            "\n",
+                            "",
+                            "@@thWS Connections",
+                            "\n",
+                            "@@thClient",
+                            ["connections", "client"],
+                            "\n",
+                            "@@thLogclient",
+                            ["connections", "logclient"]
+                        ]
+                    },
+                    "2": {
+                        "names": [
+                            "",
+                            "Handles",
+                            "Messages/sec",
+                            "Messages/min",
+                            "",
+                            "Handled Commands",
+                            "Commands/sec",
+                            "Commands/min"
+                        ],
+                        "keypaths": [
+                            "@@thClient",
+                            ["handled", "handledClient"],
+                            ["handledSecond", "handledClient"],
+                            ["handledMinute", "handledClient"],
+                            "",
+                            ["handled", "handledClientCommands"],
+                            ["handledSecond", "handledClientCommands"],
+                            ["handledMinute", "handledClientCommands"],
+                            "\n",
+                            "@@thLogclient",
+                            ["handled", "handledLog"],
+                            ["handledSecond", "handledLog"],
+                            ["handledMinute", "handledLog"],
+                            "",
+                            "",
+                            "",
+                            "\n",
+                            "@@thDiscord Client",
+                            ["handled", "handledDiscord"],
+                            ["handledSecond", "handledDiscord"],
+                            ["handledMinute", "handledDiscord"],
+                            "",
+                            ["handled", "handledDiscordCommands"],
+                            ["handledSecond", "handledDiscordCommands"],
+                            ["handledMinute", "handledDiscordCommands"]
+                        ]
+                    },
+                    "3": {
+                        "names": [
+                            "",
+                            "Handles",
+                            "Requests/sec",
+                            "Requests/min"
+                        ],
+                        "keypaths": [
+                            "@@thWebsite",
+                            ["handled", "handledWebsiteRequests"],
+                            ["handledSecond", "handledWebsiteRequests"],
+                            ["handledMinute", "handledWebsiteRequests"],
+                            "\n",
+                            "@@thAPI",
+                            ["handled", "handledAPIRequests"],
+                            ["handledSecond", "handledAPIRequests"],
+                            ["handledMinute", "handledAPIRequests"]
+                        ]
+                    }
+                };
+
+                createTable(tables, dat, "_admin_table", "_admin_body", "_admin_progress", ["_admin_progress"])
+
+                // Object.keys(tables).forEach((a, i) => {
+                //     if (document.getElementById(`_admin_table_${i}`) === null) {
+                //         let table_elem = document.createElement("table");
+                //         table_elem.id = `_admin_table_${i}`;
+                //         table_elem.classList.add("j_table", "_admin_table");
+
+                //         let th_tr_elem = document.createElement("tr");
+                //         let tr_elem = document.createElement("tr");
+                //         tr_elem.id = `_admin_table_${i}_tr_0`;
+                //         tr_elem.classList.add(`_admin_table_${i}_tr`);
+
+                //         tables[a].names.forEach((b, i2) => {
+                //             let th_elem = document.createElement("th");
+                //             th_elem.innerText = (b ?? "");
+                //             if ((b?.toString()?.length ?? 0) === 0) {
+                //                 th_elem.classList.add("noborder", "j_table-noval");
+                //             } else {
+                //                 th_elem.classList.add("j_table-hasval", "j_table-title");
+                //             }
+                //             th_elem.classList.add("j_table_th");
+
+                //             th_tr_elem.appendChild(th_elem);
+                //         });
+
+                //         table_elem.appendChild(th_tr_elem);
+                //         table_elem.appendChild(tr_elem);
+
+                //         document.getElementById("_admin_body").appendChild(table_elem);
+                //     };
+
+                //     let tabletr = document.getElementById(`_admin_table_${i}_tr_0`);
+                //     let key_elem_index = 0;
+
+                //     tables[a].keypaths.forEach((b, i2) => {
+                //         let key_elem_id = `_admin_table_${i}_td_${i2}`;
+                //         let key_elem_val_id = `_admin_table_${i}_td_${i2}_val`;
+                //         let key_elem_progress_id = `_admin_table_${i}_td_${i2}_progress`;
+
+                //         let iab = Array.isArray(b);
+                //         let isProgress = (iab && b[0] === "@@progress"); if (isProgress) b = b.slice(1);
+                //         let skipVal = (iab && b[0] === "@@skipval"); if (skipVal) b = b.slice(1);
+                //         let isTH = (!iab && b.startsWith("@@th")); if (isTH) b = b.replace("@@th", "");
+
+                //         let val = (!iab ? b : getKeyFromObject(dat, b));
+
+                //         let val_ = val;
+                //         if (Array.isArray(val)) {
+                //             val_ = val.length;
+                //         } else if (["string", "number"].includes(typeof val) && val.toString().includes(".")) {
+                //             val_ = val.toString();
+                //             val_ = val_.slice(0, (val_.split(".")[0].length + 1 + 2)) + "%";
+                //         } else if (["number"].includes(typeof val)) {
+                //             val_ = val.toString();
+                //             val_ = _numberspacer(val_);
+                //         };
+
+                //         if (val === "\n") {
+                //             key_elem_index = 0;
+
+                //             const tabletrold = tabletr;
+                //             const tabletroldnum = (tabletrold.id.split("_")[tabletrold.id.split("_").length - 1]);
+                //             let tabletr_id = `${tabletrold.id.slice(0, (tabletrold.id.length - tabletroldnum.length))}${parseInt(tabletroldnum) + 1}`
+
+                //             if (document.getElementById(tabletr_id)) {
+                //                 tabletr = document.getElementById(tabletr_id);
+                //                 return;
+                //             };
+
+                //             tabletr = document.createElement("tr");
+                //             tabletr.id = tabletr_id;
+                //             tabletr.classList.add(`_admin_table_${i}_tr`);
+
+                //             document.getElementById(`_admin_table_${i}`).appendChild(tabletr);
+                //         } else {
+                //             if (document.getElementById(key_elem_id) === null) {
+                //                 let key_elem = document.createElement((isTH ? "th" : "td"));
+                //                 key_elem.classList.add("j_table_td", "_admin_table_td", `_admin_table_${i}_td`, `_admin_table_td_${key_elem_index}`, `_admin_table_${i}_td_${key_elem_index}`);
+                //                 key_elem.id = key_elem_id;
+
+                //                 if ((val_?.toString()?.length ?? 0) === 0) {
+                //                     key_elem.classList.add("noborder", "j_table-noval");
+                //                 } else {
+                //                     key_elem.classList.add("j_table-hasval");
+                //                 };
+
+                //                 let key_elem_val = document.createElement("h");
+                //                 key_elem_val.id = key_elem_val_id;
+                //                 key_elem_val.classList.add(`_admin_val`, `_admin_table_${i}_val`);
+                //                 if (!skipVal) key_elem_val.innerText = val_;
+
+                //                 if (isTH) {
+                //                     key_elem.classList.add("j_table-title");
+                //                 } else {
+                //                     key_elem.classList.add("cursor-copy");
+                //                     key_elem.onclick = () => { copy(key_elem) };
+                //                 };
+
+                //                 key_elem.appendChild(key_elem_val);
+
+                //                 if (isProgress) {
+                //                     let progress_elem = document.createElement("progress");
+                //                     progress_elem.max = 100;
+                //                     progress_elem.value = val;
+                //                     progress_elem.classList.add("_admin_progress");
+                //                     progress_elem.id = key_elem_progress_id;
+
+                //                     key_elem.classList.add("_admin_progress_parent");
+                //                     key_elem.appendChild(progress_elem);
+                //                 };
+
+                //                 tabletr.appendChild(key_elem);
+                //             } else if (isProgress && document.getElementById(`${key_elem_id}_progress`) !== null) {
+                //                 document.getElementById(`${key_elem_id}_progress`).value = val;
+                //                 document.getElementById(key_elem_val_id).innerText = val_;
+                //             } else {
+                //                 document.getElementById(key_elem_val_id).innerText = val_;
+                //             };
+
+                //             key_elem_index++;
+                //         };
+                //     });
+                // });
+
+                let log_elem = document.getElementById("_admin_log");
+                log_elem.value = "";
+
+                Object.keys(dat.logs.all).reverse().forEach(a => {
+                    log_elem.value = `${dat.logs.all[a][2]} ${dat.logs.all[a][1]}\n${log_elem.value}`;
+                });
+
+                if (isFirst) {
+                    progress(100);
+                    log_elem.scrollTop = log_elem.scrollHeight;
+                };
+
+                isFirst = false;
+            })
+            .catch(e => {
+                requests_failed++;
+                error(e);
+                document.getElementById("_admin").style.display = "none";
+                if (interval && requests_failed > 1) clearInterval(interval);
+                return;
+            });
+    }
+};
+
 class channelsuggestion {
     suggestiondata;
     isadmin = Boolean();
@@ -707,7 +856,7 @@ class channelsuggestion {
             method: "GET"
         }, (e, dat_) => {
             if (e) return error(e);
-            
+
             if (devMode) console.debug("get", dat_);
 
             if (dat_.status !== 200) {
@@ -726,6 +875,9 @@ class channelsuggestion {
             document.getElementById("_suggestchannel").style.display = "block";
 
             if (dat.isAdmin) {
+                Object.keys(dat.handledchannels).sort((a, b) => { return dat.handledchannels[a].status - dat.handledchannels[b].status }).forEach(a => this.appendSuggestionAdmin(dat.handledchannels[a], "_suggestchannel_admin_table_2"));
+                Object.keys(dat.suggestedchannels).sort((a, b) => { return dat.suggestedchannels[a].status - dat.suggestedchannels[b].status }).forEach(a => this.appendSuggestionAdmin(dat.suggestedchannels[a]));
+
                 if (Object.keys(dat.suggestedchannels).length === 0) {
                     document.getElementById("_suggestchannel_admin_table").style.display = "none";
                     document.getElementById("_suggestchannel_admin_h").innerText = "You're all caught up - No Pending Suggestions found";
@@ -733,7 +885,6 @@ class channelsuggestion {
                 } else {
                     document.getElementById("_suggestchannel_admin").style.display = "block";
                     document.getElementById("_suggestchannel_admin_num").innerText = Object.keys(dat.suggestedchannels).length;
-                    Object.keys(dat.suggestedchannels).forEach(a => this.appendSuggestionAdmin(dat.suggestedchannels[a]));
                 };
             } else {
                 if (Object.keys(dat.suggestedchannels).length === 0) {
@@ -770,7 +921,7 @@ class channelsuggestion {
         }, (e, dat_) => {
             if (e) return error(e);
 
-            if(devMode) console.debug("submit", dat_);
+            if (devMode) console.debug("submit", dat_);
 
             if (dat_.status !== 200) {
                 switch (dat_.status) {
@@ -815,7 +966,7 @@ class channelsuggestion {
         }, (e, dat_) => {
             if (e) return error(e);
 
-            if(devMode) console.debug("submitAdmin", dat_);
+            if (devMode) console.debug("submitAdmin", dat_);
 
             if (dat_.status !== 200) {
                 switch (dat_.status) {
@@ -830,15 +981,17 @@ class channelsuggestion {
 
             progress(100);
 
-            document.getElementById(`_suggestchannel_${channel}`).remove();
-            delete this.suggestiondata.suggestedchannels[channel];
+            let removingelem = document.getElementById(`_suggestchannel_${channel}`);
+            removingelem.parentNode.appendChild(removingelem);
+            removingelem.remove();
+            try { delete this.suggestiondata.suggestedchannels[channel]; } catch (e) { error(e) };
 
             if (Object.keys((this.suggestiondata?.suggestedchannels ?? {})).length === 0) {
                 document.getElementById("_suggestchannel_admin").style.display = "none";
                 document.getElementById("_suggestchannel_admin_h").innerText = "You're all caught up - No Pending Suggestions found";
                 document.getElementById("_suggestchannel_admin_h").style.display = "block";
-            }
-        })
+            };
+        });
     };
 
     static appendSuggestion = (suggestion) => {
@@ -867,54 +1020,65 @@ class channelsuggestion {
         document.getElementById("_suggestchannel_table").appendChild(suggestionelem);
     };
 
-    static appendSuggestionAdmin = (suggestion) => {
+    static appendSuggestionAdmin = (suggestion, tableid) => {
         let suggestionelem = document.createElement("tr");
-        suggestionelem.classList.add("j_table_tr", "border_white", "j_table-hasval");
+        suggestionelem.classList.add("j_table_tr", "border_white");
         suggestionelem.id = `_suggestchannel_${suggestion._user.id}`;
 
         let suggestionelem_name = document.createElement("td");
         let suggestionelem_id = document.createElement("td");
-        let suggestionelem_users_num = document.createElement("td");
-        let suggestionelem_select = document.createElement("td");
-        let suggestionelem_submit = document.createElement("td");
+        let suggestionelem_type = document.createElement("td");
+        let suggestionelem_users = document.createElement("td");
+        let suggestionelem_status = document.createElement("td");
+        let suggestionelem_actions = document.createElement("td");
 
         suggestionelem_name.innerText = suggestion._user.login;
         suggestionelem_id.innerText = suggestion._user.id;
-        suggestionelem_users_num.innerText = suggestion.users.length;
+        suggestionelem_type.innerText = (suggestion._user.type?.length > 0 ? suggestion._user.type : "");
+        suggestionelem_type.classList.add(...(suggestion._user.type?.length > 0 ? ["bg-yellow"] : ["noborder", "bg-transparent", "j_table-noval"]));
+        suggestionelem_users.innerText = suggestion.first_user + (suggestion.users.length > 1 ? ` +${suggestion.users.length - 1}` : "");
 
-        let suggestion_select = document.createElement("select");
+        let suggestion_approve = document.createElement("button");
+        let suggestion_deny = document.createElement("button");
+
+        let this_ = this;
+        suggestion_approve.innerText = "Approve";
+        suggestion_approve.classList.add("bg-green");
+        suggestion_approve.onclick = () => { this_.submitAdmin(suggestion._user.id, 1); suggestionelem_status.innerText = "Approved"; suggestionelem_status.classList.add("bg-green"); };
+        suggestion_deny.innerText = "Deny";
+        suggestion_deny.classList.add("bg-red");
+        suggestion_deny.onclick = () => { this_.submitAdmin(suggestion._user.id, 2); suggestionelem_status.innerText = "Denied"; suggestionelem_status.classList.add("bg-red"); };
+
+        suggestionelem_actions.style.width = "20%";
+        suggestionelem_actions.style.padding = "3px";
+
+        [suggestion_approve, suggestion_deny].forEach(a => {
+            a.style.width = "40%";
+            a.style.marginLeft = a.style.marginRight = "3px";
+            suggestionelem_actions.appendChild(a);
+        });
+
         const suggestionnames = ["Pending", "Approve", "Deny"];
-        for (let i = 0; i <= 2; i++) {
-            let suggestionoptionelem = document.createElement("option");
-            suggestionoptionelem.value = i;
-            suggestionoptionelem.innerText = suggestionnames[i];
-            suggestion_select.appendChild(suggestionoptionelem);
-        };
+        const suggestionnames_2 = ["Pending", "Approved", "Denied"];
 
-        suggestionelem_select.appendChild(suggestion_select);
+        suggestionelem_status.innerText = suggestionnames_2[suggestion.status];
+        suggestionelem_status.classList.add((suggestion.status == 1 ? "bg-green" : (suggestion.status == 2 ? "bg-red" : "bg-yellow")));
 
-        let suggestion_submit = document.createElement("button");
-        suggestion_submit.innerText = "Submit";
-        let submitadmin_ = this.submitAdmin;
-        suggestion_submit.onclick = () => { submitadmin_(suggestion._user.id, suggestion_select.value) };
-        suggestion_submit.classList.add("button_submit");
-
-        suggestionelem_submit.appendChild(suggestion_submit);
-
-        [suggestionelem_name, suggestionelem_id, suggestionelem_users_num, suggestionelem_select, suggestionelem_submit].forEach((a, i) => {
+        [suggestionelem_name, suggestionelem_id, suggestionelem_type, suggestionelem_users, suggestionelem_status, suggestionelem_actions].forEach((a, i) => {
             a.classList.add(`_suggestchannel_${suggestion._user.id}`);
             a.id = `_suggestchannel_${suggestion._user.id}_${["name", "id", "users_num", "select", "submit"][i]}`;
-            if (i < 3) {
+            a.classList.add((a.innerText.length > 0 ? "j_table-hasval" : "j_table-noval"));
+            if (i < 6 && a.innerText.length > 0) {
                 a.classList.add("cursor-copy");
                 a.onclick = () => {
-                    copy(a);
+                    if (i == 3) copy(a, suggestion.users.join(", ")); else copy(a);
                 };
             };
-            if (i < 5) a.classList.add("_table_width_23-2", "j_table_td");
+            a.classList.add("j_table_td")
             suggestionelem.appendChild(a);
         });
 
-        document.getElementById("_suggestchannel_admin_table").appendChild(suggestionelem);
+        document.getElementById((tableid ?? "_suggestchannel_admin_table")).appendChild(suggestionelem);
     };
 
     static reload = () => {
@@ -922,6 +1086,238 @@ class channelsuggestion {
         [...document.querySelectorAll("#_suggestchannel_table tr")].slice(1).forEach(a => a.remove());
 
         this.load();
+    };
+};
+
+class dashboard {
+    dashboardData = {};
+
+    static load = () => {
+        if (!auth().parsed) {
+            progress(-1);
+            document.getElementById("_login").style.display = "block";
+            return;
+        };
+
+        request(apiurl("/dashboard"), {
+            headers: {
+                auth: auth().auth
+            }
+        }, (e, r) => {
+            if (e) return error(e);
+
+            let dat = r.data;
+
+            if (devMode) console.debug("dash", dat);
+
+            this.dashboardData = dat;
+
+            let dashboard_elem = document.querySelector("#_dashboard");
+            dashboard_elem.style.width = "80%";
+
+            let prefix_elem = document.createElement("div");
+            let prefix_elem_input = document.createElement("input");
+            let prefix_elem_update = document.createElement("button");
+            let prefix_elem_reset = document.createElement("button");
+            let botstatus_elem = document.createElement("div");
+            let botstatus_elem_h = document.createElement("j_h");
+            let botstatus_elem_button = document.createElement("button");
+            let removelog_elem_button = document.createElement("button");
+
+            removelog_elem_button.innerText = "Remove from logs";
+            removelog_elem_button.classList.add("bg-red");
+            removelog_elem_button.onclick = () => {
+                this.removelogs();
+            };
+
+            if (dat.bot) {
+                botstatus_elem.id = "_dash_status";
+                botstatus_elem.classList.add((dat.bot.inChannel ? "bg-green" : "bg-red"), "_width-100");
+
+                botstatus_elem_h.id = "_dash_status_h";
+                botstatus_elem_h.innerText = (dat.bot.inChannel ? `Bot in channel` : "Bot not in channel");
+
+                botstatus_elem_button.id = "_dash_status_button";
+                botstatus_elem_button.innerText = (dat.bot.inChannel ? "Part" : "Join");
+                botstatus_elem_button.classList.add((dat.bot.inChannel ? "bg-red" : "bg-green"), "_dash_status_button");
+                botstatus_elem_button.onclick = async () => {
+                    if (this.dashboardData.bot.inChannel) {
+                        await this.partChannel(auth().parsed.user_id);
+                    } else {
+                        await this.joinChannel(auth().parsed.user_id);
+                    }
+                };
+
+                [botstatus_elem_h, br].forEach(a => {
+                    botstatus_elem.appendChild(a);
+                });
+
+
+                prefix_elem_input.id = "j_dash_prefix_input";
+                prefix_elem_input.value = (dat.bot.prefix ?? "");
+                prefix_elem_input.placeholder = dat.bot.defaultPrefix;
+
+                let this_ = this;
+
+                prefix_elem.appendChild(prefix_elem_input);
+
+                prefix_elem_update.classList.add("bg-green");
+                prefix_elem_update.innerText = "Update";
+                prefix_elem_update.onclick = () => {
+                    if (!(prefix_elem_input.value ?? undefined)) return error("Prefix input is empty");
+                    if ((prefix_elem_update.value ?? undefined) === (this.dashboardData.bot.prefix ?? this.dashboardData.bot.defaultPrefix)) return error("Prefix unchanged");
+                    this_.editKey("prefix", prefix_elem_input.value);
+                };
+
+                prefix_elem_reset.classList.add("bg-red");
+                prefix_elem_reset.innerText = "Reset";
+                prefix_elem_reset.onclick = () => {
+                    if (!(prefix_elem_input.value ?? undefined)) return error("Prefix unchanged");
+                    this_.editKey("prefix", "");
+                    prefix_elem_input.value = "";
+                };
+
+                [prefix_elem_update, prefix_elem_reset].forEach(a => {
+                    a.classList.add("_dash_prefix_button");
+                });
+            };
+
+            document.getElementById("_logging_opted_out").classList.add("bg-red");
+            document.getElementById("_logging_opted_out").innerHTML = "<h>You have been opted out from logging. You cannot undo this by yourself.</h><br><h>If you want to get removed from the blacklist, write me a nice message via one of in the footer displayed options</h>";
+            if (!dat.inBlacklist) {
+                document.getElementById("_logging_opted_out").style.display = "none";
+            };
+
+            let table1 = {
+                "0": {
+                    "names": [
+                        "Status",
+                        "Prefix"
+                    ],
+                    "keypaths": [
+                        "\n",
+                        ["@@html", botstatus_elem],
+                        ["@@html", prefix_elem],
+                        // ["@@html", prefix_elem, prefix_elem_update, prefix_elem_reset],
+                        "\n",
+                        ["@@html", botstatus_elem_button],
+                        ["@@html", prefix_elem_update, prefix_elem_reset],
+                    ]
+                }
+            };
+
+            let table2 = {
+                "1": {
+                    "names": [
+                        "Remove from Logs"
+                    ],
+                    "keypaths": [
+                        "By clicking the button down below, you opt yourself out of any kind of logging, that includes your channel and you in other channels",
+                        "\n",
+                        "All your existing data will be deleted and you will be permanently blacklisted",
+                        "\n",
+                        "Warning: This cannot be undone - If you want to get removed from the blacklist, write me a nice message via one of in the footer displayed options",
+                        "\n",
+                        ["@@html", removelog_elem_button]
+                    ]
+                }
+            };
+
+            createTable(table1, dat, "_dash_table", "_dashboard");
+            createTable(table2, dat, "_dash_table2", "_dashboard");
+
+            if (dat.inBlacklist) {
+                document.getElementById("_dash_table2_0").style.display = "none";
+                document.getElementById("_logging_opted_out").style.display = "block";
+            };
+        });
+    };
+
+    static editKey = (key, value) => {
+        request(apiurl("/channel"), {
+            headers: {
+                auth: auth().auth,
+                key: key,
+                value: value
+            },
+            method: "POST"
+        }, (e, r) => {
+            if (e) return error(e);
+
+            let dat = r.data;
+
+            notification(dat.message);
+
+            if (key == "prefix") {
+                if (this.dashboardData?.bot?.prefix) this.dashboardData.bot.prefix = value;
+                if (!(value ?? undefined)) {
+                    document.getElementById("j_dash_prefix_input").value = "";
+                }
+            };
+        });
+    };
+
+    static joinChannel = (ch) => {
+        request(apiurl("/join"), {
+            headers: {
+                auth: auth().auth,
+                channel: ch
+            },
+            method: "POST"
+        }, (e, r) => {
+            if (e) return error(e);
+
+            let dat = r.data;
+
+            if (devMode) console.debug("join", dat);
+
+            document.getElementById("_dash_status_h").innerText = "Bot in channel";
+            document.getElementById("_dash_status_button").classList.replace("bg-green", "bg-red");
+            document.getElementById("_dash_status_button").innerText = "Part";
+            document.getElementById("_dash_status").classList.replace("bg-red", "bg-green");
+            this.dashboardData.bot.inChannel = true;
+        });
+    };
+
+    static partChannel = (ch) => {
+        request(apiurl("/part"), {
+            headers: {
+                auth: auth().auth,
+                channel: ch
+            },
+            method: "POST"
+        }, (e, r) => {
+            if (e) return error(e);
+
+            let dat = r.data;
+
+            if (devMode) console.debug("part", dat);
+
+            document.getElementById("_dash_status_h").innerText = "Bot not in channel";
+            document.getElementById("_dash_status_button").classList.replace("bg-red", "bg-green");
+            document.getElementById("_dash_status_button").innerText = "Join";
+            document.getElementById("_dash_status").classList.replace("bg-green", "bg-red");
+            this.dashboardData.bot.inChannel = true;
+        });
+    };
+
+    static removelogs = () => {
+        request(apiurl("/blacklist"), {
+            headers: {
+                auth: auth().auth,
+                user: auth().parsed.user_id
+            },
+            method: "POST"
+        }, (e, r) => {
+            if (e) return error(e);
+
+            let dat = r.data;
+
+            if (devMode) console.debug("removelogs", dat);
+
+            document.getElementById("_dash_table2_0").style.display = "none";
+            document.getElementById("_logging_opted_out").style.display = "block";
+        });
     };
 };
 
@@ -990,8 +1386,8 @@ function autoexec() {
         };
 
         case "/admin": {
-            loadadmin();
-            interval = setInterval(loadadmin, interval_times.admin);
+            admin.load();
+            interval = setInterval(admin.load, interval_times.admin);
             break;
         };
 
@@ -1001,18 +1397,70 @@ function autoexec() {
             break;
         };
 
+        case "/dashboard": {
+            dashboard.load(); break;
+        };
+
         default: {
             progress(-1);
         };
     };
 };
 
-let icon_elems = document.querySelectorAll(".j_icon");
-let login_elem = document.querySelector("#j_login");
-let notification_elem = document.querySelector("j_notification");
-let pagename_elem = document.querySelector("#j_pagename");
-
 function _main_elems() {
+    document.querySelector("j_body").appendChild(spacer);
+
+    let contact_elem = document.createElement("j_contact");
+    let contact_elem_h = document.createElement("j_title");
+    contact_elem_h.innerText = "Contact";
+    let contact_options = {
+        "Discord": {
+            "url": "https://discord.com/users/635032637194633229",
+            "src": "/html/img/discord.png"
+        },
+        "Twitch": {
+            "url": "https://twitch.tv/jubewe",
+            "src": "/html/img/twitch.png"
+        }
+    };
+
+    contact_elem.appendChild(contact_elem_h);
+    contact_elem.appendChild(document.createElement("j_spacer_smol"));
+
+    Object.keys(contact_options).forEach(a => {
+        contact_elem.appendChild(document.createElement("j_spacer_inline_smol"));
+        let contact_elem_2_div = document.createElement("div");
+        contact_elem_2_div.classList.add("j_contact_icon_div");
+
+        let contact_elem_2 = document.createElement("a");
+        contact_elem_2.classList.add("j_contact_icon_a");
+        let contact_elem_2_img = document.createElement("img");
+        contact_elem_2_img.classList.add("j_contact_icon_img")
+
+        contact_elem_2_img.src = contact_options[a].src;
+        contact_elem_2.href = contact_options[a].url;
+
+        contact_elem_2.appendChild(contact_elem_2_img);
+        contact_elem_2_div.appendChild(contact_elem_2);
+        contact_elem.appendChild(contact_elem_2_div);
+    });
+
+    [contact_elem, spacer].forEach(a => document.querySelector("j_body").appendChild(a));
+
+    let footer_elem = document.createElement("j_footer");
+    let footer_elem_h = document.createElement("j_h");
+    let footer_elem_host = document.createElement("j_h");
+    let footer_elem_icons = document.createElement("j_h");
+
+    footer_elem_h.innerHTML = "This page was made with <h class='fontkindaverysmollol'></h> Love by <a href='https://twitch.tv/jubewe'>Jubewe</a><br>";
+    footer_elem_host.innerHTML = `<h class='fontsmol'>Hosted by <h class='url' onclick="redirect('https://dau8er.github.io/')">DAU8ER</h></h><br>`;
+    footer_elem_icons.innerHTML = `<h class='fontsmol'>Discord- and Twitch Icon by <h class='url' onclick="redirect('https://icons8.com')">icons8.com</h></h>`;
+
+    [footer_elem_h, footer_elem_host, footer_elem_icons].forEach(a => footer_elem.appendChild(a));
+
+    document.querySelector("j_body").appendChild(footer_elem);
+
+
     if (icon_elems[0]) {
         icon_elems[0].classList.add("cursor-pointer");
         icon_elems[0].onclick = () => { redirectSelf(url.origin) };
@@ -1034,11 +1482,8 @@ function _main_elems() {
     if (pagename_elem) pagename_elem.innerText = currentendpointpath.split("/").slice(1).map(a => a[0].toUpperCase() + a.slice(1)).join("/");
 };
 
-if (url.searchParams.get("devMode")) devMode = true;
-
-_main_elems();
 progress(25);
-autoexec();
+window.onload = () => { autoexec(); _main_elems(); };
 
 window.addEventListener("keypress", ev => {
     switch (ev.key) {
