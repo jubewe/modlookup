@@ -21,10 +21,11 @@ class j {
         apiStartPath: "../../data/twitch/userids",
         executeOnOutgoingPrivmsg: (m) => {
             if (m.startsWith("Error") && !m.includes("PoroSad")) m = m + " PoroSad";
-            let dmatch = m.match(/(?<!\S)\d{3,}(?!\S)/g);
+            let dmatch = m.match(/(?<!\s)\d{3,}(?!\s)/g);
             if ((dmatch ?? undefined)) {
                 dmatch.forEach(a => {
-                    m = m.replace(new RegExp(a, "g"), _cleannumber(a));
+                    // m = m.replace(new RegExp(a, "g"), _cleannumber(a));
+                    // m = m.replace(new RegExp(a, "g"), _numberspacer(a));
                 });
             };
             return m + "";

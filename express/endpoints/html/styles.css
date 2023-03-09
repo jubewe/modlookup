@@ -413,6 +413,10 @@ j_spacer_inline_smol_smol {
   background-color: #28a09c95;
 }
 
+.j_table_td {
+  width: 100%;
+}
+
 .j_table-noval {
   padding: 0;
   margin: 0;

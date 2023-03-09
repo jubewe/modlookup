@@ -1040,6 +1040,7 @@ class channelsuggestion {
 
         let suggestion_approve = document.createElement("button");
         let suggestion_deny = document.createElement("button");
+        let suggestion_blacklist = document.createElement("button");
 
         let this_ = this;
         suggestion_approve.innerText = "Approve";
@@ -1083,6 +1084,7 @@ class channelsuggestion {
 
     static reload = () => {
         [...document.querySelectorAll("#_suggestchannel_admin_table tr")].slice(1).forEach(a => a.remove());
+        [...document.querySelectorAll("#_suggestchannel_admin_table_2 tr")].slice(1).forEach(a => a.remove());
         [...document.querySelectorAll("#_suggestchannel_table tr")].slice(1).forEach(a => a.remove());
 
         this.load();

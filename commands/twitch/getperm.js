@@ -14,7 +14,7 @@ module.exports = {
         };
 
         if (response.messageArguments[1]) {
-            permuser = await j.client.getuserid(response.messageArguments[1]);
+            permuser = await j.client.getuser(response.messageArguments[1]);
             if(!permuser.id) return response.reply(`Error: Invalid User provided: ${_returnerr(permuser)}`);
         };
 
