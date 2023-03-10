@@ -46,6 +46,10 @@ a {
   color: #0d1321;
 }
 
+.bg-orange {
+  background-color: #bc3908 !important;
+}
+
 .bg-transparent {
   background: transparent;
 }
@@ -413,9 +417,9 @@ j_spacer_inline_smol_smol {
   background-color: #28a09c95;
 }
 
-.j_table_td {
+/* .j_table_td {
   width: 100%;
-}
+} */
 
 .j_table-noval {
   padding: 0;
@@ -473,10 +477,6 @@ j_emote {
   /* height: 100%; */
   width: 100%;
   place-items: center;
-}
-
-#_suggestchannel_admin_2 {
-  display: block;
 }
 
 #_admin_body {

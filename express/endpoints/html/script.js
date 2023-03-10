@@ -22,20 +22,19 @@ if (url.searchParams.get("devmode")) devMode = true;
 
 let icon_elems = document.querySelectorAll(".j_icon");
 let login_elem = document.querySelector("#j_login");
-let notification_elem = document.querySelector("j_notification");
 let pagename_elem = document.querySelector("#j_pagename");
 let spacer = document.createElement("j_spacer");
 let spacer_inline = document.createElement("j_spacer_inline");
 let br = document.createElement("br");
+let progress_elem = document.getElementById("j_progress");
+let notification_elem = document.querySelector("j_notification");
 
 function progress(num) {
-    const progress_elem = document.getElementById("j_progress");
-
     const num_ = (num > 0 && num < 1 ? num * 100 : num);
-
+    
     if (num_ < 100) progress_elem.classList.replace("progress_load_end", "progress_load");
     if (num_ === 100) progress_elem.classList.replace("progress_load", "progress_load_end");
-
+    
     setTimeout(() => {
         progress_elem.style.display = (num_ >= 0 && num_ < 100 ? "block" : "none");
     }, (num_ >= 0 && num_ < 100 ? 0 : 1500))
@@ -43,9 +42,9 @@ function progress(num) {
 };
 
 function notification(message, timeout, iserror) {
-    const notification_elem = document.querySelector("j_notification");
-
-    const notification_elem_text = document.querySelector("#j_notification");
+    notification_elem = document.querySelector("j_notification");
+    if (!notification_elem) return;
+    let notification_elem_text = document.querySelector("#j_notification");
     let add_classes = [];
 
     iserror = (iserror ?? (message instanceof Error || (message?.error ?? message?.error)));
@@ -109,16 +108,18 @@ function auth() {
 function validatetoken() {
     if (!document.URL.includes("#access_token=")) return;
     let token = document.URL.split("#access_token=")[1].split("&")[0];
-    fetch(`${api_url}/validatetoken`, { headers: { "authorization": token } })
-        .then(async req => {
-            let res = await req.json();
-            console.log(`Successfully authorized`)
-            localStorage.setItem("auth", JSON.stringify(res.data));
-            window.close();
-        })
-        .catch(e => {
-            error(e);
-        });
+    request(apiurl("/token/validate"), {
+        headers: {
+            "authorization": token
+        }
+    }, (e, r) => {
+        if (e) return error(e);
+
+        let dat = r.data;
+        console.log(`Successfully authorized`)
+        localStorage.setItem("auth", JSON.stringify(dat));
+        window.close();
+    })
 };
 
 function login() {
@@ -886,6 +887,12 @@ class channelsuggestion {
                     document.getElementById("_suggestchannel_admin").style.display = "block";
                     document.getElementById("_suggestchannel_admin_num").innerText = Object.keys(dat.suggestedchannels).length;
                 };
+
+                if (Object.keys(dat.handledchannels).length === 0) {
+                    document.getElementById("_suggestchannel_admin_2").style.display = "none";
+                } else {
+                    document.getElementById("_suggestchannel_admin_2").style.display = "block";
+                }
             } else {
                 if (Object.keys(dat.suggestedchannels).length === 0) {
                     document.getElementById("_suggestchannel_table").style.display = "none";
@@ -893,6 +900,7 @@ class channelsuggestion {
                     document.getElementById("_suggestchannel_h").style.display = "block";
                 } else {
                     document.getElementById("_suggestchannel_div").style.display = "block";
+                    console.log(dat.suggestedchannels)
                     Object.keys(dat.suggestedchannels).forEach(a => {
                         this.appendSuggestion(dat.suggestedchannels[a]);
                     });
@@ -915,7 +923,7 @@ class channelsuggestion {
         request(apiurl("/suggestchannel"), {
             headers: {
                 "auth": auth().auth,
-                "suggestchannel": channel
+                "channel": channel
             },
             method: "POST"
         }, (e, dat_) => {
@@ -959,8 +967,8 @@ class channelsuggestion {
         request(apiurl("/suggestchannel"), {
             headers: {
                 "auth": auth().auth,
-                "suggestchannel": channel,
-                "suggestchannel_status": status
+                "channel": channel,
+                "channelstatus": status
             },
             method: "PATCH"
         }, (e, dat_) => {
@@ -1036,7 +1044,7 @@ class channelsuggestion {
         suggestionelem_id.innerText = suggestion._user.id;
         suggestionelem_type.innerText = (suggestion._user.type?.length > 0 ? suggestion._user.type : "");
         suggestionelem_type.classList.add(...(suggestion._user.type?.length > 0 ? ["bg-yellow"] : ["noborder", "bg-transparent", "j_table-noval"]));
-        suggestionelem_users.innerText = suggestion.first_user + (suggestion.users.length > 1 ? ` +${suggestion.users.length - 1}` : "");
+        suggestionelem_users.innerText = suggestion.first_user + (Object.keys(suggestion.users).length > 1 ? ` +${Object.keys(suggestion.users).length - 1}` : "");
 
         let suggestion_approve = document.createElement("button");
         let suggestion_deny = document.createElement("button");
@@ -1049,21 +1057,23 @@ class channelsuggestion {
         suggestion_deny.innerText = "Deny";
         suggestion_deny.classList.add("bg-red");
         suggestion_deny.onclick = () => { this_.submitAdmin(suggestion._user.id, 2); suggestionelem_status.innerText = "Denied"; suggestionelem_status.classList.add("bg-red"); };
+        suggestion_blacklist.innerText = "Blacklist";
+        suggestion_blacklist.classList.add("bg-red");
+        suggestion_blacklist.onclick = () => { this_.submitAdmin(suggestion._user.id, 3); suggestionelem_status.innerText = "Blacklisted"; suggestionelem_status.classList.add("bg-red"); }
 
         suggestionelem_actions.style.width = "20%";
         suggestionelem_actions.style.padding = "3px";
 
-        [suggestion_approve, suggestion_deny].forEach(a => {
-            a.style.width = "40%";
-            a.style.marginLeft = a.style.marginRight = "3px";
+        [suggestion_approve, suggestion_deny, suggestion_blacklist].forEach(a => {
+            // a.style.width = "30%";
+            a.style.marginLeft = a.style.marginRight = "1px";
             suggestionelem_actions.appendChild(a);
         });
 
-        const suggestionnames = ["Pending", "Approve", "Deny"];
-        const suggestionnames_2 = ["Pending", "Approved", "Denied"];
+        const suggestionnames = ["Pending", "Approved", "Denied", "Blacklisted"];
 
-        suggestionelem_status.innerText = suggestionnames_2[suggestion.status];
-        suggestionelem_status.classList.add((suggestion.status == 1 ? "bg-green" : (suggestion.status == 2 ? "bg-red" : "bg-yellow")));
+        suggestionelem_status.innerText = suggestionnames[suggestion.status];
+        suggestionelem_status.classList.add((suggestion.status == 1 ? "bg-green" : ([2, 3].includes(suggestion.status) ? "bg-red" : "bg-yellow")));
 
         [suggestionelem_name, suggestionelem_id, suggestionelem_type, suggestionelem_users, suggestionelem_status, suggestionelem_actions].forEach((a, i) => {
             a.classList.add(`_suggestchannel_${suggestion._user.id}`);
@@ -1088,6 +1098,22 @@ class channelsuggestion {
         [...document.querySelectorAll("#_suggestchannel_table tr")].slice(1).forEach(a => a.remove());
 
         this.load();
+    };
+
+    static blacklist = (ch) => {
+        request(apiurl("/suggestchannel"), {
+            headers: {
+                auth: auth().auth,
+                channel: ch,
+                channelstatus: 3
+            }
+        }, (e, r) => {
+            if (e) return error(e);
+
+            let dat = r.data;
+
+            if (devMode) console.debug("blacklist", dat);
+        });
     };
 };
 
@@ -1383,7 +1409,7 @@ function autoexec() {
         };
 
 
-        case "/validatetoken": {
+        case "/token/validate": {
             validatetoken(); break;
         };
 
@@ -1410,7 +1436,9 @@ function autoexec() {
 };
 
 function _main_elems() {
-    document.querySelector("j_body").appendChild(spacer);
+    let j_body_elem = document.querySelector("j_body");
+    if (!j_body_elem) return;
+    j_body_elem.appendChild(spacer);
 
     let contact_elem = document.createElement("j_contact");
     let contact_elem_h = document.createElement("j_title");
@@ -1447,7 +1475,7 @@ function _main_elems() {
         contact_elem.appendChild(contact_elem_2_div);
     });
 
-    [contact_elem, spacer].forEach(a => document.querySelector("j_body").appendChild(a));
+    [contact_elem, spacer].forEach(a => j_body_elem.appendChild(a));
 
     let footer_elem = document.createElement("j_footer");
     let footer_elem_h = document.createElement("j_h");
@@ -1460,8 +1488,7 @@ function _main_elems() {
 
     [footer_elem_h, footer_elem_host, footer_elem_icons].forEach(a => footer_elem.appendChild(a));
 
-    document.querySelector("j_body").appendChild(footer_elem);
-
+    j_body_elem.appendChild(footer_elem);
 
     if (icon_elems[0]) {
         icon_elems[0].classList.add("cursor-pointer");

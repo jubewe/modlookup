@@ -148,7 +148,7 @@ module.exports = async () => {
         res.send(_rf("./express/endpoints/html/suggestchannel.html"));
     });
 
-    j.express.get("/validatetoken", async (req, res) => {
+    j.express.get("/token/validate", async (req, res) => {
         res.send(_rf("./express/endpoints/html/validatetoken.html"));
     });
 
