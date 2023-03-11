@@ -27,28 +27,33 @@
       <j_spacer_smol_smol></j_spacer_smol_smol>
     </j_head>
     <j_body>
-      <j_h>Hey!</j_h>
-      <j_h>Welcome to my page</j_h>
-      <j_spacer_smol></j_spacer_smol>
-      <j_title>What is this Website / Bot?</j_title>
-      <j_h
-        >The Bot is a newly developed Tool that allows you to get different
-        Stats of the Moderators and VIPs on the platform Twitch</j_h
-      >
-      <j_h>This works by tracking the badges of a user via chat messages</j_h>
-      <j_h
-        >(Yes, that is the easiest option (for me) since Twitch does not support
-        the /mods Command for Non-Broadcasters anymore)</j_h
-      >
-      <j_h
-        >The Bot is in some of the live channels (except for the permanent
-        channels only German and English channels are logged at the moment)</j_h
-      >
-      <j_h
-        >You can request a channel to be permanently logged via the
-        <a href="/suggestchannel" class="link">/suggestchannel</a>
-        endpoint</j_h
-      >
+      <div>
+        <j_h>Hey!</j_h><br />
+        <j_h>Welcome to my page</j_h><br />
+        <j_spacer_smol></j_spacer_smol>
+        <j_title>What is this Website / Bot?</j_title>
+        <br /><br />
+        <j_h
+          >The Bot is a newly developed Tool that allows you to get different
+          Stats of the Moderators and VIPs on the platform Twitch</j_h
+        ><br />
+        <j_h>This works by tracking the badges of a user via chat messages</j_h
+        ><br />
+        <j_h
+          >(Yes, that is the easiest option (for me) since Twitch does not
+          support the /mods Command for Non-Broadcasters anymore)</j_h
+        ><br />
+        <j_h
+          >The Bot is in some of the live channels (except for the permanent
+          channels only German and English channels are logged at the
+          moment)</j_h
+        ><br />
+        <j_h
+          >You can request a channel to be permanently logged via the
+          <a href="/suggestchannel" class="link">/suggestchannel</a>
+          endpoint</j_h
+        >
+      </div>
       <j_spacer_smol></j_spacer_smol>
       <j_h
         >You can add the bot by using
@@ -74,7 +79,17 @@
         <tbody></tbody>
       </table>
       <j_spacer></j_spacer>
-      <j_title>Endpoints</j_title>
+      <div>
+        <j_title>Integration:</j_title><br>
+        <j_h>You can integrate the bot in many ways - such as using the API to retrieve data or opening the modlookup of someone</j_h><br><br>
+        <j_title_2>Examples for <a href="https://github.com/chatty/chatty">Chatty</a>:</j_title_2><br>
+        <j_h>(Click on command to copy)</j_h><br>
+        <j_h class="underline">Button to open Modlookup in user context menu:</j_h><code class="code copy cursor-copy" onclick="copy(this)">.Modlookup=/openUrlPrompt https://modlookup.jubewe.de/modlookup/user/$1</code><br>
+        <j_h class="underline">Command to receive and display mod info of user:</j_h><code class="code copy cursor-copy" onclick="copy(this)">/mluser /echo $json($request(https://modlookup-api.jubewe.de/modlookup/user/$1),$j(data->name) \($j(data->id)\) is mod in $j(data->num) channels)</code><br>
+        <j_h class="underline">Command to receive and display mod info of channel:</j_h><code class="code copy cursor-copy" onclick="copy(this)">/mlchannel /echo $json($request(https://modlookup-api.jubewe.de/modlookup/channel/$1),$j(data->name) \($j(data->id)\) has $j(data->num) mods)</code>
+      </div>
+      <j_spacer></j_spacer>
+      <j_title>Website Endpoints</j_title>
       <table class="j_table">
         <thead>
           <tr>
@@ -84,6 +99,7 @@
         </thead>
         <tbody id="tbody"></tbody>
       </table>
+      <j_spacer></j_spacer>
     </j_body>
   </body>
 </html>
@@ -100,7 +116,7 @@
     "/viplookup/channel/:channel": `Viplookup for channel - Will only return the first ${firstnum} results (ml!vipchannel <channel>)`,
     "/suggestchannel": "Suggest Channel to be permanently logged",
     "/admin": "Admin area",
-    "/admin/blacklist": "Blacklist management"
+    "/admin/blacklist": "Blacklist management",
   };
 
   let commands = [
@@ -168,7 +184,7 @@
     endpointtd1.classList.add("bo-wh", "link", "text-right");
     let endpointtd2 = document.createElement("td");
     endpointtd2.classList.add("j_td_2");
-    endpointtd2.classList.add("bo-wh")
+    endpointtd2.classList.add("bo-wh");
 
     endpointtd1.innerText = endpoint.length > 0 ? endpoint : " ";
     endpointtd2.innerText =
@@ -207,7 +223,7 @@
     let cmdcelems = [cmdcelem1, cmdcelem2, cmdcelem3, cmdcelem4, cmdcelem5];
     cmdcelems.forEach((a, i) => {
       a.classList.add(cmdaclass[cmdcelems.indexOf(a)]);
-      if(a.innerText.length == 0 && i !== 3) a.classList.add("noval");
+      if (a.innerText.length == 0 && i !== 3) a.classList.add("noval");
       cmdelem.appendChild(a);
     });
 
@@ -215,15 +231,20 @@
   });
 </script>
 <style>
+  body {
+    display: grid;
+    place-items: center;
+  }
+
   * {
     word-break: normal;
-    color: #F1FAEE;
+    color: #f1faee;
   }
 
   .bo-wh {
-    border: 1px solid #457B9B;
+    border: 1px solid #457b9b;
   }
-  
+
   .link {
     text-decoration: underline;
     cursor: pointer;
@@ -242,6 +263,14 @@
   .j_td_2 {
     padding: 3px;
     margin: 3px;
+  }
+
+  j_body {
+    width: 90%;
+  }
+
+  #_bot_commands_table {
+    width: auto;
   }
 
   #_bot_commands_table * {

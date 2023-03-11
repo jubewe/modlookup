@@ -64,15 +64,19 @@ module.exports = async () => {
             await j.client.getuser(userid)
                 .then(u => {
                     userid = u.id;
-                });
+                })
+                .catch(e => {
+                    res.sendWC({ error: e });
+                })
         };
+
+        if (!regex.numregex().test(userid)) return;
 
         modlookup.user(userid, true)
             .then(a => {
                 res.sendWC(a);
             })
             .catch(e => {
-                console.error(e);
                 res.sendWC(e);
             })
     });
@@ -83,16 +87,22 @@ module.exports = async () => {
             await j.client.getuser(channelid)
                 .then(u => {
                     channelid = u.id;
+                    return;
+                })
+                .catch(e => {
+                    res.sendWC({ error: e });
                 });
         };
+
+        if (!regex.numregex().test(channelid)) return;
 
         modlookup.channel(channelid, true)
             .then(a => {
                 res.sendWC(a);
             })
             .catch(e => {
-                res.sendWC(e);
-            })
+                res.sendWC({ error: e });
+            });
     });
 
     j.expressapi.get("/viplookup", async (req, res) => { res.sendWC({ "users": await j.vipinfosplitter.getMainKey(["users", "num"]), "channels": await j.vipinfosplitter.getMainKey(["channels", "num"]) }); });
@@ -107,16 +117,18 @@ module.exports = async () => {
                     userid = u.id;
                 })
                 .catch(e => {
-                    res.sendWC(e, 400);
+                    res.sendWC({ error: e }, 400);
                 })
         };
+
+        if (!regex.numregex().test(userid)) return;
 
         viplookup.user(userid, true)
             .then(a => {
                 res.sendWC(a);
             })
             .catch(e => {
-                res.sendWC(e, 400);
+                res.sendWC({ error: e }, 400);
             })
     });
     j.expressapi.get("/viplookup/channel/:channelid", async (req, res) => {
@@ -126,8 +138,13 @@ module.exports = async () => {
             await j.client.API.getUsers(channelid)
                 .then(u => {
                     channelid = u.data[0].id;
+                })
+                .catch(e => {
+                    res.sendWC({ error: e }, 400);
                 });
         };
+
+        if (!regex.numregex().test(channelid)) return;
 
         viplookup.channel(channelid, true)
             .then(a => {
@@ -320,10 +337,10 @@ module.exports = async () => {
         let user = await j.blacklistsplitter.getKey(["users", user_], true);
         if (!user) return res.sendWC({ error: Error("channel not in blacklist") });
         if (user.status !== 0) return res.sendWC({ error: Error("channel not blacklisted") });
-        
+
         await j.blacklistsplitter.deleteKey(["users", user_], true);
         await j.suggestedchannelssplitter.editKey(["channels", user_, "status"], 0, true);
-        
+
         res.sendWC({ message: "Successful" });
     });
 

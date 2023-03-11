@@ -33,6 +33,10 @@ a {
   text-decoration: underline;
 }
 
+.code {
+  background-color: grey;
+}
+
 .bg-green {
   background-color: #57cc99 !important;
 }
