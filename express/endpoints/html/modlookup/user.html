@@ -18,14 +18,14 @@
       <j_icon><img class="j_icon noselect" src="/html/img/OkayChamp_modding.png" /></j_icon>
       <j_title id="j_pagename"></j_title>
     </j_head>
+    <j_spacer></j_spacer>
     <j_body>
-      <j_spacer_smol></j_spacer_smol>
       <input placeholder="User" id="ml_user_input" />
       <j_spacer_smol_smol></j_spacer_smol_smol>
       <button onclick="redirect(siteurl('/modlookup/channel/' + document.getElementById('ml_user_input').value))">
         Search
       </button>
-      <j_spacer_smol_smol></j_spacer_smol_smol>
+      <j_spacer></j_spacer>
       <div id="j_ml_user">
         <h id="j_ml_user_info"><h id="j_ml_user_user"></h> is mod in <h id="j_ml_user_channels_number"></h> tracked channel</h></h>
         <div id="j_table_div">
@@ -40,6 +40,7 @@
           </table>
         </div>
       </div>
+      <j_spacer></j_spacer>
     </j_body>
   </body>
 </html>

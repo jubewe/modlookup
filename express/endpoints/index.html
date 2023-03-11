@@ -153,7 +153,7 @@
             `^${endpointtd1.innerText.split("/")[1]}+(-dest)*.+`
           ).test(url.host.split(".")[0])
         ) {
-          if (endpointtd1.innerText.split("/")[2]) {
+          if (new RegExp(`\/(mod|vip)lookup`).test(endpointtd1.innerText)) {
             addurl = url.href
               .replace(/(mod|vip)lookup/g, endpointtd1.innerText.split("/")[1])
               .replace(/\/$/g, "");
