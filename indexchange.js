@@ -3,27 +3,27 @@ const files = require("./variables/files");
 const j = require("./variables/j");
 const paths = require("./variables/paths");
 
-// _wf(paths.suggestedchannels, { "channels": {}, "users": {} });
+j.cooldownsplitter.create({ "channels": {} });
 
-let suggestedchannels = {...files.suggestedchannels};
+// let suggestedchannels = {...files.suggestedchannels};
 
-Object.keys(files.suggestedchannels.channels).forEach(a => {
-    let users = [...files.suggestedchannels.channels[a].users];
-    if (Array.isArray(suggestedchannels.channels[a].users)) suggestedchannels.channels[a].users = {};
-    users.forEach(b => {
-        suggestedchannels.channels[a].users[b] = {};
-    });
-});
+// Object.keys(files.suggestedchannels.channels).forEach(a => {
+//     let users = [...files.suggestedchannels.channels[a].users];
+//     if (Array.isArray(suggestedchannels.channels[a].users)) suggestedchannels.channels[a].users = {};
+//     users.forEach(b => {
+//         suggestedchannels.channels[a].users[b] = {};
+//     });
+// });
 
-Object.keys(files.suggestedchannels.users).forEach(a => {
-    let channels = [...files.suggestedchannels.users[a].channels];
-    if (Array.isArray(suggestedchannels.users[a].channels)) suggestedchannels.users[a].channels = {};
-    channels.forEach(b => {
-        suggestedchannels.users[a].channels[b] = {};
-    });
-});
+// Object.keys(files.suggestedchannels.users).forEach(a => {
+//     let channels = [...files.suggestedchannels.users[a].channels];
+//     if (Array.isArray(suggestedchannels.users[a].channels)) suggestedchannels.users[a].channels = {};
+//     channels.forEach(b => {
+//         suggestedchannels.users[a].channels[b] = {};
+//     });
+// });
 
-j.suggestedchannelssplitter.create(suggestedchannels);
+// j.suggestedchannelssplitter.create(suggestedchannels);
 
 // j.usersplitter.create({
 //     "users": {}

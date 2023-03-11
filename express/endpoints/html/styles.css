@@ -71,6 +71,13 @@ j_head * > {
   z-index: 100;
 }
 
+#j_dashboard {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  z-index: 100;
+}
+
 j_progress {
   display: contents;
   width: 99%;
@@ -130,7 +137,10 @@ j_head {
 }
 
 j_h {
+  /* padding: 2px; */
+  margin: 5px;
   max-width: 90%;
+  width: max-content;
   line-break: loose;
 }
 
@@ -249,6 +259,15 @@ j_icon {
   /* border: 2px solid;
   border-right: none;
   border-bottom: none; */
+}
+
+.j_icon_vrr {
+  animation: 1s 1 okaychamp-jam;
+  
+  display: flex;
+  border-radius: 100%;
+  margin: 0px;
+  border: 1px solid transparent;
 }
 
 j_contact {

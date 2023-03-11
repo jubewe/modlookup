@@ -155,4 +155,8 @@ module.exports = async () => {
     j.express.get("/admin", async (req, res) => {
         res.send(_rf("./express/endpoints/html/admin.html"));
     });
+    
+    j.express.get("/admin/blacklist", async (req, res) => {
+        res.send(_rf("./express/endpoints/html/admin_blacklist.html"));
+    });
 };

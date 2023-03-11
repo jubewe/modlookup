@@ -17,9 +17,9 @@
         }
     },
     "cooldown": {
-        "default": 10000,
+        "default": 5000,
         "user": {
-            "default": 30000
+            "default": 10000
         }
     },
     "trackers":{

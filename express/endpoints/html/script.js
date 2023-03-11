@@ -21,6 +21,7 @@ let devMode = false;
 if (url.searchParams.get("devmode")) devMode = true;
 
 let icon_elems = document.querySelectorAll(".j_icon");
+let icon_elems_2 = document.querySelectorAll("j_icon");
 let login_elem = document.querySelector("#j_login");
 let pagename_elem = document.querySelector("#j_pagename");
 let spacer = document.createElement("j_spacer");
@@ -31,10 +32,10 @@ let notification_elem = document.querySelector("j_notification");
 
 function progress(num) {
     const num_ = (num > 0 && num < 1 ? num * 100 : num);
-    
+
     if (num_ < 100) progress_elem.classList.replace("progress_load_end", "progress_load");
     if (num_ === 100) progress_elem.classList.replace("progress_load", "progress_load_end");
-    
+
     setTimeout(() => {
         progress_elem.style.display = (num_ >= 0 && num_ < 100 ? "block" : "none");
     }, (num_ >= 0 && num_ < 100 ? 0 : 1500))
@@ -175,6 +176,18 @@ function _numberspacer(num, replacer) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, replacer || " ");
 };
 
+function _pickrandom(pickarray, pickcount) {
+    if (!pickcount || pickcount === 1) {
+        return pickarray[Math.floor(Math.random() * pickarray.length)];
+    } else {
+        let return_ = [];
+        for (i = 0; i < pickcount; i++) {
+            return_.push(pickarray[Math.floor(Math.random() * pickarray.length)]);
+        }
+        return return_.join(" ");
+    }
+};
+
 function _sleep(time) {
     return new Promise((resolve) => setTimeout(resolve, (time ?? 1000)));
 };
@@ -223,8 +236,11 @@ function createTable(tables, dat, tableName, parentElement, progressName, progre
             let skipVal = (iab && b[0] === "@@skipval"); if (skipVal) b = b.slice(1);
             let isTH = (!iab && b.startsWith("@@th")); if (isTH) b = b.replace("@@th", "");
             let isHTML = (iab && b[0] === "@@html"); if (isHTML) b = b.slice(1);
+            let elemType = "h";
+            let haselemType = (iab && b[0] === "@@elemtype"); if (haselemType) { elemType = b[1]; b = b[2] };
+            let noCopy = (iab && b[0] === "@@nocopy"); if (noCopy) b = b[1];
 
-            let val = ((!iab || isHTML) ? b : getKeyFromObject(dat, b));
+            let val = ((!iab || isHTML || noCopy) ? b : getKeyFromObject(dat, b));
 
             let val_ = val;
             if (Array.isArray(val)) {
@@ -267,14 +283,15 @@ function createTable(tables, dat, tableName, parentElement, progressName, progre
                     };
 
                     // let key_elem_val = (isHTML ? val : document.createElement("h"));
-                    let key_elem_val = document.createElement((isHTML ? "div" : "h"));
+                    let key_elem_val = document.createElement((isHTML ? "div" : elemType));
                     key_elem_val.id = key_elem_val_id;
-                    key_elem_val.classList.add(`${tableName}_${i}_val`, `j_table-hasval`);
+                    // key_elem_val.classList.add(`${tableName}_${i}_val`, `j_table-hasval`);
+                    key_elem_val.classList.add(`${tableName}_${i}_val`);
                     if (!skipVal && !isHTML) key_elem_val.innerText = val_;
 
                     if (isTH) {
                         key_elem.classList.add("j_table-title");
-                    } else if (!isHTML) {
+                    } else if (!isHTML && !noCopy) {
                         key_elem.classList.add("cursor-copy");
                         key_elem.onclick = () => { copy(key_elem) };
                     };
@@ -692,129 +709,6 @@ class admin {
 
                 createTable(tables, dat, "_admin_table", "_admin_body", "_admin_progress", ["_admin_progress"])
 
-                // Object.keys(tables).forEach((a, i) => {
-                //     if (document.getElementById(`_admin_table_${i}`) === null) {
-                //         let table_elem = document.createElement("table");
-                //         table_elem.id = `_admin_table_${i}`;
-                //         table_elem.classList.add("j_table", "_admin_table");
-
-                //         let th_tr_elem = document.createElement("tr");
-                //         let tr_elem = document.createElement("tr");
-                //         tr_elem.id = `_admin_table_${i}_tr_0`;
-                //         tr_elem.classList.add(`_admin_table_${i}_tr`);
-
-                //         tables[a].names.forEach((b, i2) => {
-                //             let th_elem = document.createElement("th");
-                //             th_elem.innerText = (b ?? "");
-                //             if ((b?.toString()?.length ?? 0) === 0) {
-                //                 th_elem.classList.add("noborder", "j_table-noval");
-                //             } else {
-                //                 th_elem.classList.add("j_table-hasval", "j_table-title");
-                //             }
-                //             th_elem.classList.add("j_table_th");
-
-                //             th_tr_elem.appendChild(th_elem);
-                //         });
-
-                //         table_elem.appendChild(th_tr_elem);
-                //         table_elem.appendChild(tr_elem);
-
-                //         document.getElementById("_admin_body").appendChild(table_elem);
-                //     };
-
-                //     let tabletr = document.getElementById(`_admin_table_${i}_tr_0`);
-                //     let key_elem_index = 0;
-
-                //     tables[a].keypaths.forEach((b, i2) => {
-                //         let key_elem_id = `_admin_table_${i}_td_${i2}`;
-                //         let key_elem_val_id = `_admin_table_${i}_td_${i2}_val`;
-                //         let key_elem_progress_id = `_admin_table_${i}_td_${i2}_progress`;
-
-                //         let iab = Array.isArray(b);
-                //         let isProgress = (iab && b[0] === "@@progress"); if (isProgress) b = b.slice(1);
-                //         let skipVal = (iab && b[0] === "@@skipval"); if (skipVal) b = b.slice(1);
-                //         let isTH = (!iab && b.startsWith("@@th")); if (isTH) b = b.replace("@@th", "");
-
-                //         let val = (!iab ? b : getKeyFromObject(dat, b));
-
-                //         let val_ = val;
-                //         if (Array.isArray(val)) {
-                //             val_ = val.length;
-                //         } else if (["string", "number"].includes(typeof val) && val.toString().includes(".")) {
-                //             val_ = val.toString();
-                //             val_ = val_.slice(0, (val_.split(".")[0].length + 1 + 2)) + "%";
-                //         } else if (["number"].includes(typeof val)) {
-                //             val_ = val.toString();
-                //             val_ = _numberspacer(val_);
-                //         };
-
-                //         if (val === "\n") {
-                //             key_elem_index = 0;
-
-                //             const tabletrold = tabletr;
-                //             const tabletroldnum = (tabletrold.id.split("_")[tabletrold.id.split("_").length - 1]);
-                //             let tabletr_id = `${tabletrold.id.slice(0, (tabletrold.id.length - tabletroldnum.length))}${parseInt(tabletroldnum) + 1}`
-
-                //             if (document.getElementById(tabletr_id)) {
-                //                 tabletr = document.getElementById(tabletr_id);
-                //                 return;
-                //             };
-
-                //             tabletr = document.createElement("tr");
-                //             tabletr.id = tabletr_id;
-                //             tabletr.classList.add(`_admin_table_${i}_tr`);
-
-                //             document.getElementById(`_admin_table_${i}`).appendChild(tabletr);
-                //         } else {
-                //             if (document.getElementById(key_elem_id) === null) {
-                //                 let key_elem = document.createElement((isTH ? "th" : "td"));
-                //                 key_elem.classList.add("j_table_td", "_admin_table_td", `_admin_table_${i}_td`, `_admin_table_td_${key_elem_index}`, `_admin_table_${i}_td_${key_elem_index}`);
-                //                 key_elem.id = key_elem_id;
-
-                //                 if ((val_?.toString()?.length ?? 0) === 0) {
-                //                     key_elem.classList.add("noborder", "j_table-noval");
-                //                 } else {
-                //                     key_elem.classList.add("j_table-hasval");
-                //                 };
-
-                //                 let key_elem_val = document.createElement("h");
-                //                 key_elem_val.id = key_elem_val_id;
-                //                 key_elem_val.classList.add(`_admin_val`, `_admin_table_${i}_val`);
-                //                 if (!skipVal) key_elem_val.innerText = val_;
-
-                //                 if (isTH) {
-                //                     key_elem.classList.add("j_table-title");
-                //                 } else {
-                //                     key_elem.classList.add("cursor-copy");
-                //                     key_elem.onclick = () => { copy(key_elem) };
-                //                 };
-
-                //                 key_elem.appendChild(key_elem_val);
-
-                //                 if (isProgress) {
-                //                     let progress_elem = document.createElement("progress");
-                //                     progress_elem.max = 100;
-                //                     progress_elem.value = val;
-                //                     progress_elem.classList.add("_admin_progress");
-                //                     progress_elem.id = key_elem_progress_id;
-
-                //                     key_elem.classList.add("_admin_progress_parent");
-                //                     key_elem.appendChild(progress_elem);
-                //                 };
-
-                //                 tabletr.appendChild(key_elem);
-                //             } else if (isProgress && document.getElementById(`${key_elem_id}_progress`) !== null) {
-                //                 document.getElementById(`${key_elem_id}_progress`).value = val;
-                //                 document.getElementById(key_elem_val_id).innerText = val_;
-                //             } else {
-                //                 document.getElementById(key_elem_val_id).innerText = val_;
-                //             };
-
-                //             key_elem_index++;
-                //         };
-                //     });
-                // });
-
                 let log_elem = document.getElementById("_admin_log");
                 log_elem.value = "";
 
@@ -836,7 +730,71 @@ class admin {
                 if (interval && requests_failed > 1) clearInterval(interval);
                 return;
             });
-    }
+    };
+
+    static blacklist = class {
+        static load = () => {
+            request(apiurl("/blacklist"), {
+                headers: {
+                    auth: auth().auth
+                }
+            }, (e, r) => {
+                if (e) return error(e);
+
+                let dat = r.data;
+                document.getElementById("_admin").style.display = "block";
+
+                if (devMode) console.debug("blacklist load", dat);
+
+                // let blacklist_elem = document.querySelector("#_admin_blacklist");
+
+                let tables = {
+                    "0": {
+                        "names": [
+                            "Username",
+                            "User ID",
+                            "Blacklisted by Username",
+                            "Blacklisted by User ID",
+                            ""
+                        ],
+                        "keypaths": []
+                    }
+                };
+
+                Object.keys(dat.blacklist).forEach(a => {
+                    let unblacklistbutton = document.createElement("button");
+                    unblacklistbutton.innerText = "Un-Blacklist";
+                    unblacklistbutton.classList.add("bg-green");
+                    unblacklistbutton.onclick = () => {
+                        this.unblacklist(a, unblacklistbutton.parentNode.parentNode.parentNode);
+                    };
+
+                    let b = dat.blacklist[a];
+                    tables[0].keypaths.push(...[b.name, a, b.editUserName, b.editUser, ["@@html", unblacklistbutton], "\n"])
+                });
+
+                createTable(tables, dat, "_admin_blacklist_table", "_admin_blacklist_body", "_admin_blacklist_progress", ["_admin_blacklist_progress"])
+            });
+        };
+
+        static unblacklist = (user, elem) => {
+            request(apiurl("/blacklist"), {
+                headers: {
+                    auth: auth().auth,
+                    user: user
+                },
+                method: "DELETE"
+            }, (e, r) => {
+                if (e) return error(e);
+
+                let dat = r.data;
+
+                if (devMode) console.debug("blacklist delete", dat);
+
+                elem?.remove();
+            });
+        };
+    };
 };
 
 class channelsuggestion {
@@ -1079,7 +1037,7 @@ class channelsuggestion {
             a.classList.add(`_suggestchannel_${suggestion._user.id}`);
             a.id = `_suggestchannel_${suggestion._user.id}_${["name", "id", "users_num", "select", "submit"][i]}`;
             a.classList.add((a.innerText.length > 0 ? "j_table-hasval" : "j_table-noval"));
-            if (i < 6 && a.innerText.length > 0) {
+            if (i < 5 && a.innerText.length > 0) {
                 a.classList.add("cursor-copy");
                 a.onclick = () => {
                     if (i == 3) copy(a, suggestion.users.join(", ")); else copy(a);
@@ -1170,16 +1128,15 @@ class dashboard {
                 botstatus_elem_button.classList.add((dat.bot.inChannel ? "bg-red" : "bg-green"), "_dash_status_button");
                 botstatus_elem_button.onclick = async () => {
                     if (this.dashboardData.bot.inChannel) {
-                        await this.partChannel(auth().parsed.user_id);
+                        this.partChannel(auth().parsed.user_id);
                     } else {
-                        await this.joinChannel(auth().parsed.user_id);
+                        this.joinChannel(auth().parsed.user_id);
                     }
                 };
 
                 [botstatus_elem_h, br].forEach(a => {
                     botstatus_elem.appendChild(a);
                 });
-
 
                 prefix_elem_input.id = "j_dash_prefix_input";
                 prefix_elem_input.value = (dat.bot.prefix ?? "");
@@ -1240,11 +1197,11 @@ class dashboard {
                         "Remove from Logs"
                     ],
                     "keypaths": [
-                        "By clicking the button down below, you opt yourself out of any kind of logging, that includes your channel and you in other channels",
+                        ["@@nocopy", "By clicking the button down below, you opt yourself out of any kind of logging, that includes your channel and you in other channels"],
                         "\n",
-                        "All your existing data will be deleted and you will be permanently blacklisted",
+                        ["@@nocopy", "All your existing data will be deleted and you will be permanently blacklisted"],
                         "\n",
-                        "Warning: This cannot be undone - If you want to get removed from the blacklist, write me a nice message via one of in the footer displayed options",
+                        ["@@nocopy", "Warning: This cannot be undone - If you want to get removed from the blacklist, write me a nice message via one of in the footer displayed options"],
                         "\n",
                         ["@@html", removelog_elem_button]
                     ]
@@ -1419,6 +1376,11 @@ function autoexec() {
             break;
         };
 
+        case "/admin/blacklist": {
+            admin.blacklist.load();
+            break;
+        };
+
         case "/suggestchannel": {
             if (autoexecs > 1) channelsuggestion.submit(); else channelsuggestion.load();
             if (!devMode) interval = setInterval(channelsuggestion.reload, interval_times.suggestchannel);
@@ -1436,6 +1398,13 @@ function autoexec() {
 };
 
 function _main_elems() {
+    let j_dashboard_elem = document.createElement("button");
+    j_dashboard_elem.innerText = "Dashboard";
+    j_dashboard_elem.id = "j_dashboard";
+    j_dashboard_elem.onclick = () => { redirect(`${url.origin}/dashboard`) };
+
+    document.querySelector("body").appendChild(j_dashboard_elem);
+
     let j_body_elem = document.querySelector("j_body");
     if (!j_body_elem) return;
     j_body_elem.appendChild(spacer);
@@ -1492,6 +1461,8 @@ function _main_elems() {
 
     if (icon_elems[0]) {
         icon_elems[0].classList.add("cursor-pointer");
+        // icon_elems[0].classList.add(_pickrandom("j_icon", "j_icon-vrr"))
+
         icon_elems[0].onclick = () => { redirectSelf(url.origin) };
     };
 
@@ -1509,6 +1480,16 @@ function _main_elems() {
     };
 
     if (pagename_elem) pagename_elem.innerText = currentendpointpath.split("/").slice(1).map(a => a[0].toUpperCase() + a.slice(1)).join("/");
+
+    // if(icon_elems[0]) {
+    //     icon_elems[0].onclick = () => {
+    //         if(icon_elems[0].classList.contains("j_icon")){
+    //             icon_elems[0].classList.replace("j_icon", "j_icon_vrr");
+    //         } else {
+    //             icon_elems[0].classList.replace("j_icon_vrr", "j_icon");
+    //         }
+    //     }
+    // }
 };
 
 progress(25);

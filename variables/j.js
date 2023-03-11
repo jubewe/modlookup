@@ -71,8 +71,9 @@ class j {
     static channelsplitter = new jsonsplitter({ startpath: "./data/twitch", debug: 1 });
     static usersplitter = new jsonsplitter({ startpath: "./data/twitch", debug: 1 });
     static blacklistsplitter = new jsonsplitter({ startpath: "./data/blacklist", debug: 1 });
-    
-    static suggestedchannelssplitter = new jsonsplitter({ startpath: "./data/suggestedchannels", debug: 3 });
+
+    static suggestedchannelssplitter = new jsonsplitter({ startpath: "./data/suggestedchannels", debug: 1 });
+    static cooldownsplitter = new jsonsplitter({ startpath: "./data/cooldowns", debug: 1 });
 
     static modules = class {
         static oberknechtClient = oberknechtClient;

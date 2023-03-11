@@ -171,8 +171,8 @@ module.exports = async () => {
                     .map(async a => {
                         return await j.suggestedchannelssplitter.getKey(["channels", a], true)
                             .then(suggestedchannel => {
-                                if(!suggestedchannel) return;
-                                
+                                if (!suggestedchannel) return;
+
                                 let b = {
                                     ...suggestedchannel,
                                     status_name: suggestchannelStatusname(suggestedchannel.status)
@@ -296,12 +296,18 @@ module.exports = async () => {
         let blacklist_filtered = {};
         await Promise.all(Object.keys(blacklist).slice(lastindex, (lastindex + num)).map(async a => {
             return await j.blacklistsplitter.getKey(["users", a], true)
-                .then(b => {
-                    if (b) blacklist_filtered[a] = b;
+                .then(async b => {
+                    if (b) {
+                        blacklist_filtered[a] = {
+                            ...b,
+                            name: await j.client.getusername(a),
+                            editUserName: await j.client.getusername(b.editUser)
+                        };
+                    };
                 })
         }));
 
-        res.sendWC(blacklist_filtered);
+        res.sendWC({ blacklist: blacklist_filtered });
     });
 
     j.expressapi.delete("/blacklist", async (req, res) => {
@@ -314,10 +320,10 @@ module.exports = async () => {
         let user = await j.blacklistsplitter.getKey(["users", user_], true);
         if (!user) return res.sendWC({ error: Error("channel not in blacklist") });
         if (user.status !== 0) return res.sendWC({ error: Error("channel not blacklisted") });
-
-        await j.blacklistsplitter.editKey(["users", user_, "status"], 1);
-        await j.blacklistsplitter.editKey(["users", user_, "editUser"], req.permission.id);
-
+        
+        await j.blacklistsplitter.deleteKey(["users", user_], true);
+        await j.suggestedchannelssplitter.editKey(["channels", user_, "status"], 0, true);
+        
         res.sendWC({ message: "Successful" });
     });
 

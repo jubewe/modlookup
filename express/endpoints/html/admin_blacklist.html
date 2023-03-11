@@ -1,0 +1,48 @@
+<!-- Welcome to my messy html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/html/img/OkayChamp_modding.ico" />
+    <link rel="stylesheet" href="/html/styles.css" />
+    <title>Ju / Admin</title>
+  </head>
+  <body>
+    <button id="j_login" onclick="login()">Login</button>
+    <j_progress>
+      <progress
+        id="j_progress"
+        class="progress_load"
+        value="0"
+        max="100"
+      ></progress>
+    </j_progress>
+    <j_notification></j_notification>
+    <j_spacer></j_spacer>
+    <j_head>
+      <j_icon>
+        <img class="j_icon noselect" src="/html/img/OkayChamp_modding.png"/>
+      </j_icon>
+      <j_title id="j_pagename"></j_title>
+    </j_head>
+    <j_spacer></j_spacer>
+    <j_body>
+      <div id="_login">
+        <j_h>Please <button class="j_login" onclick="login()">Login</button> to view this page</j_h>
+      </div>
+      <div id="_noperm">
+        <j_emote
+          ><center><img class="emote" src="/html/img/NAHHH.gif" /></center
+        ></j_emote>
+        <j_h>You ain't an admin dud</j_h>
+      </div>
+      <div id="_admin">
+        <j_title_2>Blacklist</j_title_2>
+        <div id="_admin_blacklist_body"></div>
+      </div>
+    </j_body>
+  </body>
+</html>
+<script src="/html/script.js"></script>
