@@ -81,6 +81,36 @@ class j {
     };
 
     static joinedChannels = [];
+    static systeminfo = {
+        cpu: {
+            "used": Number(),
+            "usedpercent": Number()
+        },
+        memory: {
+            "os": {
+                "free": Number(),
+                "total": Number(),
+                "used": Number(),
+                "usedpercent": Number(),
+                "freepercent": Number()
+            },
+            "process": {
+                "free": Number(),
+                "total": Number(),
+                "used": Number(),
+                "usedpercent": Number()
+            }
+        },
+        uptime: {
+            "os": Number(),
+            "process": Number(),
+            "client": Number(),
+            "clientws": Number(),
+            "logclient": Number(),
+            "logclientws": Number(),
+            "discordclient": Number()
+        }
+    };
 };
 
 module.exports = j;

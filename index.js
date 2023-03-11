@@ -10,6 +10,9 @@ const _cleantime = require("./functions/_cleantime");
 const c = require("./config.json");
 const _discordembed = require("./functions/_discordembed");
 const env = require("dotenv").config().parsed;
+const os = require("os");
+const osUtils = require("os-utils");
+const _percentage = require("./functions/_percentage");
 
 _log(1, `Index: Loaded packages (Took ${_cleantime(Date.now() - loadstart, 4).time.join(" and ")})`, null, "42");
 
@@ -106,6 +109,40 @@ setInterval(() => {
             j.handledCache.handledWebsiteEndpointRequests[a][d] = (files.lel.handledWebsiteEndpointRequests[a] ?? 0);
         });
     };
+
+    new Promise((resolve) => { osUtils.cpuUsage(resolve) })
+        .then(cpuUsage => {
+            j.systeminfo.cpu = {
+                "used": cpuUsage,
+                "usedpercent": (cpuUsage * 100)
+            };
+
+            j.systeminfo.memory = {
+                "os": {
+                    "free": os.freemem(),
+                    "total": os.totalmem(),
+                    "used": (os.totalmem() - os.freemem()),
+                    "usedpercent": _percentage(os.totalmem(), (os.totalmem() - os.freemem())),
+                    "freepercent": _percentage(os.totalmem(), os.freemem())
+                },
+                "process": {
+                    "free": process.memoryUsage.rss(),
+                    "total": os.totalmem(),
+                    "used": (os.totalmem() - process.memoryUsage.rss()),
+                    "usedpercent": _percentage(os.totalmem(), (os.totalmem() - process.memoryUsage.rss()))
+                }
+            };
+
+            j.systeminfo.uptime = {
+                "os": (os.uptime() * 1000),
+                "process": (process.uptime() * 1000),
+                "client": j.client?.uptime ?? "-",
+                "clientws": j.client?.wsUptime ?? "-",
+                "logclient": j.logclient?.uptime ?? "-",
+                "logclientws": j.logclient?.wsUptime ?? "-",
+                "discordclient": j.discordclient?.uptime ?? "-"
+            };
+        })
 }, 1000);
 
 process.on("unhandledRejection", e => {
