@@ -1,9 +1,8 @@
-const j = require("../variables/j");
-const os = require("os");
 const getHandles = require("./getHandles");
 const _cleantime = require("./_cleantime");
 
 async function getApiAdmin() {
+    let j = require("../variables/j");
     let _logs = global.logs;
     let logs = { "all": {} };
 
@@ -23,8 +22,8 @@ async function getApiAdmin() {
             "channels": await j.vipinfosplitter.getMainKey(["channels", "num"]),
             "users": await j.vipinfosplitter.getMainKey(["users", "num"])
         },
-        "memory": j.usage.memory,
-        "cpu": j.usage.cpu,
+        "memory": j.systeminfo.memory,
+        "cpu": j.systeminfo.cpu,
         "handled": getHandles(0),
         "handledSecond": getHandles(1001),
         "handledMinute": getHandles(60 * 1000),
