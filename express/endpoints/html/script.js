@@ -8,6 +8,7 @@ function redirectSelf(url_) { redirect(url_, "_self") };
 const currentendpoint = document.URL.replace(/http(s)*:\/\/(mod|vip)lookup(-dest)*\.jubewe\.de/g, "");
 const currentendpointpath = currentendpoint.split("/").slice(0, 3).join("/").split(/#|\?/)[0];
 const currentendpointparts = currentendpoint.split("/").slice(1);
+const suggestionnames = ["Pending", "Approved", "Denied", "Blacklisted"];
 let autoexecs = 0;
 let interval_times = {
     "admin": 3000,
@@ -192,7 +193,12 @@ function _sleep(time) {
     return new Promise((resolve) => setTimeout(resolve, (time ?? 1000)));
 };
 
-function createTable(tables, dat, tableName, parentElement, progressName, progressClasses) {
+function _firstcap(str) {
+    if (str?.length > 0) str = str?.split("")?.[0]?.toUpperCase() + str?.split("")?.slice(1).join("");
+    return str;
+};
+
+function createTable(tables, dat, tableName, parentElement, progressName, progressClasses, nosort) {
     Object.keys(tables).forEach((a, i) => {
         if (document.getElementById(`${tableName}_${i}`) === null) {
             let table_elem = document.createElement("table");
@@ -206,14 +212,28 @@ function createTable(tables, dat, tableName, parentElement, progressName, progre
 
             tables[a].names.forEach((b, i2) => {
                 let th_elem = document.createElement("th");
-                th_elem.innerText = (b ?? "");
+                th_elem.classList.add("cursor-sort");
+                th_elem.setAttribute("j_sorting", 2);
+                th_elem.onclick = () => {
+                    th_elem.setAttribute("j_sorting", ([1, 2][[2, 1].indexOf(parseInt(th_elem.getAttribute("j_sorting")))]));
+                    sorttable(table_elem, i2, th_elem.getAttribute("j_sorting"));
+                };
+                let th_elem_text = document.createElement("j_h");
+                // let th_elem_sorting = document.createElement("img");
+                // th_elem_sorting.id = `${tableName}_${i}_sorting`;
+                // th_elem_sorting.src = "/html/img/arrow-down.png";
+                // th_elem_sorting.classList.add("j_table-sorting");
+
+                th_elem_text.innerText = (b ?? "");
                 if ((b?.toString()?.length ?? 0) === 0) {
                     th_elem.classList.add("noborder", "j_table-noval");
                 } else {
                     th_elem.classList.add("j_table-hasval", "j_table-title");
-                }
+                    // th_elem.appendChild(th_elem_sorting);
+                };
                 th_elem.classList.add("j_table_th");
 
+                th_elem.appendChild(th_elem_text);
                 th_tr_elem.appendChild(th_elem);
             });
 
@@ -234,9 +254,9 @@ function createTable(tables, dat, tableName, parentElement, progressName, progre
             let iab = Array.isArray(b);
             let isProgress = (iab && b[0] === "@@progress"); if (isProgress) b = b.slice(1);
             let skipVal = (iab && b[0] === "@@skipval"); if (skipVal) b = b.slice(1);
-            let isTH = (!iab && b.startsWith("@@th")); if (isTH) b = b.replace("@@th", "");
+            let isTH = (!iab && typeof b == "string" && b?.startsWith("@@th")); if (isTH) b = b.replace("@@th", "");
             let isHTML = (iab && b[0] === "@@html"); if (isHTML) b = b.slice(1);
-            let elemType = "h";
+            let elemType = "j_h";
             let haselemType = (iab && b[0] === "@@elemtype"); if (haselemType) { elemType = b[1]; b = b[2] };
             let noCopy = (iab && b[0] === "@@nocopy"); if (noCopy) b = b[1];
 
@@ -276,12 +296,6 @@ function createTable(tables, dat, tableName, parentElement, progressName, progre
                     key_elem.classList.add("j_table_td", `${tableName}_td`, `${tableName}_${i}_td`, `${tableName}_td_${key_elem_index}`, `${tableName}_${i}_td_${key_elem_index}`);
                     key_elem.id = key_elem_id;
 
-                    if ((val_?.toString()?.length ?? 0) === 0) {
-                        key_elem.classList.add("noborder", "j_table-noval");
-                    } else {
-                        key_elem.classList.add("j_table-hasval");
-                    };
-
                     // let key_elem_val = (isHTML ? val : document.createElement("h"));
                     let key_elem_val = document.createElement((isHTML ? "div" : elemType));
                     key_elem_val.id = key_elem_val_id;
@@ -292,14 +306,22 @@ function createTable(tables, dat, tableName, parentElement, progressName, progre
                     if (isTH) {
                         key_elem.classList.add("j_table-title");
                     } else if (!isHTML && !noCopy) {
-                        key_elem.classList.add("cursor-copy");
-                        key_elem.onclick = () => { copy(key_elem) };
+                        if (key_elem_val.innerText.length > 0) {
+                            key_elem.classList.add("cursor-copy");
+                            key_elem.onclick = () => { copy(key_elem) };
+                        }
                     };
 
                     if (isHTML) {
                         b.forEach(a => {
                             key_elem_val.appendChild(a);
                         });
+                    };
+
+                    if (key_elem_val.innerText.length === 0) {
+                        key_elem.classList.add("noborder", "j_table-noval");
+                    } else {
+                        key_elem.classList.add("j_table-hasval");
                     };
 
                     key_elem.appendChild(key_elem_val);
@@ -327,6 +349,22 @@ function createTable(tables, dat, tableName, parentElement, progressName, progre
             };
         });
     });
+};
+
+function sorttable(tableelem, tdnum, mode) {
+    // mode 1 = desc (default), 2
+    let trelems = [...tableelem.childNodes].slice(1);
+    const trelems_ = [...trelems];
+
+    trelems.forEach(a => a.remove());
+
+    tdnum = (tdnum ?? 0);
+    let tdsorted = trelems_.map((a, i) => [a.childNodes[tdnum]?.innerText, a]);
+
+    tdsorted.sort();
+    if (mode == 1) tdsorted.reverse();
+
+    tdsorted.forEach(a => tableelem.appendChild(a[1]));
 };
 
 async function copy() {
@@ -800,6 +838,38 @@ class admin {
 class channelsuggestion {
     suggestiondata;
     isadmin = Boolean();
+    static tables = {
+        "0": {
+            "names": [
+                "Channel Name",
+                "Channel ID",
+                "Status"
+            ],
+            "keypaths": []
+        },
+        "1": {
+            "names": [
+                "Channel Name",
+                "Channel ID",
+                "Channel Type",
+                "Suggested By",
+                "Status",
+                ""
+            ],
+            "keypaths": []
+        },
+        "2": {
+            "names": [
+                "Channel Name",
+                "Channel ID",
+                "Channel Type",
+                "Suggested By",
+                "Status",
+                ""
+            ],
+            "keypaths": []
+        }
+    };
 
     static load = () => {
         if (!auth().parsed) {
@@ -833,35 +903,103 @@ class channelsuggestion {
 
             document.getElementById("_suggestchannel").style.display = "block";
 
+            let tables = this.tables;
+
             if (dat.isAdmin) {
-                Object.keys(dat.handledchannels).sort((a, b) => { return dat.handledchannels[a].status - dat.handledchannels[b].status }).forEach(a => this.appendSuggestionAdmin(dat.handledchannels[a], "_suggestchannel_admin_table_2"));
-                Object.keys(dat.suggestedchannels).sort((a, b) => { return dat.suggestedchannels[a].status - dat.suggestedchannels[b].status }).forEach(a => this.appendSuggestionAdmin(dat.suggestedchannels[a]));
+                let this_ = this;
+
+                function admin_appendelemstotable(key, num) {
+                    Object.keys(dat[key]).forEach((a, i) => {
+                        let b = dat[key][a];
+                        let suggestionelem_status = document.createElement("j_h_block");
+                        let suggestion_type = document.createElement("j_h_block");
+
+                        suggestionelem_status.innerText = suggestionnames[b.status];
+                        suggestionelem_status.classList.add((b.status == 1 ? "bg-green" : ([2, 3].includes(b.status) ? "bg-red" : "bg-yellow")));
+
+                        let suggestion_approve = document.createElement("button");
+                        let suggestion_deny = document.createElement("button");
+                        let suggestion_blacklist = document.createElement("button");
+
+                        suggestion_approve.innerText = "Approve";
+                        suggestion_approve.classList.add("bg-green");
+                        suggestion_approve.onclick = () => { this_.submitAdmin(b._user.id, 1); suggestionelem_status.innerText = "Approved"; suggestionelem_status.classList.add("bg-green"); };
+                        suggestion_deny.innerText = "Deny";
+                        suggestion_deny.classList.add("bg-red");
+                        suggestion_deny.onclick = () => { this_.submitAdmin(b._user.id, 2); suggestionelem_status.innerText = "Denied"; suggestionelem_status.classList.add("bg-red"); };
+                        suggestion_blacklist.innerText = "Blacklist";
+                        suggestion_blacklist.classList.add("bg-red");
+                        suggestion_blacklist.onclick = () => { this_.submitAdmin(b._user.id, 3); suggestionelem_status.innerText = "Blacklisted"; suggestionelem_status.classList.add("bg-red"); }
+
+                        [suggestion_approve, suggestion_deny, suggestion_blacklist].forEach(c => {
+                            c.margin = "2px";
+                        });
+
+                        let utype = (b._user.type.length > 0 ? b._user.type : (b._user.broadcaster_type.length > 0 ? b._user.broadcaster_type : "") ?? "");
+
+                        suggestion_type.innerText = _firstcap(utype);
+                        if ((b._user.type ?? undefined)) suggestion_type.classList.add("bg-orange");
+
+                        tables[num].keypaths.push(...[
+                            b._user.login, b._user.id,
+                            ["@@html", suggestion_type],
+                            (b.first_user + (Object.keys(b.users).length > 1 ? ` +${Object.keys(b.users).length - 1}` : "")),
+                            ["@@html", suggestionelem_status],
+                            ["@@html", suggestion_approve, suggestion_deny, suggestion_blacklist]
+                        ]);
+
+                        if (i < (Object.keys(dat[key]).length) - 1) tables[num].keypaths.push("\n");
+                    });
+
+                    this_.createTable(num, `_suggestchannel_table_${num}`, `_suggestchannel_admin_${num}_div`);
+                };
 
                 if (Object.keys(dat.suggestedchannels).length === 0) {
-                    document.getElementById("_suggestchannel_admin_table").style.display = "none";
+                    // document.getElementById("_suggestchannel_admin_table").style.display = "none";
                     document.getElementById("_suggestchannel_admin_h").innerText = "You're all caught up - No Pending Suggestions found";
                     document.getElementById("_suggestchannel_admin_h").style.display = "block";
                 } else {
                     document.getElementById("_suggestchannel_admin").style.display = "block";
                     document.getElementById("_suggestchannel_admin_num").innerText = Object.keys(dat.suggestedchannels).length;
+
+                    admin_appendelemstotable("suggestedchannels", 1);
+                    // createTable({ "1": tables[1] }, dat, "_suggestchannel_table_1", "_suggestchannel_admin_div", "", []);
+                    // sorttable(document.getElementById("_suggestchannel_table_1_0"), 0, 2);
                 };
 
                 if (Object.keys(dat.handledchannels).length === 0) {
                     document.getElementById("_suggestchannel_admin_2").style.display = "none";
                 } else {
                     document.getElementById("_suggestchannel_admin_2").style.display = "block";
+
+                    admin_appendelemstotable("handledchannels", 2);
+                    // createTable({ "2": tables[2] }, dat, "_suggestchannel_table_2", "_suggestchannel_admin_2_div", "", []);
+                    // sorttable(document.getElementById("_suggestchannel_table_2_0"), 0, 2);
                 }
             } else {
                 if (Object.keys(dat.suggestedchannels).length === 0) {
-                    document.getElementById("_suggestchannel_table").style.display = "none";
+                    // document.getElementById("_suggestchannel_table").style.display = "none";
                     document.getElementById("_suggestchannel_h").innerText = "No Suggestions found.. yet";
                     document.getElementById("_suggestchannel_h").style.display = "block";
                 } else {
                     document.getElementById("_suggestchannel_div").style.display = "block";
-                    console.log(dat.suggestedchannels)
-                    Object.keys(dat.suggestedchannels).forEach(a => {
-                        this.appendSuggestion(dat.suggestedchannels[a]);
+
+                    Object.keys(dat.suggestedchannels).forEach((a, i) => {
+                        let b = dat.suggestedchannels[a];
+                        let suggestionelem_status = document.createElement("j_h_block");
+
+                        suggestionelem_status.innerText = suggestionnames[b.status];
+                        suggestionelem_status.classList.add((b.status == 1 ? "bg-green" : ([2, 3].includes(b.status) ? "bg-red" : "bg-yellow")));
+
+                        tables[0].keypaths.push(...[
+                            b._user.login, b._user.id,
+                            ["@@html", suggestionelem_status]
+                        ]);
+
+                        if (i < Object.keys(dat.suggestedchannels).length) tables[0].keypaths.push("\n");
                     });
+
+                    this.createTable(0, "_suggestchannel_table", "_suggestchannel_div");
                 };
             };
 
@@ -904,6 +1042,9 @@ class channelsuggestion {
 
             document.getElementById("_suggestchannel_submit").classList.add("copied");
             document.getElementById("_suggestchannel_input").value = "";
+            if (document.getElementById("_suggestchannel_admin_table")) {
+                document.getElementById("_suggestchannel_admin_table").appendChild()
+            };
             notification(`Successfully submitted channel`);
             progress(100);
 
@@ -911,8 +1052,6 @@ class channelsuggestion {
                 .then(() => {
                     document.getElementById("_suggestchannel_submit").classList.remove("copied");
                 })
-
-            this.appendSuggestion(dat.suggestedchannel);
         });
     };
 
@@ -948,7 +1087,7 @@ class channelsuggestion {
             progress(100);
 
             let removingelem = document.getElementById(`_suggestchannel_${channel}`);
-            removingelem.parentNode.appendChild(removingelem);
+            document.getElementById("_suggestchannel_table_2_0").appendChild(removingelem);
             removingelem.remove();
             try { delete this.suggestiondata.suggestedchannels[channel]; } catch (e) { error(e) };
 
@@ -960,102 +1099,21 @@ class channelsuggestion {
         });
     };
 
-    static appendSuggestion = (suggestion) => {
-        let suggestionelem = document.createElement("tr");
-        suggestionelem.classList.add("j_table_tr", "border_white", "j_table-hasval");
-        suggestionelem.id = `_suggestchannel_${suggestion._user.id}`;
-
-        let suggestionelem_name = document.createElement("td");
-        let suggestionelem_id = document.createElement("td");
-        let suggestionelem_status = document.createElement("td");
-
-        suggestionelem_name.innerText = suggestion._user.login;
-        suggestionelem_id.innerText = suggestion._user.id;
-        suggestionelem_status.innerText = suggestion.status_name;
-
-        [suggestionelem_name, suggestionelem_id, suggestionelem_status].forEach((a, i) => {
-            a.classList.add(`_suggestchannel_${suggestion._user.id}`, "_table_width_33", "j_table_td");
-            a.id = `_suggestchannel_${suggestion._user.id}_${["name", "id", "status"][i]}`;
-            suggestionelem.appendChild(a);
-            if (i < 3) {
-                a.classList.add("cursor-copy");
-                a.onclick = () => { copy(a) };
-            };
-        });
-
-        document.getElementById("_suggestchannel_table").appendChild(suggestionelem);
-    };
-
-    static appendSuggestionAdmin = (suggestion, tableid) => {
-        let suggestionelem = document.createElement("tr");
-        suggestionelem.classList.add("j_table_tr", "border_white");
-        suggestionelem.id = `_suggestchannel_${suggestion._user.id}`;
-
-        let suggestionelem_name = document.createElement("td");
-        let suggestionelem_id = document.createElement("td");
-        let suggestionelem_type = document.createElement("td");
-        let suggestionelem_users = document.createElement("td");
-        let suggestionelem_status = document.createElement("td");
-        let suggestionelem_actions = document.createElement("td");
-
-        suggestionelem_name.innerText = suggestion._user.login;
-        suggestionelem_id.innerText = suggestion._user.id;
-        suggestionelem_type.innerText = (suggestion._user.type?.length > 0 ? suggestion._user.type : "");
-        suggestionelem_type.classList.add(...(suggestion._user.type?.length > 0 ? ["bg-yellow"] : ["noborder", "bg-transparent", "j_table-noval"]));
-        suggestionelem_users.innerText = suggestion.first_user + (Object.keys(suggestion.users).length > 1 ? ` +${Object.keys(suggestion.users).length - 1}` : "");
-
-        let suggestion_approve = document.createElement("button");
-        let suggestion_deny = document.createElement("button");
-        let suggestion_blacklist = document.createElement("button");
-
-        let this_ = this;
-        suggestion_approve.innerText = "Approve";
-        suggestion_approve.classList.add("bg-green");
-        suggestion_approve.onclick = () => { this_.submitAdmin(suggestion._user.id, 1); suggestionelem_status.innerText = "Approved"; suggestionelem_status.classList.add("bg-green"); };
-        suggestion_deny.innerText = "Deny";
-        suggestion_deny.classList.add("bg-red");
-        suggestion_deny.onclick = () => { this_.submitAdmin(suggestion._user.id, 2); suggestionelem_status.innerText = "Denied"; suggestionelem_status.classList.add("bg-red"); };
-        suggestion_blacklist.innerText = "Blacklist";
-        suggestion_blacklist.classList.add("bg-red");
-        suggestion_blacklist.onclick = () => { this_.submitAdmin(suggestion._user.id, 3); suggestionelem_status.innerText = "Blacklisted"; suggestionelem_status.classList.add("bg-red"); }
-
-        suggestionelem_actions.style.width = "20%";
-        suggestionelem_actions.style.padding = "3px";
-
-        [suggestion_approve, suggestion_deny, suggestion_blacklist].forEach(a => {
-            // a.style.width = "30%";
-            a.style.marginLeft = a.style.marginRight = "1px";
-            suggestionelem_actions.appendChild(a);
-        });
-
-        const suggestionnames = ["Pending", "Approved", "Denied", "Blacklisted"];
-
-        suggestionelem_status.innerText = suggestionnames[suggestion.status];
-        suggestionelem_status.classList.add((suggestion.status == 1 ? "bg-green" : ([2, 3].includes(suggestion.status) ? "bg-red" : "bg-yellow")));
-
-        [suggestionelem_name, suggestionelem_id, suggestionelem_type, suggestionelem_users, suggestionelem_status, suggestionelem_actions].forEach((a, i) => {
-            a.classList.add(`_suggestchannel_${suggestion._user.id}`);
-            a.id = `_suggestchannel_${suggestion._user.id}_${["name", "id", "users_num", "select", "submit"][i]}`;
-            a.classList.add((a.innerText.length > 0 ? "j_table-hasval" : "j_table-noval"));
-            if (i < 5 && a.innerText.length > 0) {
-                a.classList.add("cursor-copy");
-                a.onclick = () => {
-                    if (i == 3) copy(a, suggestion.users.join(", ")); else copy(a);
-                };
-            };
-            a.classList.add("j_table_td")
-            suggestionelem.appendChild(a);
-        });
-
-        document.getElementById((tableid ?? "_suggestchannel_admin_table")).appendChild(suggestionelem);
-    };
-
     static reload = () => {
-        [...document.querySelectorAll("#_suggestchannel_admin_table tr")].slice(1).forEach(a => a.remove());
-        [...document.querySelectorAll("#_suggestchannel_admin_table_2 tr")].slice(1).forEach(a => a.remove());
-        [...document.querySelectorAll("#_suggestchannel_table tr")].slice(1).forEach(a => a.remove());
+        this.removetables();
 
         this.load();
+    };
+
+    static createTable = (num, tableName, parentid) => {
+        createTable({ [num]: this.tables[num] }, {}, tableName, parentid, "", []);
+        sorttable(document.getElementById(`${tableName}_0`), 0, 2);
+    };
+
+    static removetables = () => {
+        document.getElementById("_suggestchannel_table").remove();
+        document.getElementById("_suggestchannel_admin_table").remove();
+        document.getElementById("_suggestchannel_admin_table_2").remove();
     };
 
     static blacklist = (ch) => {

@@ -5,7 +5,6 @@ const _returnerr = require("./_returnerr");
 let pagination;
 let joinedChannels = j.joinedChannels;
 let block_channels = 0;
-const max_block_channels = 3000;
 
 class modlookup {
     static channel = (channelID, maxnum) => {
@@ -76,7 +75,7 @@ class modlookup {
         });
     };
 
-    /** @param {num} num in hundred (*100) */
+    /** @param {num} num */
     static join = async (num, usePagination) => {
         return new Promise(async (resolve, reject) => {
             join();
@@ -93,7 +92,7 @@ class modlookup {
                         block_channels += 100;
                         joinedChannels.push(...streamLogins);
                         j.logclient.joinAll(streamLogins);
-                        if (block_channels < ((num * 100) ?? max_block_channels)) join(); else resolve(joinedChannels);
+                        if (block_channels < (num ?? (j.config.trackers.max_channels ?? 5000))) join(); else resolve(joinedChannels);
                     })
                     .catch(reject);
 
@@ -102,15 +101,15 @@ class modlookup {
         });
     };
 
-    /** @param {number} num in hundrets (*100) */
+    /** @param {number} num */
     static part = async (num) => {
-        let partChannels = joinedChannels.filter(a => !files.clientChannels.permanentlogchannels.includes(a)).splice(0, (num * 100));
+        let partChannels = joinedChannels.filter(a => !files.clientChannels.permanentlogchannels.includes(a)).splice(0, num);
         block_channels -= partChannels.length;
         _log(0, `>> Parted ${partChannels.length} channels (Now in ${joinedChannels.length} channels, Bot joined: ${j.logclient.channels.length})`, "42");
         return await j.client.partAll(partChannels);
     };
 
-    /** @param {number} num in hundrets (*100) */
+    /** @param {number} num */
     static renew = async (num) => {
         await this.part(num);
         return await this.join(num, true);

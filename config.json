@@ -24,7 +24,8 @@
     },
     "trackers":{
         "mods": true,
-        "vips": true
+        "vips": true,
+        "max_channels": 5000
     },
     "express": {
         "port": 2005,

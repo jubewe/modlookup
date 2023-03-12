@@ -10,10 +10,12 @@
 ✅ link update (/endpoints)  (mod => vipinfo für vip) 
 ✅ update on jubewe.github.io/modlookup
 ✅ live console (website, ws)
-- bot controls 
+✅ bot controls 
 ✅ special dauba seite mit extra viel stats und zeug lol
 ✅ feature to log specific channels (limited requests?)
 ✅ no website rate limits for admins
-- log blacklist (channels + users)
-- log delete (self+) (channels + users)
+✅ log blacklist (channels + users)
+✅ log delete (self+) (channels + users)
 (- channel status + followers in /modlookup/user/:user and /viplookup/user/:user)
+- notification on 1 bln messages
+- increase logchannels number

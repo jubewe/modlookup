@@ -18,7 +18,9 @@ module.exports = async (req, res, next) => {
             .then(dat => {
                 req.auth = dat;
             })
-            .catch();
+            .catch(e => {
+                return res.send(JSON.stringify({ error: e }));
+            });
 
         return next();
     } else {

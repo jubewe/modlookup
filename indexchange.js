@@ -3,7 +3,7 @@ const files = require("./variables/files");
 const j = require("./variables/j");
 const paths = require("./variables/paths");
 
-j.cooldownsplitter.create({ "channels": {} });
+// j.cooldownsplitter.create({ "channels": {} });
 
 // let suggestedchannels = {...files.suggestedchannels};
 
