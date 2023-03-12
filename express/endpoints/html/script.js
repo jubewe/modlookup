@@ -1101,6 +1101,9 @@ class channelsuggestion {
 
     static reload = () => {
         this.removetables();
+        Object.keys(this.tables).forEach(a => {
+            this.tables[a].keypaths = [];
+        });
 
         this.load();
     };
@@ -1111,9 +1114,9 @@ class channelsuggestion {
     };
 
     static removetables = () => {
-        document.getElementById("_suggestchannel_table").remove();
-        document.getElementById("_suggestchannel_admin_table").remove();
-        document.getElementById("_suggestchannel_admin_table_2").remove();
+        if (document.getElementById("_suggestchannel_table_0")) document.getElementById("_suggestchannel_table_0").remove();
+        if (document.getElementById("_suggestchannel_table_1_0")) document.getElementById("_suggestchannel_table_1_0")?.remove();
+        if (document.getElementById("_suggestchannel_table_2_0")) document.getElementById("_suggestchannel_table_2_0")?.remove();
     };
 
     static blacklist = (ch) => {
