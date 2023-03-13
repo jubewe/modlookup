@@ -11,8 +11,8 @@ module.exports = async (response) => {
     if (!files.clientChannels.channels.includes(response.channel.name)) return;
     if (files.clientChannels.logchannels.includes(response.channel.name)) _log(0, `#${response.channel.name} ${response.userstate.username}: ${response.message.messageText}`);
 
-    let channelprefix = await j.channelsplitter.getKey(["channels", response.channelID, "prefix"], true);
-    let prefix = (channelprefix ?? j.config.prefix);
+    let channel_ = response.channel_ = await j.channelsplitter.getKey(["channels", response.channelID], true);
+    let prefix = (channel_?.prefix ?? j.config.prefix);
     let command = response.messageText.match(new RegExp(`(?<=^${regexescape(prefix)})\\w+`))?.[0];
     let command_ = response.messageText.match(new RegExp(`(?<=^${regexescape(j.config.prefix)})(prefix)+`))?.[0];
     

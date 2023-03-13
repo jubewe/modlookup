@@ -17,5 +17,7 @@
 ✅ log blacklist (channels + users)
 ✅ log delete (self+) (channels + users)
 (- channel status + followers in /modlookup/user/:user and /viplookup/user/:user)
-- notification on 1 bln messages
-- increase logchannels number
+(- notification on 1 bln messages)
+✅ increase logchannels number (3k => 5k)
+✅ table sorting
+✅ table search function

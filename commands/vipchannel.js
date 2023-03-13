@@ -3,6 +3,7 @@ const j_ = require("../classes/j_");
 const viplookup = require("../functions/viplookup");
 const _returnerr = require("../functions/_returnerr");
 const j = require("../variables/j");
+const _url = require("../functions/_url");
 
 module.exports = {
     name: "vipchannel",
@@ -20,7 +21,8 @@ module.exports = {
                 response.reply(`Found ${add.length} (tracked) vips in `
                     + `${_lookupchannel.login}${response instanceof whisperMessage ?
                         `: ${add.slice(0, j.config.twitch.dm.max_tracker_num).join(", ")}`
-                        + `${add.length > j.config.twitch.dm.max_tracker_num ? ` (First ${j.config.twitch.dm.max_tracker_num})` : ""}` : ""}`);
+                        + `${add.length > j.config.twitch.dm.max_tracker_num ? ` (First ${j.config.twitch.dm.max_tracker_num})` : ""}` : ""} `
+                    + `${(response.channel_?.linksInCommands == 1 ? _url(`/viplookup/channel/${_lookupchannel.id}`) : "")}`);
             })
             .catch(e => {
                 response.reply(`Errored: ${_returnerr(e)}`);

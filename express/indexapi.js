@@ -380,14 +380,16 @@ module.exports = async () => {
     j.expressapi.get("/dashboard", async (req, res) => {
         if (!req.permission.id) return res.sendWC({ error: Error("auth required") }, 401);
 
+        let channel = await j.channelsplitter.getKey(["channels", req.permission.id], true);
         let r = {
             username: req.permission.login,
             id: req.permission.id,
-            inBlacklist: (await j.blacklistsplitter.getKey(["users", req.permission.id, "status"], true) === 0),
+            inBlacklist: (await j.blacklistsplitter.getKey(["users", req.permission.id, "status"], true) === 1),
             bot: {
                 inChannel: (files.clientChannels.channels.includes(req.permission.login)),
-                prefix: await j.channelsplitter.getKey(["channels", req.permission.id, "prefix"], true),
-                defaultPrefix: j.config.prefix
+                prefix: channel?.prefix,
+                defaultPrefix: j.config.prefix,
+                linksInCommands: channel?.linksInCommands
             }
         };
 

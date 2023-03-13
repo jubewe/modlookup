@@ -23,7 +23,7 @@ if (url.searchParams.get("devmode")) devMode = true;
 
 let icon_elems = document.querySelectorAll(".j_icon");
 let icon_elems_2 = document.querySelectorAll("j_icon");
-let login_elem = document.querySelector("#j_login");
+// let login_elem = document.querySelector("#j_login");
 let pagename_elem = document.querySelector("#j_pagename");
 let spacer = document.createElement("j_spacer");
 let spacer_inline = document.createElement("j_spacer_inline");
@@ -198,12 +198,17 @@ function _firstcap(str) {
     return str;
 };
 
-function createTable(tables, dat, tableName, parentElement, progressName, progressClasses, nosort) {
+function createTable(tables, dat, tableName, parentElement, progressName, progressClasses, nosort, nosearch) {
     Object.keys(tables).forEach((a, i) => {
         if (document.getElementById(`${tableName}_${i}`) === null) {
             let table_elem = document.createElement("table");
             table_elem.id = `${tableName}_${i}`;
             table_elem.classList.add("j_table", tableName);
+
+            let search_elem = document.createElement("input");
+            search_elem.placeholder = "Search";
+            search_elem.id = `${tableName}_${i}_search`;
+            search_elem.oninput = () => { searchtable(table_elem, search_elem.value) };
 
             let th_tr_elem = document.createElement("tr");
             let tr_elem = document.createElement("tr");
@@ -212,11 +217,13 @@ function createTable(tables, dat, tableName, parentElement, progressName, progre
 
             tables[a].names.forEach((b, i2) => {
                 let th_elem = document.createElement("th");
-                th_elem.classList.add("cursor-sort");
-                th_elem.setAttribute("j_sorting", 2);
-                th_elem.onclick = () => {
-                    th_elem.setAttribute("j_sorting", ([1, 2][[2, 1].indexOf(parseInt(th_elem.getAttribute("j_sorting")))]));
-                    sorttable(table_elem, i2, th_elem.getAttribute("j_sorting"));
+                if (!(nosort ?? undefined)) {
+                    th_elem.classList.add("cursor-sort");
+                    th_elem.setAttribute("j_sorting", 2);
+                    th_elem.onclick = () => {
+                        th_elem.setAttribute("j_sorting", ([1, 2][[2, 1].indexOf(parseInt(th_elem.getAttribute("j_sorting")))]));
+                        sorttable(table_elem, i2, th_elem.getAttribute("j_sorting"));
+                    };
                 };
                 let th_elem_text = document.createElement("j_h");
                 // let th_elem_sorting = document.createElement("img");
@@ -240,6 +247,12 @@ function createTable(tables, dat, tableName, parentElement, progressName, progre
             table_elem.appendChild(th_tr_elem);
             table_elem.appendChild(tr_elem);
 
+            if (!(nosearch ?? undefined)) {
+                if(!(document.getElementById(`${tableName}_${i}_search`) ?? undefined)){
+                    document.getElementById(parentElement).appendChild(search_elem);
+                    document.getElementById(parentElement).appendChild(document.createElement("j_spacer_smol"));
+                };
+            };
             document.getElementById(parentElement).appendChild(table_elem);
         };
 
@@ -367,6 +380,41 @@ function sorttable(tableelem, tdnum, mode) {
     tdsorted.forEach(a => tableelem.appendChild(a[1]));
 };
 
+function searchtable(tableelem, value) {
+    let trelems = [...tableelem.childNodes].slice(1);
+    const trelems_ = [...trelems];
+
+    let valuereg = new RegExp(value, "gi");
+    let tdelems = [];
+    trelems_.forEach((a, i) => {
+        let p = [[], []];
+        a.childNodes?.forEach((b, i2) => {
+            if (value?.length > 0) {
+                if (b?.innerText && valuereg.test(b?.innerText)) {
+                    p[0].push(true);
+                    p[1].push(b?.innerText);
+                } else {
+                    p[0].push(false);
+                    p[1].push(undefined);
+                };
+            } else {
+                p[0].push(true);
+                p[1].push(undefined);
+            };
+        });
+
+        tdelems.push([...p, a]);
+    });
+
+    tdelems.forEach(a => {
+        if (a[0].includes(true)) {
+            a[2].style.display = "";
+        } else {
+            a[2].style.display = "none";
+        };
+    });
+};
+
 async function copy() {
     if (!arguments[0].innerText && (!arguments[1] || (document.getElementById(arguments[1]) === null))) return;
     let element = (arguments[0].innerText ? arguments[0] : document.getElementById(arguments[1]));
@@ -400,34 +448,31 @@ class ml {
             if (e) return error(e);
             if (devMode) console.debug("user", r);
 
-            let mluser = r.data;
-            document.getElementById("j_ml_user_user").innerText = `${mluser.name} (${mluser.id})`;
-            document.getElementById("j_ml_user_channels_number").innerText = (mluser.num > 0 ? mluser.num : "none of the");
+            let dat = r.data;
+            document.getElementById("j_ml_user_user").innerText = `${dat.name} (${dat.id})`;
+            document.getElementById("j_ml_user_channels_number").innerText = (dat.num > 0 ? dat.num : "none of the");
             [...document.getElementsByClassName("j_table_tr")].forEach(a => a.remove());
 
             document.getElementById("j_ml_user").style.display = "grid";
-            if (Object.keys(mluser.channels).length > 1 || mluser.num == 0) document.getElementById("j_ml_user_info").innerText += "s";
-            if (mluser.num == 0) return;
+            if (Object.keys(dat.channels).length > 1 || dat.num == 0) document.getElementById("j_ml_user_info").innerText += "s";
+            if (dat.num == 0) return;
 
-            Object.keys(mluser.channels).sort((a, b) => { return mluser.channels[a].name - mluser.channels[b].name }).forEach(channel => {
-                let channelelemtr = document.createElement("tr");
-                channelelemtr.id = `ml_channel_${channel}`;
-                channelelemtr.classList.add("j_table_tr", "j_table_tr_single");
+            let tables = {
+                "0": {
+                    "names": [
+                        "Channel Names",
+                        "Channel IDs"
+                    ],
+                    "keypaths": []
+                }
+            };
 
-                let channelelemtdname = document.createElement("td");
-                let channelelemtdid = document.createElement("td");
-
-                channelelemtdname.innerText = mluser.channels[channel].name;
-                channelelemtdid.innerText = channel;
-
-                [channelelemtdname, channelelemtdid].forEach(a => {
-                    a.classList.add("j_table_td", "cursor-copy");
-                    a.onclick = () => { copy(a) };
-                    a.innerHTML = `<j_h>${a.innerText}</j_h>`;
-                    channelelemtr.appendChild(a);
-                });
-                document.getElementById("j_table").appendChild(channelelemtr);
+            Object.keys(dat.channels).forEach((channel, i) => {
+                tables[0].keypaths.push(...[dat.channels[channel].name, channel]);
+                if (i < (Object.keys(dat.channels).length - 1)) tables[0].keypaths.push("\n");
             });
+
+            createTable(tables, dat, "j_table", "j_table_div");
 
             document.getElementById("j_table_div").style.display = "block";
         });
@@ -438,35 +483,33 @@ class ml {
             if (e) return error(e);
             if (devMode) console.debug("channel", r);
 
-            let mlchannel = r.data;
-            document.getElementById("j_ml_channel_channel").innerText = `${mlchannel.name} (${mlchannel.id})`;
-            document.getElementById("j_ml_channel_users_number").innerText = (mlchannel.num > 0 ? mlchannel.num : "no");
+            let dat = r.data;
+            document.getElementById("j_ml_channel_channel").innerText = `${dat.name} (${dat.id})`;
+            document.getElementById("j_ml_channel_users_number").innerText = (dat.num > 0 ? dat.num : "no");
             [...document.getElementsByClassName("j_table_tr")].forEach(a => a.remove());
 
             document.getElementById("j_ml_channel").style.display = "grid";
-            if (Object.keys(mlchannel.users).length > 1 || mlchannel.num == 0) document.getElementById("j_ml_channel_info").innerText += "s";
-            if (mlchannel.num == 0) return;
+            if (Object.keys(dat.users).length > 1 || dat.num == 0) document.getElementById("j_ml_channel_info").innerText += "s";
+            if (dat.num == 0) return;
 
-            Object.keys(mlchannel.users).forEach(user => {
-                let channelelemtr = document.createElement("tr");
-                channelelemtr.id = `ml_user_${user}`;
-                channelelemtr.classList.add("j_table_tr", "j_table_tr_single");
+            let tables = {
+                "0": {
+                    "names": [
+                        "Moderator Names",
+                        "Moderator IDs"
+                    ],
+                    "keypaths": []
+                }
+            };
 
-                let channelelemtdname = document.createElement("td");
-                let channelelemtdid = document.createElement("td");
-                channelelemtdname.innerText = mlchannel.users[user].name;
-                channelelemtdid.innerText = user;
-
-                [channelelemtdname, channelelemtdid].forEach(a => {
-                    a.classList.add("j_table_td", "cursor-copy");
-                    a.onclick = () => { copy(a) };
-                    a.innerHTML = `<j_h>${a.innerText}</j_h>`;
-                    channelelemtr.appendChild(a);
-                });
-                document.getElementById("j_table").appendChild(channelelemtr);
+            Object.keys(dat.users).forEach((user, i) => {
+                tables[0].keypaths.push(...[dat.users[user].name, user]);
+                if (i < (Object.keys(dat.users).length - 1)) tables[0].keypaths.push("\n");
             });
 
             document.getElementById("j_table_div").style.display = "block";
+
+            createTable(tables, dat, "j_table", "j_table_div");
         });
     };
 
@@ -506,34 +549,31 @@ class vl {
             if (e) return error(e);
             if (devMode) console.debug("user", r);
 
-            let vluser = r.data;
-            document.getElementById("j_vl_user_user").innerText = `${vluser.name} (${vluser.id})`;
-            document.getElementById("j_vl_user_channels_number").innerText = (vluser.num > 0 ? vluser.num : "none of the");
+            let dat = r.data;
+            document.getElementById("j_vl_user_user").innerText = `${dat.name} (${dat.id})`;
+            document.getElementById("j_vl_user_channels_number").innerText = (dat.num > 0 ? dat.num : "none of the");
             [...document.getElementsByClassName("j_table_tr")].forEach(a => a.remove());
 
             document.getElementById("j_vl_user").style.display = "grid";
-            if (Object.keys(vluser.channels).length > 1 || vluser.num == 0) document.getElementById("j_vl_user_info").innerText += "s";
-            if (vluser.num == 0) return;
+            if (Object.keys(dat.channels).length > 1 || dat.num == 0) document.getElementById("j_vl_user_info").innerText += "s";
+            if (dat.num == 0) return;
 
-            Object.keys(vluser.channels).forEach(channel => {
-                let channelelemtr = document.createElement("tr");
-                let channelelemtdname = document.createElement("td");
-                let channelelemtdid = document.createElement("td");
+            let tables = {
+                "0": {
+                    "names": [
+                        "Channel Names",
+                        "Channel IDs"
+                    ],
+                    "keypaths": []
+                }
+            };
 
-                channelelemtr.id = `vl_channel_${channel}`;
-                channelelemtr.classList.add("j_table_tr", "j_table_tr_single");
-
-                channelelemtdname.innerText = vluser.channels[channel].name;
-                channelelemtdid.innerText = channel;
-
-                [channelelemtdname, channelelemtdid].forEach(a => {
-                    a.classList.add("j_table_td", "cursor-copy");
-                    a.onclick = () => { copy(a) };
-                    a.innerHTML = `<j_h>${a.innerText}</j_h>`;
-                    channelelemtr.appendChild(a);
-                });
-                document.getElementById("j_table").appendChild(channelelemtr);
+            Object.keys(dat.channels).forEach(channel => {
+                tables[0].keypaths.push(...[dat.channels[channel].name, channel]);
+                if (i < (Object.keys(dat.channels).length - 1)) tables[0].keypaths.push("\n");
             });
+
+            createTable(tables, dat, "j_table", "j_table_div");
 
             document.getElementById("j_table_div").style.display = "block";
         });
@@ -544,33 +584,31 @@ class vl {
             if (e) return error(e);
             if (devMode) console.debug("channel", r);
 
-            let vlchannel = r.data;
-            document.getElementById("j_vl_channel_channel").innerText = `${vlchannel.name} (${vlchannel.id})`;
-            document.getElementById("j_vl_channel_users_number").innerText = (vlchannel.num > 0 ? vlchannel.num : "no");
+            let dat = r.data;
+            document.getElementById("j_vl_channel_channel").innerText = `${dat.name} (${dat.id})`;
+            document.getElementById("j_vl_channel_users_number").innerText = (dat.num > 0 ? dat.num : "no");
             [...document.getElementsByClassName("j_table_tr")].forEach(a => a.remove());
 
             document.getElementById("j_vl_channel").style.display = "grid";
-            if (Object.keys(vlchannel.users).length > 1 || vlchannel.num === 0) document.getElementById("j_vl_channel_info").innerText += "s";
-            if (vlchannel.num == 0) return;
-            Object.keys(vlchannel.users).forEach(user => {
-                let channelelemtr = document.createElement("tr");
-                let channelelemtdname = document.createElement("td");
-                let channelelemtdid = document.createElement("td");
-                channelelemtr.id = `vl_user_${user}`;
+            if (Object.keys(dat.users).length > 1 || dat.num === 0) document.getElementById("j_vl_channel_info").innerText += "s";
+            if (dat.num == 0) return;
 
-                channelelemtr.classList.add("j_table_tr", "j_table_tr_single");
+            let tables = {
+                "0": {
+                    "names": [
+                        "Users",
+                        "User IDs"
+                    ],
+                    "keypaths": []
+                }
+            };
 
-                channelelemtdname.innerText = vlchannel.users[user].name;
-                channelelemtdid.innerText = user;
-
-                [channelelemtdname, channelelemtdid].forEach(a => {
-                    a.classList.add("j_table_td", "cursor-copy");
-                    a.onclick = () => { copy(a) };
-                    a.innerHTML = `<j_h>${a.innerText}</j_h>`;
-                    channelelemtr.appendChild(a);
-                });
-                document.getElementById("j_table").appendChild(channelelemtr);
+            Object.keys(dat.users).forEach(user => {
+                tables[0].keypaths.push(...[dat.users[user].name, user]);
+                if (i < (Object.keys(dat.users).length - 1)) tables[0].keypaths.push("\n");
             });
+
+            createTable(tables, dat, "j_table", "j_table_div");
 
             document.getElementById("j_table_div").style.display = "block";
         });
@@ -745,7 +783,7 @@ class admin {
                     }
                 };
 
-                createTable(tables, dat, "_admin_table", "_admin_body", "_admin_progress", ["_admin_progress"])
+                createTable(tables, dat, "_admin_table", "_admin_body", "_admin_progress", ["_admin_progress"], true, true);
 
                 let log_elem = document.getElementById("_admin_log");
                 log_elem.value = "";
@@ -1086,9 +1124,9 @@ class channelsuggestion {
 
             progress(100);
 
-            let removingelem = document.getElementById(`_suggestchannel_${channel}`);
-            document.getElementById("_suggestchannel_table_2_0").appendChild(removingelem);
-            removingelem.remove();
+            // let removingelem = document.getElementById(`_suggestchannel_${channel}`);
+            // document.getElementById("_suggestchannel_table_2_0").appendChild(removingelem);
+            // removingelem.remove();
             try { delete this.suggestiondata.suggestedchannels[channel]; } catch (e) { error(e) };
 
             if (Object.keys((this.suggestiondata?.suggestedchannels ?? {})).length === 0) {
@@ -1170,6 +1208,8 @@ class dashboard {
             let botstatus_elem_h = document.createElement("j_h");
             let botstatus_elem_button = document.createElement("button");
             let removelog_elem_button = document.createElement("button");
+            let bot_linksincommands = document.createElement("j_h_block");
+            let bot_linksincommands_button = document.createElement("button");
 
             removelog_elem_button.innerText = "Remove from logs";
             removelog_elem_button.classList.add("bg-red");
@@ -1226,6 +1266,21 @@ class dashboard {
                 [prefix_elem_update, prefix_elem_reset].forEach(a => {
                     a.classList.add("_dash_prefix_button");
                 });
+
+                bot_linksincommands.innerText = (dat.bot.linksInCommands ? "Enabled" : "Disabled");
+                bot_linksincommands.style.width = "100%";
+                bot_linksincommands.classList.add((dat.bot.linksInCommands ? "bg-green" : "bg-red"));
+                bot_linksincommands_button.innerText = (dat.bot.linksInCommands ? "Disable" : "Enable");
+                bot_linksincommands_button.classList.add((dat.bot.linksInCommands ? "bg-red" : "bg-green"));
+                
+                bot_linksincommands_button.onclick = () => {
+                    dat.bot.linksOnCommands = this_.dashboardData.bot.linksInCommands = ([0, 1][[1, 0].indexOf(dat.bot.linksInCommands ?? 0)]);
+                    this_.editKey("linksInCommands", dat.bot.linksInCommands);
+                    bot_linksincommands.innerText = (dat.bot.linksInCommands ? "Enabled" : "Disabled");
+                    bot_linksincommands.classList.replace((dat.bot.linksInCommands ? "bg-red" : "bg-green"), (dat.bot.linksInCommands ? "bg-green" : "bg-red"));
+                    bot_linksincommands_button.innerText = (dat.bot.linksInCommands ? "Disable" : "Enable");
+                    bot_linksincommands_button.classList.replace((dat.bot.linksInCommands ? "bg-green" : "bg-red"), (dat.bot.linksInCommands ? "bg-red" : "bg-green"));
+                };
             };
 
             document.getElementById("_logging_opted_out").classList.add("bg-red");
@@ -1238,16 +1293,19 @@ class dashboard {
                 "0": {
                     "names": [
                         "Status",
-                        "Prefix"
+                        "Prefix",
+                        "Links in commands"
                     ],
                     "keypaths": [
                         "\n",
                         ["@@html", botstatus_elem],
                         ["@@html", prefix_elem],
+                        ["@@html", bot_linksincommands],
                         // ["@@html", prefix_elem, prefix_elem_update, prefix_elem_reset],
                         "\n",
                         ["@@html", botstatus_elem_button],
                         ["@@html", prefix_elem_update, prefix_elem_reset],
+                        ["@@html", bot_linksincommands_button]
                     ]
                 }
             };
@@ -1269,8 +1327,8 @@ class dashboard {
                 }
             };
 
-            createTable(table1, dat, "_dash_table", "_dashboard");
-            createTable(table2, dat, "_dash_table2", "_dashboard");
+            createTable(table1, dat, "_dash_table", "_dashboard", "", [], true, true);
+            createTable(table2, dat, "_dash_table2", "_dashboard", "", [], true, true);
 
             if (dat.inBlacklist) {
                 document.getElementById("_dash_table2_0").style.display = "none";
@@ -1294,11 +1352,17 @@ class dashboard {
 
             notification(dat.message);
 
-            if (key == "prefix") {
-                if (this.dashboardData?.bot?.prefix) this.dashboardData.bot.prefix = value;
-                if (!(value ?? undefined)) {
-                    document.getElementById("j_dash_prefix_input").value = "";
-                }
+            switch (key) {
+                case "prefix": {
+                    if (this.dashboardData?.bot?.prefix) this.dashboardData.bot.prefix = value;
+                    if (!(value ?? undefined)) document.getElementById("j_dash_prefix_input").value = "";
+
+                    break;
+                };
+
+                case "linksOnCommands": {
+                    break;
+                };
             };
         });
     };
@@ -1459,10 +1523,19 @@ function autoexec() {
 };
 
 function _main_elems() {
-    let j_dashboard_elem = document.createElement("button");
+    let login_elem = document.createElement("h");
+    login_elem.innerText = "Login";
+    login_elem.id = "j_login";
+    login_elem.classList.add("j_button_head", "cursor-pointer");
+    login_elem.onclick = () => { login() };
+    document.querySelector("body").appendChild(login_elem);
+
+    let j_dashboard_elem = document.createElement("a");
+    j_dashboard_elem.classList.add("j_button_head", "cursor-pointer");
+    j_dashboard_elem.href = `${url.origin}/dashboard`;
     j_dashboard_elem.innerText = "Dashboard";
     j_dashboard_elem.id = "j_dashboard";
-    j_dashboard_elem.onclick = () => { redirect(`${url.origin}/dashboard`) };
+    // j_dashboard_elem.onclick = () => { redirect(`${url.origin}/dashboard`) };
 
     document.querySelector("body").appendChild(j_dashboard_elem);
 
@@ -1492,13 +1565,14 @@ function _main_elems() {
         let contact_elem_2_div = document.createElement("div");
         contact_elem_2_div.classList.add("j_contact_icon_div");
 
-        let contact_elem_2 = document.createElement("a");
-        contact_elem_2.classList.add("j_contact_icon_a");
+        let contact_elem_2 = document.createElement("j_h_block");
+        contact_elem_2.classList.add("j_contact_icon_a", "cursor-pointer");
         let contact_elem_2_img = document.createElement("img");
         contact_elem_2_img.classList.add("j_contact_icon_img")
 
         contact_elem_2_img.src = contact_options[a].src;
-        contact_elem_2.href = contact_options[a].url;
+        // contact_elem_2.href = contact_options[a].url;1
+        contact_elem_2.onclick = () => { redirect(contact_options[a].url) };
 
         contact_elem_2.appendChild(contact_elem_2_img);
         contact_elem_2_div.appendChild(contact_elem_2);
@@ -1512,7 +1586,7 @@ function _main_elems() {
     let footer_elem_host = document.createElement("j_h");
     let footer_elem_icons = document.createElement("j_h");
 
-    footer_elem_h.innerHTML = "This page was made with <h class='fontkindaverysmollol'></h> Love by <a href='https://twitch.tv/jubewe'>Jubewe</a><br>";
+    footer_elem_h.innerHTML = `This page was made with Love by <a class='url' onclick="redirect('https://twitch.tv/jubewe')">Jubewe</a><br>`;
     footer_elem_host.innerHTML = `<h class='fontsmol'>Hosted by <h class='url' onclick="redirect('https://dau8er.github.io/')">DAU8ER</h></h><br>`;
     footer_elem_icons.innerHTML = `<h class='fontsmol'>Discord- and Twitch Icon by <h class='url' onclick="redirect('https://icons8.com')">icons8.com</h></h>`;
 

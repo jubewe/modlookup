@@ -3,6 +3,7 @@ const modlookup = require("../functions/modlookup");
 let j = require("../variables/j");
 const _returnerr = require("../functions/_returnerr");
 const whisperMessage = require("oberknecht-client/lib/parser/WHISPER.Message");
+const _url = require("../functions/_url");
 
 module.exports = {
     name: "channel",
@@ -23,7 +24,8 @@ module.exports = {
                         response.reply(`Found ${add.length} (tracked) mods in `
                             + `${_lookupchannel.login}${response instanceof whisperMessage
                                 ? `: ${add.slice(0, j.config.twitch.dm.max_tracker_num).join(", ")}`
-                                + `${add.length > j.config.twitch.dm.max_tracker_num ? ` (First ${j.config.twitch.dm.max_tracker_num})` : ""}` : ""}`);
+                                + `${add.length > j.config.twitch.dm.max_tracker_num ? ` (First ${j.config.twitch.dm.max_tracker_num})` : ""}` : ""} `
+                            + `${(response.channel_?.linksInCommands == 1 ? _url(`/modlookup/channel/${_lookupchannel.id}`) : "")}`);
                     })
                     .catch(e => {
                         response.reply(`Errored: ${_returnerr(e)}`);

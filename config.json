@@ -1,5 +1,5 @@
 {
-    "prefix": "ml!",
+    "prefix": "mlb!",
     "debug": {
         "filechange": true
     },
@@ -40,7 +40,7 @@
         "express": true,
         "discord": true,
         "twitch": true,
-        "twitch_log": true
+        "twitch_log": false
     },
     "default": {
         "color": "Aqua",
