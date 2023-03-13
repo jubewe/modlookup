@@ -21,3 +21,4 @@
 ✅ increase logchannels number (3k => 5k)
 ✅ table sorting
 ✅ table search function
+- fix search on table (not working after re-creation)
